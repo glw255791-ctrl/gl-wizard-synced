@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { handleRegister, supabase } from "../../../../api/api";
+// import { handleRegister, supabase } from "../../../../api/api";
 
 export interface RegisterData {
   firstName: string;
@@ -30,52 +30,48 @@ export function useRegisterModel() {
   };
 
   const onRegister = async () => {
-    try {
-      const { firstName, lastName, password } = registerData;
-
-      if (!firstName) {
-        setFieldErrors((prev) => ({
-          ...prev,
-          firstName: "First name is required",
-        }));
-      }
-      if (!lastName) {
-        setFieldErrors((prev) => ({
-          ...prev,
-          lastName: "Last name is required",
-        }));
-      }
-      if (!password) {
-        setFieldErrors((prev) => ({
-          ...prev,
-          password: "Password is required",
-        }));
-      }
-      if (!password || !firstName || !lastName) {
-        throw new Error();
-      }
-
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
-      if (!user || error) throw new Error("No user found");
-
-      const registerResponse = await handleRegister(
-        user.id,
-        password,
-        firstName,
-        lastName
-      );
-
-      if (registerResponse.success) {
-        navigate("/registered");
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        setFieldErrors((prev) => ({ ...prev, rest: error.message }));
-      }
-    }
+    // try {
+    //   const { firstName, lastName, password } = registerData;
+    //   if (!firstName) {
+    //     setFieldErrors((prev) => ({
+    //       ...prev,
+    //       firstName: "First name is required",
+    //     }));
+    //   }
+    //   if (!lastName) {
+    //     setFieldErrors((prev) => ({
+    //       ...prev,
+    //       lastName: "Last name is required",
+    //     }));
+    //   }
+    //   if (!password) {
+    //     setFieldErrors((prev) => ({
+    //       ...prev,
+    //       password: "Password is required",
+    //     }));
+    //   }
+    //   if (!password || !firstName || !lastName) {
+    //     throw new Error();
+    //   }
+    //   const {
+    //     data: { user },
+    //     error,
+    //   } = await supabase.auth.getUser();
+    //   if (!user || error) throw new Error("No user found");
+    //   const registerResponse = await handleRegister(
+    //     user.id,
+    //     password,
+    //     firstName,
+    //     lastName
+    //   );
+    //   if (registerResponse.success) {
+    //     navigate("/registered");
+    //   }
+    // } catch (error) {
+    //   if (error instanceof Error) {
+    //     setFieldErrors((prev) => ({ ...prev, rest: error.message }));
+    //   }
+    // }
   };
 
   return {
