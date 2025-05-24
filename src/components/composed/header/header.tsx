@@ -28,6 +28,7 @@ export const Header = (props: Props) => {
   const [user, setUser] = useState("");
 
   useEffect(() => {
+    setUser("");
     // const checkAuth = async () => {
     //   const {
     //     data: { session },

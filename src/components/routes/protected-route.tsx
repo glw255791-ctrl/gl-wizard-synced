@@ -13,6 +13,7 @@ export default function ProtectedRoute({
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
+    setIsAuthorized(true);
     // const checkAuth = async () => {
     //   const {
     //     data: { session },

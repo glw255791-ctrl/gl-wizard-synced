@@ -12,6 +12,7 @@ export function MainMenu() {
 
   const [userRole, setUserRole] = useState<"USER" | "ADMIN">("USER");
   useEffect(() => {
+    setUserRole("USER");
     // const checkSession = async () => {
     //   const {
     //     data: { session },

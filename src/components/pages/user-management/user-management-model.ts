@@ -45,6 +45,7 @@ export function useUserManagementModel() {
   const navigate = useNavigate();
 
   const loadData = async () => {
+    setUserData([]);
     // try {
     //   const {
     //     data: { session },
@@ -80,6 +81,7 @@ export function useUserManagementModel() {
   };
 
   const updateLicenceDate = async (id: string, newDate: Date) => {
+    console.log(id, newDate);
     // try {
     //   const { error } = await supabase
     //     .from("profiles")
@@ -104,6 +106,7 @@ export function useUserManagementModel() {
   };
 
   async function signUpUser(email: string) {
+    console.log(email);
     // try {
     //   const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
     //   if (error) {
