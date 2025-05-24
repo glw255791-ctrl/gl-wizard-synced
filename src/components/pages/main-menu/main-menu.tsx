@@ -4,7 +4,7 @@ import { colors } from "../../../assets/colors";
 import logo from "./logo.png";
 import { styles } from "./main-menu.style";
 import { Header } from "../../composed/header/header";
-import { supabase } from "../../../api/api";
+// import { supabase } from "../../../api/api";
 import { useEffect, useState } from "react";
 
 export function MainMenu() {
@@ -12,26 +12,23 @@ export function MainMenu() {
 
   const [userRole, setUserRole] = useState<"USER" | "ADMIN">("USER");
   useEffect(() => {
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (session) {
-        const { data: profile, error } = await supabase
-          .from("profiles")
-          .select("user_role")
-          .eq("id", session.user.id)
-          .single();
-
-        if (error || !profile) {
-          return;
-        }
-        setUserRole(profile.user_role);
-      }
-    };
-
-    checkSession();
+    // const checkSession = async () => {
+    //   const {
+    //     data: { session },
+    //   } = await supabase.auth.getSession();
+    //   if (session) {
+    //     const { data: profile, error } = await supabase
+    //       .from("profiles")
+    //       .select("user_role")
+    //       .eq("id", session.user.id)
+    //       .single();
+    //     if (error || !profile) {
+    //       return;
+    //     }
+    //     setUserRole(profile.user_role);
+    //   }
+    // };
+    // checkSession();
   }, [navigate]);
 
   return (

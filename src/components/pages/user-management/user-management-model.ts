@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import { supabase, supabaseAdmin } from "../../../api/api";
+// import { supabase, supabaseAdmin } from "../../../api/api";
 
 export interface Column {
   key: string;
@@ -45,91 +45,83 @@ export function useUserManagementModel() {
   const navigate = useNavigate();
 
   const loadData = async () => {
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        return;
-      }
-
-      const { data: profiles, error } = await supabase
-        .from("profiles")
-        .select("*");
-
-      if (error || !profiles) {
-        setSnackbarProps({
-          message: `Failed to load data. ${error.message}`,
-          severity: "error",
-          open: true,
-        });
-        throw new Error();
-      }
-
-      setUserData(
-        profiles.map(
-          ({ first_name, last_name, email, licence_valid_until, id }) => ({
-            first_name,
-            last_name,
-            email,
-            licence_valid_until,
-            id,
-          })
-        )
-      );
-    } catch (error) {
-      console.warn(error);
-    }
+    // try {
+    //   const {
+    //     data: { session },
+    //   } = await supabase.auth.getSession();
+    //   if (!session) {
+    //     return;
+    //   }
+    //   const { data: profiles, error } = await supabase
+    //     .from("profiles")
+    //     .select("*");
+    //   if (error || !profiles) {
+    //     setSnackbarProps({
+    //       message: `Failed to load data. ${error.message}`,
+    //       severity: "error",
+    //       open: true,
+    //     });
+    //     throw new Error();
+    //   }
+    //   setUserData(
+    //     profiles.map(
+    //       ({ first_name, last_name, email, licence_valid_until, id }) => ({
+    //         first_name,
+    //         last_name,
+    //         email,
+    //         licence_valid_until,
+    //         id,
+    //       })
+    //     )
+    //   );
+    // } catch (error) {
+    //   console.warn(error);
+    // }
   };
 
   const updateLicenceDate = async (id: string, newDate: Date) => {
-    try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ licence_valid_until: newDate.toISOString() })
-        .eq("id", id);
-
-      if (error) {
-        setSnackbarProps({
-          message: `Failed to update licence. ${error.message}`,
-          severity: "error",
-          open: true,
-        });
-        throw new Error();
-      }
-
-      setSnackbarProps({
-        message: `Licence updated.`,
-        severity: "success",
-        open: true,
-      });
-    } catch (error) {
-      console.warn(error);
-    }
+    // try {
+    //   const { error } = await supabase
+    //     .from("profiles")
+    //     .update({ licence_valid_until: newDate.toISOString() })
+    //     .eq("id", id);
+    //   if (error) {
+    //     setSnackbarProps({
+    //       message: `Failed to update licence. ${error.message}`,
+    //       severity: "error",
+    //       open: true,
+    //     });
+    //     throw new Error();
+    //   }
+    //   setSnackbarProps({
+    //     message: `Licence updated.`,
+    //     severity: "success",
+    //     open: true,
+    //   });
+    // } catch (error) {
+    //   console.warn(error);
+    // }
   };
 
   async function signUpUser(email: string) {
-    try {
-      const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
-
-      if (error) {
-        setSnackbarProps({
-          message: `Failed to invite user. ${error.message}`,
-          severity: "error",
-          open: true,
-        });
-        throw new Error();
-      }
-
-      setSnackbarProps({
-        message: `User invited.`,
-        severity: "success",
-        open: true,
-      });
-    } catch (error) {
-      console.warn(error);
-    }
+    // try {
+    //   const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
+    //   if (error) {
+    //     setSnackbarProps({
+    //       message: `Failed to invite user. ${error.message}`,
+    //       severity: "error",
+    //       open: true,
+    //     });
+    //     throw new Error();
+    //   }
+    //   setSnackbarProps({
+    //     message: `User invited.`,
+    //     severity: "success",
+    //     open: true,
+    //   });
+    // } catch (error) {
+    //   console.warn(error);
+    // }
   }
 
   const columns: Column[] = [

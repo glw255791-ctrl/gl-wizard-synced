@@ -11,7 +11,7 @@ import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useEffect, useState } from "react";
-import { supabase } from "../../../api/api";
+// import { supabase } from "../../../api/api";
 interface Props {
   title?: string;
   onPressResetBtn?: () => void;
@@ -28,28 +28,24 @@ export const Header = (props: Props) => {
   const [user, setUser] = useState("");
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        return;
-      }
-
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .single();
-
-      if (error || !profile) {
-        return;
-      }
-
-      setUser(`${profile.first_name} ${profile.last_name}`);
-    };
-    checkAuth();
+    // const checkAuth = async () => {
+    //   const {
+    //     data: { session },
+    //   } = await supabase.auth.getSession();
+    //   if (!session) {
+    //     return;
+    //   }
+    //   const { data: profile, error } = await supabase
+    //     .from("profiles")
+    //     .select("*")
+    //     .eq("id", session.user.id)
+    //     .single();
+    //   if (error || !profile) {
+    //     return;
+    //   }
+    //   setUser(`${profile.first_name} ${profile.last_name}`);
+    // };
+    // checkAuth();
   }, []);
 
   return (

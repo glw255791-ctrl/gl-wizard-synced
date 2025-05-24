@@ -2,15 +2,11 @@ import { Stack, Button, TextField, Box, Typography } from "@mui/material";
 import { styles } from "./register.style";
 import logo from "../logo.png";
 import { useRegisterModel } from "./register-model";
-import { supabase } from "../../../../api/api";
+// import { supabase } from "../../../../api/api";
 
 export function RegisterPage() {
   const { onRegister, onChangeField, fieldErrors, registerData } =
     useRegisterModel();
-
-  supabase.auth.onAuthStateChange((event, session) => {
-    console.log("Auth event:", event, "Session:", session);
-  });
 
   return (
     <Stack style={styles.root}>
