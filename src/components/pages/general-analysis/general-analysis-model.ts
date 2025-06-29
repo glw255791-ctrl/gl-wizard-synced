@@ -94,9 +94,10 @@ export function useGeneralAnalysis() {
         ? formatDate(
             new Date(
               Math.min(
-                ...rawData.glData.map((item) =>
-                  new Date(item[selectedHeaders.glHeaders.date]).getTime()
-                )
+                ...rawData.glData
+                  .map((item) => new Date(item[selectedHeaders.glHeaders.date]))
+                  .filter((date) => !isNaN(date.getTime()))
+                  .map((date) => date.getTime())
               )
             ),
             "dd-MM-yyyy"
@@ -106,9 +107,10 @@ export function useGeneralAnalysis() {
         ? formatDate(
             new Date(
               Math.max(
-                ...rawData.glData.map((item) =>
-                  new Date(item[selectedHeaders.glHeaders.date]).getTime()
-                )
+                ...rawData.glData
+                  .map((item) => new Date(item[selectedHeaders.glHeaders.date]))
+                  .filter((date) => !isNaN(date.getTime()))
+                  .map((date) => date.getTime())
               )
             ),
             "dd-MM-yyyy"

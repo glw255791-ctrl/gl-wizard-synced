@@ -30,7 +30,7 @@ export const GLDropdowns = (props: Props) => {
   return (
     <Stack spacing={1}>
       <Dropdown
-        label="Acout number"
+        label="Account number"
         items={glHeaderOptions}
         value={selectedHeaders.glHeaders.account}
         onChange={(event) =>

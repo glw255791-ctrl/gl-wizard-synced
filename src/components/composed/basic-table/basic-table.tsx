@@ -81,18 +81,18 @@ export const BasicTable = (props: Props) => {
     saveAs(blob, "table_data.xlsx");
   };
 
-  console.log(data.map((item) => item.result));
   const getCellValueFormatted = (
     key: string,
     value: string | Date | number | string[]
   ) => {
     switch (key) {
       case "date":
-        return formatDate(value as Date, "dd-MM-yyy");
+        console.log(value);
+        return formatDate(value as Date, "dd-MM-yyyy");
       case "result":
         return reversalReclassification
           ? String(value || "-")
-          : (value as string[]).join("/");
+          : (value as string[])?.join("/");
       default:
         return String(value);
     }

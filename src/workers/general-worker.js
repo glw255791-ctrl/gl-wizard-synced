@@ -74,7 +74,7 @@ self.onmessage = (event) => {
 
   const condensedDataByResult = Object.values(groupedByJenAndDate)
     .flat()
-    .map((item) => ({ ...item, result: item.result.join("/") }))
+    .map((item) => ({ ...item, result: item.result?.join("/") }))
     .reduce((prev, curr) => {
       if (!prev[curr.result]) prev[curr.result] = [];
       prev[curr.result].push(curr);
