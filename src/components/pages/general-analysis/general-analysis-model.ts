@@ -38,6 +38,7 @@ export interface ReviewData {
 
 export enum AnalysisStep {
   TO_UPLOAD_GL,
+  UPLOADED_GL,
   TO_UPLOAD_COA,
   TO_ANALYZE,
   ANALYZED,
@@ -84,11 +85,10 @@ export function useGeneralAnalysis() {
     return {
       rows: rawData.glData.length,
       total: selectedHeaders.glHeaders.value
-        ? rawData.glData.reduce(
-            (prev, curr) =>
-              (prev += Number(curr[selectedHeaders.glHeaders.value])),
-            0
-          )
+        ? rawData.glData.reduce((prev, curr) => {
+            const val = Number(curr[selectedHeaders.glHeaders.value]);
+            return (prev += Number.isNaN(val) ? 0 : val);
+          }, 0)
         : 0,
       startDate: selectedHeaders.glHeaders.date
         ? formatDate(
@@ -184,7 +184,14 @@ export function useGeneralAnalysis() {
       .slice(2) // Skip header row
       .map((row: any) =>
         columnNames.reduce((acc, col, index) => {
-          acc[col] = row[index] || "";
+          const cell = row[index];
+          // If cell is an object with a 'result' key, use that
+          if (cell && typeof cell === "object" && "result" in cell) {
+            acc[col] = cell.result;
+          } else {
+            acc[col] = cell ?? ""; // fallback to value or empty string
+          }
+
           return acc;
         }, {} as Record<string, any>)
       );
@@ -194,16 +201,8 @@ export function useGeneralAnalysis() {
       glData: rows,
       glHeaders: columnNames.filter(Boolean),
     }));
-    setSelectedHeaders((prev) => ({
-      ...prev,
-      glHeaders: {
-        account: columnNames.filter(Boolean)[0],
-        jen: columnNames.filter(Boolean)[1],
-        date: columnNames.filter(Boolean)[2],
-        value: columnNames.filter(Boolean)[3],
-      },
-    }));
-    setCurrentStep((prev) => [...prev, AnalysisStep.TO_UPLOAD_COA]);
+
+    setCurrentStep((prev) => [...prev, AnalysisStep.UPLOADED_GL]);
   };
 
   const onChartOfAccountsDrop = async (acceptedFiles: File[]) => {
@@ -248,10 +247,15 @@ export function useGeneralAnalysis() {
   };
 
   const onChangeGlHeader = (key: keyof GlHeaders, value: string) => {
+    const newValue = { ...selectedHeaders.glHeaders, [key]: value };
     setSelectedHeaders((prev) => ({
       ...prev,
-      glHeaders: { ...prev.glHeaders, [key]: value },
+      glHeaders: newValue,
     }));
+
+    if (!Object.values(newValue).some((item) => item === "")) {
+      setCurrentStep((prev) => [...prev, AnalysisStep.TO_UPLOAD_COA]);
+    }
   };
 
   const onChangeCoaHeader = (key: keyof CoaHeaders, value: string) => {

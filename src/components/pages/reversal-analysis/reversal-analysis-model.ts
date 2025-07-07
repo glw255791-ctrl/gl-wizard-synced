@@ -39,6 +39,7 @@ export interface ReviewData {
 
 export enum AnalysisStep {
   TO_UPLOAD_GL,
+  UPLOADED_GL,
   TO_UPLOAD_COA,
   TO_ANALYZE,
   ANALYZED,

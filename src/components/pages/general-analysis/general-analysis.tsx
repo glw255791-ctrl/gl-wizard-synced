@@ -5,6 +5,7 @@ import {
   CircularProgress,
   Grid2,
   Stack,
+  Typography,
 } from "@mui/material";
 import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
 import { FileDropzone } from "../../ui-kit/dropzone/dropzone";
@@ -16,6 +17,7 @@ import { BasicDataOverview } from "../../basic-data-overview/basic-data-overview
 import { DataOverview } from "../../analysed-data-overview/analysed-data-overview";
 import { AnalysisStep, useGeneralAnalysis } from "./general-analysis-model";
 import { styles } from "./style";
+import { colors } from "../../../assets/colors";
 
 export function GeneralAnalysis() {
   const {
@@ -40,6 +42,7 @@ export function GeneralAnalysis() {
   } = useGeneralAnalysis();
 
   // Memoized computed values
+  const isUploadedGl = currentStep.includes(AnalysisStep.UPLOADED_GL);
   const isCoaUploadStep = currentStep.includes(AnalysisStep.TO_UPLOAD_COA);
   const isAnalyzeStep = currentStep.includes(AnalysisStep.TO_ANALYZE);
   const isAnalyzedStep = currentStep.includes(AnalysisStep.ANALYZED);
@@ -71,10 +74,25 @@ export function GeneralAnalysis() {
   return (
     <>
       <Backdrop
-        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        sx={{
+          color: colors.vistaBlue,
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
         open={loadingStatus}
       >
-        <CircularProgress color="inherit" />
+        <Stack
+          style={{
+            backgroundColor: "#fff",
+            borderRadius: 45,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 15,
+            padding: 15,
+          }}
+        >
+          <Typography>Analysing, this may take a while...</Typography>
+          <CircularProgress color="inherit" />
+        </Stack>
       </Backdrop>
 
       <Stack sx={styles.root} spacing={2}>
@@ -88,7 +106,7 @@ export function GeneralAnalysis() {
             <FileDropzoneSection
               onDrop={onGeneralLedgerDrop}
               text="Drop GL file here"
-              uploaded={isCoaUploadStep}
+              uploaded={isUploadedGl}
             >
               <GLDropdowns
                 glHeaderOptions={glHeaderOptions}

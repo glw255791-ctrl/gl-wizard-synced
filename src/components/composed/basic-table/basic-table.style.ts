@@ -38,6 +38,7 @@ export const styles: Record<string, CommonProps["style"]> = {
     alignItems: "center",
     justifyContent: "flex-end",
     fontWeight: "bold",
+    width: 200,
   },
   rightAlign: {
     justifyContent: "flex-end",

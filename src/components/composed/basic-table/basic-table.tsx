@@ -6,6 +6,7 @@ import {
   TableCell,
   TableContainer,
   TableRow,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { formatDate } from "date-fns";
@@ -87,7 +88,6 @@ export const BasicTable = (props: Props) => {
   ) => {
     switch (key) {
       case "date":
-        console.log(value);
         return formatDate(value as Date, "dd-MM-yyyy");
       case "result":
         return reversalReclassification
@@ -144,15 +144,22 @@ export const BasicTable = (props: Props) => {
             {data.map((item) => (
               <TableRow style={styles.tableRow} key={Math.random()}>
                 {header.map((headerItem) => (
-                  <TableCell
-                    style={getCellStyle(headerItem.key)}
-                    key={Math.random()}
-                  >
-                    {getCellValueFormatted(
+                  <Tooltip
+                    title={getCellValueFormatted(
                       headerItem.key,
                       item[headerItem.title]
                     )}
-                  </TableCell>
+                  >
+                    <TableCell
+                      style={getCellStyle(headerItem.key)}
+                      key={Math.random()}
+                    >
+                      {getCellValueFormatted(
+                        headerItem.key,
+                        item[headerItem.title]
+                      )}
+                    </TableCell>
+                  </Tooltip>
                 ))}
               </TableRow>
             ))}
