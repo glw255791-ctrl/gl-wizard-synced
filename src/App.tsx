@@ -17,6 +17,8 @@ import { UserManagementPage } from "./components/pages/user-management/user-mana
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
 function App() {
   return (
     <>

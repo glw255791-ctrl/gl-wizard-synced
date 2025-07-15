@@ -46,6 +46,7 @@ export enum AnalysisStep {
 
 export function useGeneralAnalysis() {
   const [error, setError] = useState<string | undefined>(undefined);
+
   const [currentStep, setCurrentStep] = useState<AnalysisStep[]>([
     AnalysisStep.TO_UPLOAD_GL,
   ]);
@@ -186,6 +187,7 @@ export function useGeneralAnalysis() {
         columnNames.reduce((acc, col, index) => {
           const cell = row[index];
           // If cell is an object with a 'result' key, use that
+
           if (cell && typeof cell === "object" && "result" in cell) {
             acc[col] = cell.result;
           } else {
@@ -299,19 +301,19 @@ export function useGeneralAnalysis() {
     );
 
     worker.onmessage = (event) => {
-      generateOverviewData(
-        Object.values(event.data.groupedByJenAndDate).flat()
-      );
+      if (event.data.type === "progress") {
+        console.warn(`Progress: ${event.data.progress}%`);
+        // Update progress bar
+      } else if (event.data.type === "complete") {
+        setTableData(event.data.tableData);
 
-      setTableData(
-        Object.values(
-          event.data.groupedByJenAndDate as Record<string, any>[]
-        ).flat()
-      );
-      setOverviewTableData(event.data.condensedDataByResult);
-      setCurrentStep((prev) => [...prev, AnalysisStep.ANALYZED]);
-      setLoadingStatus(false);
-      worker.terminate();
+        setOverviewTableData(event.data.overviewTableData);
+        setDataDisplayHeader(event.data.displayHeaders);
+        setCurrentStep((prev) => [...prev, AnalysisStep.ANALYZED]);
+        setLoadingStatus(false);
+
+        worker.terminate();
+      }
     };
 
     worker.onerror = (error) => {
@@ -321,23 +323,6 @@ export function useGeneralAnalysis() {
     };
 
     worker.postMessage({ rawData, selectedHeaders });
-  };
-
-  const generateOverviewData = (data: any[]) => {
-    const existingCoaKeys = [
-      ...new Set(
-        data.map(
-          (item) => item.coaData?.[selectedHeaders.coaHeaders.mappingValue]
-        )
-      ),
-    ];
-
-    const filteredCoaData = rawData.coaData
-      .filter((item) =>
-        existingCoaKeys.includes(item[selectedHeaders.coaHeaders.mappingValue])
-      )
-      .map((item) => ({ ...item, active: true }));
-    setDataDisplayHeader(filteredCoaData);
   };
 
   const sortedDataDisplayHeader = useMemo(() => {

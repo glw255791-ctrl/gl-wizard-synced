@@ -1,20 +1,12 @@
-import {
-  Button,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
-  Tooltip,
-  Typography,
-} from "@mui/material";
+import { Button, Stack, Tooltip, Typography } from "@mui/material";
 import { formatDate } from "date-fns";
 import { styles } from "./basic-table.style";
 import DownloadIcon from "@mui/icons-material/Download";
-import { RefObject, useRef } from "react";
 import { Workbook } from "exceljs";
 import saveAs from "file-saver";
+import { Table, Column, AutoSizer } from "react-virtualized";
+import "react-virtualized/styles.css";
+import { getElipsis } from "../../analysed-data-overview/table/functions";
 
 interface Props {
   header: TableHeader[];
@@ -30,27 +22,32 @@ export interface TableHeader {
 export const BasicTable = (props: Props) => {
   const { header, data, reversalReclassification } = props;
 
-  const tableRef = useRef(null);
-
   const exportTableToExcel = async () => {
-    const tableData = (tableRef as RefObject<HTMLTableElement | null>).current;
-
-    if (!tableData) return;
-
     const workbook = new Workbook();
     const worksheet = workbook.addWorksheet("Sheet1");
 
-    const rows = tableData.querySelectorAll("tr");
+    const rows = data;
 
+    worksheet.addRow(header.map((item) => item.title));
     rows.forEach((row) => {
-      const data = Array.from(row.querySelectorAll("td")).map((cell) =>
-        cell?.textContent?.trim()
-      );
+      const data = header.map((item) => {
+        const val = row[item.title];
+
+        const formatedVal =
+          item.key === "result" && typeof val === "object"
+            ? (val as string[]).join("/")
+            : item.key === "date"
+            ? formatDate(val, "dd-MM-yyyy")
+            : val;
+
+        return typeof formatedVal === "object" ? "" : formatedVal;
+      });
       worksheet.addRow(data);
     });
 
     worksheet.columns.forEach((column, index) => {
       if (index === 0) column.width = 24;
+      else if (index === 5) column.width = 100;
       else column.width = 18;
     });
 
@@ -110,6 +107,7 @@ export const BasicTable = (props: Props) => {
         return styles.tableCell;
     }
   };
+
   return (
     <Stack style={styles.root}>
       <Stack style={styles.tableHeader}>
@@ -123,49 +121,53 @@ export const BasicTable = (props: Props) => {
           Download
         </Button>
       </Stack>
-      <TableContainer>
-        <Table ref={tableRef}>
-          <TableBody>
-            <TableRow style={styles.tableRow}>
-              {header.map((item) => (
-                <TableCell
-                  style={{
-                    ...styles.headerTableCell,
-                    ...(item.key === "value" || item.key === "result"
-                      ? styles.rightAlign
-                      : {}),
+
+      {data.length && (
+        <AutoSizer style={{ width: "100%", height: 600 }}>
+          {({ width, height }) => (
+            <Table
+              width={width}
+              height={height - 80}
+              headerHeight={40}
+              rowHeight={30}
+              rowCount={data.length}
+              rowGetter={({ index }) => data[index]}
+            >
+              {header.map((item, index) => (
+                <Column
+                  key={index}
+                  label={item?.title}
+                  dataKey={item.key}
+                  width={width / header.length}
+                  minWidth={width / header.length}
+                  maxWidth={width / header.length}
+                  flexGrow={1}
+                  cellRenderer={(props) => {
+                    return (
+                      <Tooltip
+                        title={getCellValueFormatted(item.key, props.cellData)}
+                      >
+                        <Stack style={getCellStyle(item.key)}>
+                          {getElipsis(
+                            getCellValueFormatted(item.key, props.cellData),
+                            20
+                          )}
+                        </Stack>
+                      </Tooltip>
+                    );
                   }}
-                  key={Math.random()}
-                >
-                  {item.title}
-                </TableCell>
+                  headerRenderer={(props) => (
+                    <Stack style={{ flex: 1, textAlign: "left" }}>
+                      {props.label}
+                    </Stack>
+                  )}
+                  cellDataGetter={(params) => params.rowData[item.title]}
+                />
               ))}
-            </TableRow>
-            {data.map((item) => (
-              <TableRow style={styles.tableRow} key={Math.random()}>
-                {header.map((headerItem) => (
-                  <Tooltip
-                    title={getCellValueFormatted(
-                      headerItem.key,
-                      item[headerItem.title]
-                    )}
-                  >
-                    <TableCell
-                      style={getCellStyle(headerItem.key)}
-                      key={Math.random()}
-                    >
-                      {getCellValueFormatted(
-                        headerItem.key,
-                        item[headerItem.title]
-                      )}
-                    </TableCell>
-                  </Tooltip>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </Table>
+          )}
+        </AutoSizer>
+      )}
     </Stack>
   );
 };

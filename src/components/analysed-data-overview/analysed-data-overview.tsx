@@ -100,35 +100,40 @@ export function DataOverview(props: Props) {
                   ...(coaHeaderOptions || []),
                 ]}
                 value={selectedFilter.header}
-                onChange={(event) =>
+                onChange={(event) => {
+                  setDataDisplayHeader((prev) =>
+                    prev.map((item) => ({ ...item, active: true }))
+                  );
                   setSelectedFilters((prev) => ({
                     ...prev,
                     header: String(event.target.value),
-                  }))
-                }
+                  }));
+                }}
               />
             </Stack>
           </Stack>
         </Stack>
         {selectedFilter.header !== "all" ? (
           <Stack style={styles.tablesStack}>
-            {filterValueOptions.map((value) => (
-              <DataTable
-                title={value}
-                mappingValue={mappingValue}
-                selectedRow={selectedRow}
-                setSelectedRow={setSelectedRow}
-                overviewTableData={filteredByValueOverviewTableData(value)}
-                selectedFilter={selectedFilter}
-                setDataDisplayHeader={setDataDisplayHeader}
-                sortedDataDisplayHeader={sortedDataDisplayHeader.filter(
-                  (item) =>
-                    item[selectedFilter.header] === value ||
-                    item[mappingValue] === "total"
-                )}
-                valueKey={valueKey}
-              />
-            ))}
+            {filterValueOptions.map((value) => {
+              return value === "total" ? undefined : (
+                <DataTable
+                  title={value}
+                  mappingValue={mappingValue}
+                  selectedRow={selectedRow}
+                  setSelectedRow={setSelectedRow}
+                  overviewTableData={filteredByValueOverviewTableData(value)}
+                  selectedFilter={selectedFilter}
+                  setDataDisplayHeader={setDataDisplayHeader}
+                  sortedDataDisplayHeader={sortedDataDisplayHeader.filter(
+                    (item) =>
+                      item[selectedFilter.header] === value ||
+                      item[mappingValue] === "total"
+                  )}
+                  valueKey={valueKey}
+                />
+              );
+            })}
           </Stack>
         ) : (
           <DataTable

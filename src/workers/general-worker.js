@@ -1,85 +1,122 @@
 self.onmessage = (event) => {
   const { rawData, selectedHeaders } = event.data;
+  const { glData, coaData } = rawData;
+  const { glHeaders, coaHeaders } = selectedHeaders;
 
-  const output = rawData.glData.map((item) => {
-    const foundCoaItems = rawData.coaData
-      .filter((item) => item[selectedHeaders.coaHeaders.mappingValue] !== "")
-      .filter((coaItem) =>
-        String(item[selectedHeaders.glHeaders.account]).startsWith(
-          coaItem[selectedHeaders.coaHeaders.mappingValue]
-        )
-      );
+  // ===== 1. Pre-process COA Data =====
+  const validCoaItems = coaData
+    .filter((item) => item[coaHeaders.mappingValue] !== "")
+    .sort(
+      (a, b) =>
+        b[coaHeaders.mappingValue].length - a[coaHeaders.mappingValue].length
+    );
 
-    const betterMatchingCoaItem = foundCoaItems.sort(
-      (a, b) => b.length - a.length
-    )[0];
+  // ===== 2. Process GL Data in Chunks =====
+  const CHUNK_SIZE = 500;
+  const output = [];
+  const totalRows = glData.length;
+  let processedRows = 0;
 
-    return {
-      ...item,
-      ...(betterMatchingCoaItem
-        ? {}
-        : { [selectedHeaders.glHeaders.account]: "not mapped" }),
-      coaData:
-        betterMatchingCoaItem ??
-        Object.keys(rawData.coaData[0]).reduce((prev, curr) => {
-          prev[curr] = "not mapped";
-          return prev;
-        }, {}),
-    };
-  });
+  const createEmptyCoaItem = () => {
+    const empty = {};
+    for (const key in coaData[0]) empty[key] = "not mapped";
+    return empty;
+  };
 
-  const groupedByJenAndDate = output.reduce((acc, curr) => {
-    const key = `${curr[selectedHeaders.glHeaders.date]}_${
-      curr[selectedHeaders.glHeaders.jen]
-    }`;
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(curr);
-    return acc;
-  }, {});
+  while (processedRows < totalRows) {
+    const chunkEnd = Math.min(processedRows + CHUNK_SIZE, totalRows);
+    const chunk = glData.slice(processedRows, chunkEnd);
 
-  for (const [, rows] of Object.entries(groupedByJenAndDate)) {
-    let i = 0;
-    while (i < rows.length) {
-      const chunk = [];
-      let sum = 0;
+    for (const item of chunk) {
+      const account = String(item[glHeaders.account]);
+      let bestMatch = null;
 
-      for (let j = i; j < rows.length; j++) {
-        chunk.push(rows[j]);
-        sum =
-          Number(sum.toFixed(2)) +
-          Number(Number(rows[j][selectedHeaders.glHeaders.value]).toFixed(2));
-        // Check if the sum of the chunk is zero
-        if (sum === 0) {
-          // Assign the result property to each row in the chunk
-          const coaValues = chunk.map(
-            (row) => row.coaData?.[selectedHeaders.coaHeaders.displayValue]
-          );
-          chunk.forEach(
-            (row) =>
-              (row.result = [...new Set(coaValues)].sort((a, b) => a - b))
-          );
-
-          // Move to the next unprocessed rows
-          i = j + 1;
+      for (const coaItem of validCoaItems) {
+        if (account.startsWith(coaItem[coaHeaders.mappingValue])) {
+          bestMatch = coaItem;
           break;
         }
       }
 
-      // If the loop ends without finding a zero sum, increase the chunk size
-      if (sum !== 0) {
-        i++; // Increase starting point to prevent infinite loop
+      output.push({
+        ...item,
+        ...(!bestMatch ? { [glHeaders.account]: "not mapped" } : {}),
+        coaData: bestMatch || createEmptyCoaItem(),
+      });
+    }
+
+    processedRows = chunkEnd;
+    self.postMessage({
+      type: "progress",
+      progress: Math.round((processedRows / totalRows) * 100),
+    });
+  }
+
+  // ===== 3. Group by JEN and Date =====
+  const groupedByJenAndDate = new Map();
+  for (const item of output) {
+    const key = `${item[glHeaders.date]}_${item[glHeaders.jen]}`;
+    if (!groupedByJenAndDate.has(key)) groupedByJenAndDate.set(key, []);
+    groupedByJenAndDate.get(key).push(item);
+  }
+
+  // ===== 4. Find Zero-Sum Groups =====
+  for (const rows of groupedByJenAndDate.values()) {
+    let i = 0;
+    while (i < rows.length) {
+      let sum = 0;
+      const chunk = [];
+
+      for (let j = i; j < rows.length; j++) {
+        const row = rows[j];
+        chunk.push(row);
+        sum = Number((sum + Number(row[glHeaders.value])).toFixed(2));
+
+        if (sum === 0) {
+          const coaValues = new Set();
+          for (const row of chunk) {
+            const val = row.coaData?.[coaHeaders.displayValue];
+            if (val) coaValues.add(val);
+          }
+          const sortedValues = [...coaValues].sort((a, b) => a - b);
+          for (const row of chunk) row.result = sortedValues;
+          i = j + 1;
+          break;
+        }
       }
+      if (sum !== 0) i++;
     }
   }
 
-  const condensedDataByResult = Object.values(groupedByJenAndDate)
-    .flat()
-    .map((item) => ({ ...item, result: item.result?.join("/") }))
-    .reduce((prev, curr) => {
-      if (!prev[curr.result]) prev[curr.result] = [];
-      prev[curr.result].push(curr);
-      return prev;
-    }, {});
+  // ===== 5. Prepare ALL Output Data =====
+  const flatGroupedData = Array.from(groupedByJenAndDate.values()).flat();
 
-  self.postMessage({ groupedByJenAndDate, condensedDataByResult });
+  // Generate overview data (originally generateOverviewData)
+  const existingCoaKeys = new Set(
+    flatGroupedData.map((item) => item.coaData?.[coaHeaders.mappingValue])
+  );
+  const filteredCoaData = coaData
+    .filter((item) => existingCoaKeys.has(item[coaHeaders.mappingValue]))
+    .map((item) => ({ ...item, active: true }));
+
+  // Condensed data (originally setOverviewTableData)
+  const condensedDataByResult = new Map();
+  for (const item of output) {
+    const resultKey = item.result?.join("/") || "unmatched";
+    if (!condensedDataByResult.has(resultKey)) {
+      condensedDataByResult.set(resultKey, []);
+    }
+    condensedDataByResult.get(resultKey).push(item);
+  }
+
+  // ===== 6. Send Complete Result =====
+  self.postMessage({
+    type: "complete",
+    // Processed data for main thread
+    tableData: flatGroupedData,
+    overviewTableData: Object.fromEntries(condensedDataByResult),
+    displayHeaders: filteredCoaData,
+    // Original grouped data if still needed
+    groupedByJenAndDate: Object.fromEntries(groupedByJenAndDate),
+  });
 };
