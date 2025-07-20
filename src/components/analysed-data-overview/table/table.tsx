@@ -1,5 +1,5 @@
 import { Stack, Typography, Checkbox, Button, Tooltip } from "@mui/material";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import "react-virtualized/styles.css";
 import DownloadIcon from "@mui/icons-material/Download";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -99,6 +99,7 @@ export const DataTable = (props: Props) => {
           ...generatedRowObject,
           total: (total as number).toFixed(2),
           bg: "white",
+          header: false,
         };
       }),
       {
@@ -138,8 +139,12 @@ export const DataTable = (props: Props) => {
       },
     ];
     setTableColumns(columns);
-    setTableWidth(200 * columns.length);
-    setTableHeight(24 * (rows.length + 1));
+    setTableWidth(250 * columns.length);
+    setTableHeight(
+      24 * rows.filter((item) => !item.header).length +
+        36 * rows.filter((item) => item.header).length +
+        24
+    );
     setTableRows(rows);
   };
 
@@ -226,7 +231,7 @@ export const DataTable = (props: Props) => {
             height={tableHeight - 24}
             rowCount={tableRows.length}
             rowStyle={{ width: tableWidth }}
-            rowHeight={24}
+            rowHeight={(params) => (tableRows[params.index].header ? 36 : 24)}
             headerHeight={0}
             rowGetter={({ index }) => tableRows[index]}
             onRowClick={(params) => {
@@ -243,14 +248,16 @@ export const DataTable = (props: Props) => {
                 key={item}
                 label={item}
                 dataKey={item}
-                width={200}
-                minWidth={200}
-                maxWidth={200}
+                width={250}
+                minWidth={250}
+                maxWidth={250}
                 flexGrow={1}
                 style={{ margin: 0 }}
                 cellRenderer={(props) => {
+                  const Wrapper =
+                    props.rowData[item]?.length > 80 ? Tooltip : Fragment;
                   return (
-                    <Tooltip title={props.rowData[item]}>
+                    <Wrapper title={props.rowData[item]}>
                       <Stack
                         style={{
                           padding: "0 5px",
@@ -263,14 +270,32 @@ export const DataTable = (props: Props) => {
                           borderRightWidth: 1,
                           borderRightStyle: "solid",
                           borderRightColor: colors.honeydew,
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
+                          wordWrap: "break-word",
+                          overflowWrap: "break-word",
+                          whiteSpace: "normal",
+                          height: props.rowData.header ? 35 : 23,
+                          justifyContent: "center",
+                          borderBottomWidth: 1,
+                          borderBottomStyle: "solid",
+                          borderBottomColor: colors.honeydew,
+                          fontSize: 12,
+                          fontWeight:
+                            item === "total" ||
+                            item === "sideHeader" ||
+                            props.rowData.sideHeader === "Total" ||
+                            props.rowData.sideHeader === mappingValue
+                              ? "bold"
+                              : "initial",
+                          textAlign: item === "sideHeader" ? "left" : "center",
                         }}
                       >
                         {props.rowData.sideHeader === "Include" ? (
                           item === "total" ? (
-                            <>Total</>
+                            <Typography
+                              style={{ fontSize: 14, fontWeight: "bold" }}
+                            >
+                              Total
+                            </Typography>
                           ) : item === "sideHeader" ? (
                             "-"
                           ) : (
@@ -296,12 +321,12 @@ export const DataTable = (props: Props) => {
                             />
                           )
                         ) : props.rowData[item] ? (
-                          getElipsis(props.rowData[item], 24)
+                          getElipsis(props.rowData[item], 80)
                         ) : (
-                          "-"
+                          ""
                         )}
                       </Stack>
-                    </Tooltip>
+                    </Wrapper>
                   );
                 }}
                 headerRenderer={() => <></>}
