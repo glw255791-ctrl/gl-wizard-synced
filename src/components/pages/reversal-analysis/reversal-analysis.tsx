@@ -40,6 +40,7 @@ export function ReversalAnalysis() {
   } = useReversalAnalysis();
 
   // Memoized computed values
+  const isUploadedGl = currentStep.includes(AnalysisStep.UPLOADED_GL);
   const isCoaUploadStep = currentStep.includes(AnalysisStep.TO_UPLOAD_COA);
   const isAnalyzeStep = currentStep.includes(AnalysisStep.TO_ANALYZE);
   const isAnalyzedStep = currentStep.includes(AnalysisStep.ANALYZED);
@@ -84,7 +85,7 @@ export function ReversalAnalysis() {
             <FileDropzoneSection
               onDrop={onGeneralLedgerDrop}
               text="Drop GL file here"
-              uploaded={isCoaUploadStep}
+              uploaded={isUploadedGl}
             >
               <GLDropdowns
                 glHeaderOptions={glHeaderOptions}

@@ -189,7 +189,15 @@ export function useReversalAnalysis() {
       .slice(2) // Skip header row
       .map((row: any) =>
         columnNames.reduce((acc, col, index) => {
-          acc[col] = row[index] || "";
+          const cell = row[index];
+          // If cell is an object with a 'result' key, use that
+
+          if (cell && typeof cell === "object" && "result" in cell) {
+            acc[col] = cell.result;
+          } else {
+            acc[col] = cell ?? ""; // fallback to value or empty string
+          }
+
           return acc;
         }, {} as Record<string, any>)
       );
@@ -199,16 +207,8 @@ export function useReversalAnalysis() {
       glData: rows,
       glHeaders: columnNames.filter(Boolean),
     }));
-    setSelectedHeaders((prev) => ({
-      ...prev,
-      glHeaders: {
-        account: columnNames.filter(Boolean)[0],
-        jen: columnNames.filter(Boolean)[1],
-        date: columnNames.filter(Boolean)[2],
-        value: columnNames.filter(Boolean)[3],
-      },
-    }));
-    setCurrentStep((prev) => [...prev, AnalysisStep.TO_UPLOAD_COA]);
+
+    setCurrentStep((prev) => [...prev, AnalysisStep.UPLOADED_GL]);
   };
 
   const onChartOfAccountsDrop = async (acceptedFiles: File[]) => {
@@ -253,10 +253,15 @@ export function useReversalAnalysis() {
   };
 
   const onChangeGlHeader = (key: keyof GlHeaders, value: string) => {
+    const newValue = { ...selectedHeaders.glHeaders, [key]: value };
     setSelectedHeaders((prev) => ({
       ...prev,
-      glHeaders: { ...prev.glHeaders, [key]: value },
+      glHeaders: newValue,
     }));
+
+    if (!Object.values(newValue).some((item) => item === "")) {
+      setCurrentStep((prev) => [...prev, AnalysisStep.TO_UPLOAD_COA]);
+    }
   };
 
   const onChangeCoaHeader = (key: keyof CoaHeaders, value: string) => {

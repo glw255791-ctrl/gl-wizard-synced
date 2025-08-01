@@ -19,42 +19,44 @@ export interface TableHeader {
   title: string;
 }
 
-export const BasicTable = (props: Props) => {
-  const { header, data, reversalReclassification } = props;
-
+export const BasicTable = ({
+  header,
+  data,
+  reversalReclassification,
+}: Props) => {
   const exportTableToExcel = async () => {
     const workbook = new Workbook();
     const worksheet = workbook.addWorksheet("Sheet1");
 
-    const rows = data;
-
     worksheet.addRow(header.map((item) => item.title));
-    rows.forEach((row) => {
-      const data = header.map((item) => {
+
+    data.forEach((row) => {
+      const rowData = header.map((item) => {
         const val = row[item.title];
 
-        const formatedVal =
+        const formattedVal =
           item.key === "result" && typeof val === "object"
             ? (val as string[]).join("/")
             : item.key === "date"
             ? formatDate(val, "dd-MM-yyyy")
             : val;
 
-        return typeof formatedVal === "object" ? "" : formatedVal;
+        return typeof formattedVal === "object" ? "" : formattedVal;
       });
-      worksheet.addRow(data);
+
+      worksheet.addRow(rowData);
     });
 
     worksheet.columns.forEach((column, index) => {
-      if (index === 0) column.width = 24;
-      else if (index === 5) column.width = 100;
-      else column.width = 18;
+      column.width = index === 0 ? 24 : index === 5 ? 100 : 18;
     });
 
     worksheet.eachRow((row, rowNumber) => {
       row.eachCell((cell, colNumber) => {
-        if (rowNumber === 1) {
-          cell.font = { bold: true };
+        const isHeader = rowNumber === 1;
+        const highlightCol = colNumber === 1 || colNumber === 5;
+
+        if (isHeader || highlightCol) {
           cell.fill = {
             type: "pattern",
             pattern: "solid",
@@ -62,12 +64,8 @@ export const BasicTable = (props: Props) => {
           };
         }
 
-        if (colNumber === 1 || colNumber === 5) {
-          cell.fill = {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: "CCCCCC" },
-          };
+        if (isHeader) {
+          cell.font = { bold: true };
         }
       });
     });
@@ -113,7 +111,7 @@ export const BasicTable = (props: Props) => {
       <Stack style={styles.tableHeader}>
         <Typography style={styles.tableTitle}>Data overview</Typography>
         <Button
-          onClick={() => exportTableToExcel()}
+          onClick={exportTableToExcel}
           variant="contained"
           style={styles.downloadBtn}
           endIcon={<DownloadIcon />}
@@ -122,8 +120,8 @@ export const BasicTable = (props: Props) => {
         </Button>
       </Stack>
 
-      {data.length && (
-        <AutoSizer style={{ width: "100%", height: 600 }}>
+      {data.length > 0 && (
+        <AutoSizer style={styles.autoSizer}>
           {({ width, height }) => (
             <Table
               width={width}
@@ -136,32 +134,26 @@ export const BasicTable = (props: Props) => {
               {header.map((item, index) => (
                 <Column
                   key={index}
-                  label={item?.title}
+                  label={item.title}
                   dataKey={item.key}
                   width={width / header.length}
                   minWidth={width / header.length}
                   maxWidth={width / header.length}
                   flexGrow={1}
-                  cellRenderer={(props) => {
-                    return (
-                      <Tooltip
-                        title={getCellValueFormatted(item.key, props.cellData)}
-                      >
-                        <Stack style={getCellStyle(item.key)}>
-                          {getElipsis(
-                            getCellValueFormatted(item.key, props.cellData),
-                            20
-                          )}
-                        </Stack>
-                      </Tooltip>
-                    );
-                  }}
-                  headerRenderer={(props) => (
-                    <Stack style={{ flex: 1, textAlign: "left" }}>
-                      {props.label}
-                    </Stack>
+                  cellRenderer={({ cellData }) => (
+                    <Tooltip title={getCellValueFormatted(item.key, cellData)}>
+                      <Stack style={getCellStyle(item.key)}>
+                        {getElipsis(
+                          getCellValueFormatted(item.key, cellData),
+                          20
+                        )}
+                      </Stack>
+                    </Tooltip>
                   )}
-                  cellDataGetter={(params) => params.rowData[item.title]}
+                  headerRenderer={({ label }) => (
+                    <Stack style={styles.headerCell}>{label}</Stack>
+                  )}
+                  cellDataGetter={({ rowData }) => rowData[item.title]}
                 />
               ))}
             </Table>

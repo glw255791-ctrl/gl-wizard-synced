@@ -6,14 +6,24 @@ export const styles: Record<string, CommonProps["style"]> = {
     borderRadius: 8,
     border: `1px solid ${colors.vistaBlue}`,
   },
-  headerTableCell: {
-    padding: 4,
-    flex: 1,
-    borderBottom: `1px solid ${colors.vistaBlue}`,
-    borderRight: `1px solid ${colors.vistaBlue}`,
-    display: "flex",
-    backgroundColor: colors.powderBlue,
+  tableHeader: {
+    width: "calc(100vw - 10rem)",
+    padding: "1rem",
+    backgroundColor: colors.vistaBlue,
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
+    borderBottom: `2px solid ${colors.tifanyBlue}`,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+  },
+  downloadBtn: {
+    borderRadius: 8,
+    width: 200,
+    backgroundColor: "#1D6F42",
+  },
+  tableTitle: {
+    fontSize: 20,
     fontWeight: "bold",
   },
   tableCell: {
@@ -40,9 +50,6 @@ export const styles: Record<string, CommonProps["style"]> = {
     fontWeight: "bold",
     width: 200,
   },
-  rightAlign: {
-    justifyContent: "flex-end",
-  },
   valueCell: {
     flex: 1,
     borderRight: `1px solid ${colors.vistaBlue}`,
@@ -67,30 +74,13 @@ export const styles: Record<string, CommonProps["style"]> = {
     padding: 4,
     backgroundColor: "white",
   },
-  tableRow: {
-    display: "flex",
-    flexDirection: "row",
-    height: 30,
-    width: "calc(100vw - 8rem)",
+
+  headerCell: {
+    flex: 1,
+    textAlign: "left",
   },
-  tableHeader: {
-    width: "calc(100vw - 10rem)",
-    padding: "1rem",
-    backgroundColor: `${colors.vistaBlue}`,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottom: `2px solid ${colors.tifanyBlue}`,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
-  },
-  downloadBtn: {
-    borderRadius: 8,
-    width: 200,
-    backgroundColor: "#1D6F42",
-  },
-  tableTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
+  autoSizer: {
+    width: "100%",
+    height: 600,
   },
 };

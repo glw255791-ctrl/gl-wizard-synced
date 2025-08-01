@@ -1,5 +1,5 @@
 import { Stack, Typography, Checkbox, Button, Tooltip } from "@mui/material";
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "react-virtualized/styles.css";
 import DownloadIcon from "@mui/icons-material/Download";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -7,7 +7,7 @@ import CancelRounded from "@mui/icons-material/CancelRounded";
 import { AnyType, getElipsis } from "./functions";
 
 import { styles } from "./table-style";
-import { AutoSizer, Column, Table } from "react-virtualized";
+import { AutoSizer, MultiGrid } from "react-virtualized";
 import { colors } from "../../../assets/colors";
 import saveAs from "file-saver";
 import { Workbook } from "exceljs";
@@ -43,113 +43,35 @@ export const DataTable = (props: Props) => {
     setDataDisplayHeader,
   } = props;
 
-  const [tableWidth, setTableWidth] = useState(1000);
   const [tableHeight, setTableHeight] = useState(600);
 
   const [tableRows, setTableRows] = useState<Record<string, AnyType>[]>([]);
   const [tableColumns, setTableColumns] = useState<string[]>([]);
 
   const generateTableData = () => {
-    const columns: string[] = [
-      "sideHeader",
-      ...sortedDataDisplayHeader.map((item) => item[mappingValue] as string),
-    ];
-
-    const rows = [
-      ...Object.keys(sortedDataDisplayHeader[0]).map((item) => ({
-        sideHeader: item === "active" ? "Include" : item,
-        ...Object.fromEntries(
-          columns
-            .filter((item) => item !== "sideHeader")
-            .map((key, index) => [key, sortedDataDisplayHeader[index][item]])
-        ),
-        total: "",
-        bg: colors.powderBlue,
-        header: true,
-      })),
-      ...Object.keys(overviewTableData).map((item) => {
-        const generatedRowObject = Object.fromEntries(
-          columns
-            .filter((item) => item !== "total" && item !== "sideHeader")
-            .map((key) => [
-              key,
-              Number(
-                (overviewTableData[item] as Record<string, AnyType>[])
-                  .filter(
-                    (it) =>
-                      (it.coaData as Record<string, AnyType>)[mappingValue] ===
-                      key
-                  )
-                  .reduce((prev, curr) => prev + (curr[valueKey] as number), 0)
-              ).toFixed(2),
-            ])
-        );
-
-        const total = sortedDataDisplayHeader
-          .filter((item) => item.active)
-          .map((item) => item[mappingValue])
-          .reduce(
-            (prev: number, curr) =>
-              prev +
-              Number(generatedRowObject[curr as string] as string | number),
-            0
-          );
-        return {
-          sideHeader: item,
-          ...generatedRowObject,
-          total: (total as number).toFixed(2),
-          bg: "white",
-          header: false,
-        };
-      }),
-      {
-        sideHeader: "Total",
-        ...Object.fromEntries(
-          columns
-            .filter((item) => item !== "total" && item !== "sideHeader")
-            .map((key) => [
-              key,
-              Number(
-                Object.values(overviewTableData)
-                  .flat()
-                  .filter(
-                    (item) =>
-                      (
-                        (item as Record<string, AnyType>).coaData as Record<
-                          string,
-                          AnyType
-                        >
-                      )[mappingValue] === key
-                  )
-                  .reduce(
-                    (prev: number, curr) =>
-                      prev +
-                      Number(
-                        (curr as Record<string, AnyType>)[
-                          valueKey as string
-                        ] as string | number
-                      ),
-                    0
-                  )
-              ).toFixed(2),
-            ])
-        ),
-        bg: colors.powderBlue,
-        header: true,
-      },
-    ];
-    setTableColumns(columns);
-    setTableWidth(250 * columns.length);
-    setTableHeight(
-      24 * rows.filter((item) => !item.header).length +
-        36 * rows.filter((item) => item.header).length +
-        24
+    const worker = new Worker(
+      new URL("./generate-table-data.js", import.meta.url)
     );
-    setTableRows(rows);
+
+    worker.onmessage = (e) => {
+      const { columns, rows, height } = e.data;
+      setTableColumns(columns);
+      setTableRows(rows);
+      setTableHeight(height);
+    };
+
+    worker.postMessage({
+      sortedDataDisplayHeader,
+      overviewTableData,
+      mappingValue,
+      valueKey,
+      colors,
+    });
   };
 
   useEffect(() => {
     generateTableData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortedDataDisplayHeader, overviewTableData]);
 
   const exportTableToExcel = async () => {
@@ -222,118 +144,110 @@ export const DataTable = (props: Props) => {
           Download
         </Button>
       </Stack>
-      <AutoSizer
-        style={{ width: "100%", overflowX: "auto", height: tableHeight }}
-      >
-        {() => (
-          <Table
-            width={tableWidth}
-            height={tableHeight - 24}
-            rowCount={tableRows.length}
-            rowStyle={{ width: tableWidth }}
-            rowHeight={(params) => (tableRows[params.index].header ? 36 : 24)}
-            headerHeight={0}
-            rowGetter={({ index }) => tableRows[index]}
-            onRowClick={(params) => {
-              if (params.rowData.header) return;
-              else {
-                setSelectedRow?.((prev) =>
-                  prev === "" ? params.rowData.sideHeader : ""
-                );
-              }
+      <AutoSizer style={{ width: "100%", overflow: "auto", height: 1000 }}>
+        {({ width }) => (
+          <MultiGrid
+            fixedColumnCount={1}
+            columnWidth={250}
+            columnCount={tableColumns.length}
+            rowHeight={({ index }) => {
+              return tableRows[index]?.header ? 36 : 24;
             }}
-          >
-            {tableColumns.map((item) => (
-              <Column
-                key={item}
-                label={item}
-                dataKey={item}
-                width={250}
-                minWidth={250}
-                maxWidth={250}
-                flexGrow={1}
-                style={{ margin: 0 }}
-                cellRenderer={(props) => {
-                  const Wrapper =
-                    props.rowData[item]?.length > 80 ? Tooltip : Fragment;
-                  return (
-                    <Wrapper title={props.rowData[item]}>
-                      <Stack
-                        style={{
-                          padding: "0 5px",
-                          backgroundColor:
-                            item === "total"
-                              ? colors.powderBlue
-                              : selectedRow === props.rowData.sideHeader
-                              ? colors.fairyTale
-                              : props.rowData.bg,
-                          borderRightWidth: 1,
-                          borderRightStyle: "solid",
-                          borderRightColor: colors.honeydew,
-                          wordWrap: "break-word",
-                          overflowWrap: "break-word",
-                          whiteSpace: "normal",
-                          height: props.rowData.header ? 35 : 23,
-                          justifyContent: "center",
-                          borderBottomWidth: 1,
-                          borderBottomStyle: "solid",
-                          borderBottomColor: colors.honeydew,
-                          fontSize: 12,
-                          fontWeight:
-                            item === "total" ||
-                            item === "sideHeader" ||
-                            props.rowData.sideHeader === "Total" ||
-                            props.rowData.sideHeader === mappingValue
-                              ? "bold"
-                              : "initial",
-                          textAlign: item === "sideHeader" ? "left" : "center",
-                        }}
-                      >
-                        {props.rowData.sideHeader === "Include" ? (
-                          item === "total" ? (
-                            <Typography
-                              style={{ fontSize: 14, fontWeight: "bold" }}
-                            >
-                              Total
-                            </Typography>
-                          ) : item === "sideHeader" ? (
-                            "-"
-                          ) : (
-                            <Checkbox
-                              disabled={!!setSelectedRow}
-                              checkedIcon={
-                                <CheckCircleIcon style={{ color: "green" }} />
-                              }
-                              icon={<CancelRounded style={{ color: "red" }} />}
-                              value={props.rowData[item]}
-                              checked={Boolean(props.rowData[item])}
-                              onChange={(_, checked) =>
-                                setDataDisplayHeader((prev) =>
-                                  prev.map((header) => ({
-                                    ...header,
-                                    active:
-                                      header[mappingValue] === item
-                                        ? checked
-                                        : header.active,
-                                  }))
-                                )
-                              }
-                            />
-                          )
-                        ) : props.rowData[item] ? (
-                          getElipsis(props.rowData[item], 80)
+            rowCount={tableRows.length}
+            width={width - 20}
+            height={tableHeight}
+            cellRenderer={({ columnIndex, rowIndex, key, style }) => {
+              const column = tableColumns[columnIndex];
+              const row = tableRows[rowIndex];
+
+              if (!row) return <></>;
+              const isHeader = row.header;
+
+              return (
+                <div key={key} style={style}>
+                  <Tooltip
+                    title={
+                      (row[column] as string)?.length > 35
+                        ? (row[column] as string)
+                        : ""
+                    }
+                  >
+                    <Stack
+                      style={{
+                        padding: "0 5px",
+                        backgroundColor:
+                          column === "sideHeader"
+                            ? colors.powderBlue
+                            : ((column === "total"
+                                ? colors.powderBlue
+                                : selectedRow === row.sideHeader
+                                ? colors.fairyTale
+                                : row.bg) as string),
+                        borderRightWidth: column === "sideHeader" ? 3 : 1,
+                        borderRightStyle: "solid",
+                        borderRightColor:
+                          column === "sideHeader" ? "gray" : colors.honeydew,
+                        wordWrap: "break-word",
+                        overflowWrap: "break-word",
+                        whiteSpace: "normal",
+                        justifyContent: "center",
+                        borderBottomWidth: 1,
+                        borderBottomStyle: "solid",
+                        borderBottomColor: colors.honeydew,
+                        fontSize: 12,
+                        height: isHeader ? 35 : 23,
+                        fontWeight:
+                          column === "total" ||
+                          column === "sideHeader" ||
+                          row.sideHeader === "Total" ||
+                          row.sideHeader === mappingValue
+                            ? "bold"
+                            : "initial",
+                        textAlign: column === "sideHeader" ? "left" : "center",
+                      }}
+                    >
+                      {row.sideHeader === "Include" ? (
+                        column === "total" ? (
+                          <Typography
+                            style={{ fontSize: 14, fontWeight: "bold" }}
+                          >
+                            Total
+                          </Typography>
+                        ) : column === "sideHeader" ? (
+                          "-"
                         ) : (
-                          ""
-                        )}
-                      </Stack>
-                    </Wrapper>
-                  );
-                }}
-                headerRenderer={() => <></>}
-                cellDataGetter={(params) => params.rowData[item]}
-              />
-            ))}
-          </Table>
+                          <Checkbox
+                            disabled={!!setSelectedRow}
+                            checkedIcon={
+                              <CheckCircleIcon style={{ color: "green" }} />
+                            }
+                            icon={<CancelRounded style={{ color: "red" }} />}
+                            value={row[column]}
+                            checked={Boolean(row[column])}
+                            onChange={(_, checked) =>
+                              setDataDisplayHeader((prev) =>
+                                prev.map((header) => ({
+                                  ...header,
+                                  active:
+                                    header[mappingValue] === column
+                                      ? checked
+                                      : header.active,
+                                }))
+                              )
+                            }
+                          />
+                        )
+                      ) : row[column] ? (
+                        getElipsis(row[column] as string, 35)
+                      ) : (
+                        ""
+                      )}
+                    </Stack>
+                  </Tooltip>
+                </div>
+              );
+            }}
+          />
         )}
       </AutoSizer>
     </Stack>
