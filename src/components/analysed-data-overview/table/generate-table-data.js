@@ -79,7 +79,7 @@ self.onmessage = function (e) {
   const height =
     24 * rows.filter((item) => !item.header).length +
     36 * rows.filter((item) => item.header).length +
-    36;
+    24;
 
   self.postMessage({
     columns,

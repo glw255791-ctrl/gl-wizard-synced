@@ -19,6 +19,7 @@ interface Props {
   overviewTableData: Record<string, AnyType>;
   valueKey: string;
   selectedRow?: string;
+  id?: string;
   setSelectedRow?: React.Dispatch<React.SetStateAction<string>>;
   selectedFilter: Filters;
   setDataDisplayHeader: React.Dispatch<
@@ -39,11 +40,10 @@ export const DataTable = (props: Props) => {
     selectedRow,
     overviewTableData,
     valueKey,
+    id,
     setSelectedRow,
     setDataDisplayHeader,
   } = props;
-
-  const [tableHeight, setTableHeight] = useState(600);
 
   const [tableRows, setTableRows] = useState<Record<string, AnyType>[]>([]);
   const [tableColumns, setTableColumns] = useState<string[]>([]);
@@ -54,10 +54,9 @@ export const DataTable = (props: Props) => {
     );
 
     worker.onmessage = (e) => {
-      const { columns, rows, height } = e.data;
+      const { columns, rows } = e.data;
       setTableColumns(columns);
       setTableRows(rows);
-      setTableHeight(height);
     };
 
     worker.postMessage({
@@ -129,7 +128,7 @@ export const DataTable = (props: Props) => {
   };
 
   return (
-    <Stack style={styles.tableScrollableWrapper}>
+    <Stack id={id} style={styles.tableScrollableWrapper}>
       <Stack style={styles.tableHeader}>
         <Typography style={styles.tableTitle}>{title}</Typography>
         <Button
@@ -144,24 +143,28 @@ export const DataTable = (props: Props) => {
           Download
         </Button>
       </Stack>
-      <AutoSizer style={{ width: "100%", overflow: "auto", height: 1000 }}>
-        {({ width }) => (
+      <AutoSizer
+        style={{
+          width: "100%",
+          overflow: "auto",
+          height: 600,
+        }}
+      >
+        {({ width, height }) => (
           <MultiGrid
             fixedColumnCount={1}
+            fixedRowCount={8}
             columnWidth={250}
             columnCount={tableColumns.length}
-            rowHeight={({ index }) => {
-              return tableRows[index]?.header ? 36 : 24;
-            }}
+            rowHeight={24}
             rowCount={tableRows.length}
-            width={width - 20}
-            height={tableHeight}
+            width={width - 2}
+            height={height - 73}
             cellRenderer={({ columnIndex, rowIndex, key, style }) => {
               const column = tableColumns[columnIndex];
               const row = tableRows[rowIndex];
 
               if (!row) return <></>;
-              const isHeader = row.header;
 
               return (
                 <div key={key} style={style}>
@@ -177,13 +180,13 @@ export const DataTable = (props: Props) => {
                         padding: "0 5px",
                         backgroundColor:
                           column === "sideHeader"
-                            ? colors.powderBlue
+                            ? selectedRow === row.sideHeader
+                              ? colors.fairyTale
+                              : colors.powderBlue
                             : ((column === "total"
                                 ? colors.powderBlue
-                                : selectedRow === row.sideHeader
-                                ? colors.fairyTale
                                 : row.bg) as string),
-                        borderRightWidth: column === "sideHeader" ? 3 : 1,
+                        borderRightWidth: column === "sideHeader" ? 2 : 1,
                         borderRightStyle: "solid",
                         borderRightColor:
                           column === "sideHeader" ? "gray" : colors.honeydew,
@@ -191,11 +194,23 @@ export const DataTable = (props: Props) => {
                         overflowWrap: "break-word",
                         whiteSpace: "normal",
                         justifyContent: "center",
-                        borderBottomWidth: 1,
+                        borderBottomWidth:
+                          rowIndex ===
+                          Object.keys(sortedDataDisplayHeader[0]).length - 1
+                            ? 2
+                            : 1,
                         borderBottomStyle: "solid",
-                        borderBottomColor: colors.honeydew,
+                        borderBottomColor:
+                          rowIndex ===
+                          Object.keys(sortedDataDisplayHeader[0]).length - 1
+                            ? "gray"
+                            : colors.honeydew,
                         fontSize: 12,
-                        height: isHeader ? 35 : 23,
+                        height:
+                          rowIndex ===
+                          Object.keys(sortedDataDisplayHeader[0]).length - 1
+                            ? 21
+                            : 23,
                         fontWeight:
                           column === "total" ||
                           column === "sideHeader" ||

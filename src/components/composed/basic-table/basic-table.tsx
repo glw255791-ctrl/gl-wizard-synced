@@ -28,16 +28,19 @@ export const BasicTable = ({
     const workbook = new Workbook();
     const worksheet = workbook.addWorksheet("Sheet1");
 
-    worksheet.addRow(header.map((item) => item.title));
+    const fullHeader = Object.keys(data[0]).filter(
+      (item) => item !== "coaData"
+    );
+    worksheet.addRow(fullHeader.map((item) => item));
 
     data.forEach((row) => {
-      const rowData = header.map((item) => {
-        const val = row[item.title];
+      const rowData = fullHeader.map((item) => {
+        const val = row[item];
 
         const formattedVal =
-          item.key === "result" && typeof val === "object"
+          item === "result" && typeof val === "object"
             ? (val as string[]).join("/")
-            : item.key === "date"
+            : item === header.find((it) => it.key === "date")?.title
             ? formatDate(val, "dd-MM-yyyy")
             : val;
 
@@ -47,16 +50,15 @@ export const BasicTable = ({
       worksheet.addRow(rowData);
     });
 
-    worksheet.columns.forEach((column, index) => {
-      column.width = index === 0 ? 24 : index === 5 ? 100 : 18;
+    worksheet.columns.forEach((column) => {
+      column.width = 24;
     });
 
     worksheet.eachRow((row, rowNumber) => {
-      row.eachCell((cell, colNumber) => {
+      row.eachCell((cell) => {
         const isHeader = rowNumber === 1;
-        const highlightCol = colNumber === 1 || colNumber === 5;
 
-        if (isHeader || highlightCol) {
+        if (isHeader) {
           cell.fill = {
             type: "pattern",
             pattern: "solid",

@@ -1,11 +1,4 @@
-import {
-  Backdrop,
-  Button,
-  Card,
-  CircularProgress,
-  Grid2,
-  Stack,
-} from "@mui/material";
+import { Button, Card, Grid2, Stack } from "@mui/material";
 import { FileDropzone } from "../../ui-kit/dropzone/dropzone";
 import { Dropdown } from "../../ui-kit/dropdown/dropdown";
 import { styles } from "./style";
@@ -16,6 +9,7 @@ import { DataValidityInfo } from "../../composed/data-validity-info/data-validit
 import { Header } from "../../composed/header/header";
 import { DataOverview } from "../../analysed-data-overview/analysed-data-overview";
 import { BasicDataOverview } from "../../basic-data-overview/basic-data-overview";
+import { Loader } from "../../ui-kit/loader-overlay/loader-overlay";
 
 export function ReversalAnalysis() {
   const {
@@ -71,12 +65,7 @@ export function ReversalAnalysis() {
 
   return (
     <>
-      <Backdrop
-        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={loadingStatus}
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
+      <Loader loadingStatus={loadingStatus} />
       <Stack style={styles.root} spacing={2}>
         <Header title="Reversal analysis" onPressResetBtn={onPressResetBtn} />
 

@@ -160,51 +160,47 @@ export function useGeneralAnalysis() {
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "application/vnd.ms-excel",
     ];
+
     if (!validMimeTypes.includes(file.type) && !file.name.endsWith(".xlsx")) {
       setError("Invalid file type. Please upload an Excel file.");
-
-      setTimeout(() => {
-        setError(undefined);
-      }, 4000);
+      setTimeout(() => setError(undefined), 4000);
       return;
     }
 
+    setLoadingStatus(true);
     const buffer = await file.arrayBuffer();
-    const workbook = new Workbook();
-    await workbook.xlsx.load(buffer);
 
-    const sheet = workbook.worksheets[0]; // Get first sheet
-    if (!sheet) return;
+    const worker = new Worker(new URL("./gl-worker.js", import.meta.url), {
+      type: "module",
+    });
 
-    // Get column names
-    const columnNames: string[] = sheet.getRow(1).values as string[];
+    worker.postMessage({ buffer });
 
-    // Read data
-    const rows = sheet
-      .getSheetValues()
-      .slice(2) // Skip header row
-      .map((row: any) =>
-        columnNames.reduce((acc, col, index) => {
-          const cell = row[index];
-          // If cell is an object with a 'result' key, use that
+    worker.onmessage = (e) => {
+      const { glData, glHeaders, error } = e.data;
 
-          if (cell && typeof cell === "object" && "result" in cell) {
-            acc[col] = cell.result;
-          } else {
-            acc[col] = cell ?? ""; // fallback to value or empty string
-          }
+      if (error) {
+        setError(error);
+        setLoadingStatus(false);
+        return;
+      }
 
-          return acc;
-        }, {} as Record<string, any>)
-      );
+      setRawData((prev) => ({
+        ...prev,
+        glData,
+        glHeaders,
+      }));
 
-    setRawData((prev) => ({
-      ...prev,
-      glData: rows,
-      glHeaders: columnNames.filter(Boolean),
-    }));
+      worker.onerror = (error) => {
+        console.error("Worker error:", error);
+        setLoadingStatus(false);
+        worker.terminate();
+      };
 
-    setCurrentStep((prev) => [...prev, AnalysisStep.UPLOADED_GL]);
+      setCurrentStep((prev) => [...prev, AnalysisStep.UPLOADED_GL]);
+      setLoadingStatus(false);
+      worker.terminate();
+    };
   };
 
   const onChartOfAccountsDrop = async (acceptedFiles: File[]) => {
@@ -301,18 +297,19 @@ export function useGeneralAnalysis() {
     );
 
     worker.onmessage = (event) => {
-      if (event.data.type === "progress") {
-        console.warn(`Progress: ${event.data.progress}%`);
-        // Update progress bar
-      } else if (event.data.type === "complete") {
+      if (event.data.type === "complete") {
         setTableData(event.data.tableData);
-
         setOverviewTableData(event.data.overviewTableData);
         setDataDisplayHeader(event.data.displayHeaders);
         setCurrentStep((prev) => [...prev, AnalysisStep.ANALYZED]);
         setLoadingStatus(false);
 
         worker.terminate();
+
+        if (event.data.tableData.find((item: any) => !item.coaData)) {
+          setError("Some rows from GL do not have a CoA");
+          setTimeout(() => setError(undefined), 4000);
+        }
       }
     };
 

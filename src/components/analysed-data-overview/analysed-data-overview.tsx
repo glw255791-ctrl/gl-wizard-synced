@@ -2,6 +2,8 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Button,
+  Grid2,
   Stack,
   Typography,
 } from "@mui/material";
@@ -113,11 +115,27 @@ export function DataOverview(props: Props) {
             </Stack>
           </Stack>
         </Stack>
+        <Grid2 container>
+          {selectedFilter.header !== "all"
+            ? filterValueOptions?.map((item) => (
+                <Grid2>
+                  <Button
+                    href={`#${item}`}
+                    variant="text"
+                    style={{ padding: 0, fontSize: 11 }}
+                  >
+                    {item}
+                  </Button>
+                </Grid2>
+              ))
+            : undefined}
+        </Grid2>
         {selectedFilter.header !== "all" ? (
           <Stack style={styles.tablesStack}>
             {filterValueOptions.map((value) => {
               return value === "total" ? undefined : (
                 <DataTable
+                  id={value}
                   title={value}
                   mappingValue={mappingValue}
                   selectedRow={selectedRow}

@@ -158,51 +158,42 @@ export function useReversalReclassificationAnalysis() {
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "application/vnd.ms-excel",
     ];
+
     if (!validMimeTypes.includes(file.type) && !file.name.endsWith(".xlsx")) {
       setError("Invalid file type. Please upload an Excel file.");
-
-      setTimeout(() => {
-        setError(undefined);
-      }, 4000);
+      setTimeout(() => setError(undefined), 4000);
       return;
     }
 
+    setLoadingStatus(true);
     const buffer = await file.arrayBuffer();
-    const workbook = new Workbook();
-    await workbook.xlsx.load(buffer);
 
-    const sheet = workbook.worksheets[0]; // Get first sheet
-    if (!sheet) return;
+    const worker = new Worker(new URL("./gl-worker.js", import.meta.url), {
+      type: "module",
+    });
 
-    // Get column names
-    const columnNames: string[] = sheet.getRow(1).values as string[];
+    worker.postMessage({ buffer });
 
-    // Read data
-    const rows = sheet
-      .getSheetValues()
-      .slice(2) // Skip header row
-      .map((row: any) =>
-        columnNames.reduce((acc, col, index) => {
-          acc[col] = row[index] || "";
-          return acc;
-        }, {} as Record<string, any>)
-      );
+    worker.onmessage = (e) => {
+      const { glData, glHeaders, error } = e.data;
 
-    setRawData((prev) => ({
-      ...prev,
-      glData: rows,
-      glHeaders: columnNames.filter(Boolean),
-    }));
-    setSelectedHeaders((prev) => ({
-      ...prev,
-      glHeaders: {
-        account: columnNames.filter(Boolean)[0],
-        jen: columnNames.filter(Boolean)[1],
-        date: columnNames.filter(Boolean)[2],
-        value: columnNames.filter(Boolean)[3],
-      },
-    }));
-    setCurrentStep((prev) => [...prev, AnalysisStep.TO_UPLOAD_COA]);
+      if (error) {
+        setError(error);
+        setLoadingStatus(false);
+        worker.terminate();
+        return;
+      }
+
+      setRawData((prev) => ({
+        ...prev,
+        glData,
+        glHeaders,
+      }));
+
+      setCurrentStep((prev) => [...prev, AnalysisStep.UPLOADED_GL]);
+      setLoadingStatus(false);
+      worker.terminate();
+    };
   };
 
   const onChartOfAccountsDrop = async (acceptedFiles: File[]) => {
@@ -255,10 +246,15 @@ export function useReversalReclassificationAnalysis() {
   };
 
   const onChangeGlHeader = (key: keyof GlHeaders, value: string) => {
+    const newValue = { ...selectedHeaders.glHeaders, [key]: value };
     setSelectedHeaders((prev) => ({
       ...prev,
-      glHeaders: { ...prev.glHeaders, [key]: value },
+      glHeaders: newValue,
     }));
+
+    if (!Object.values(newValue).some((item) => item === "")) {
+      setCurrentStep((prev) => [...prev, AnalysisStep.TO_UPLOAD_COA]);
+    }
   };
 
   const onChangeCoaFilter = (key: keyof CoaFilters, value: string) => {

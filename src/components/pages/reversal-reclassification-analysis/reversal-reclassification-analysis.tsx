@@ -1,11 +1,4 @@
-import {
-  Backdrop,
-  Button,
-  Card,
-  CircularProgress,
-  Grid2,
-  Stack,
-} from "@mui/material";
+import { Button, Card, Grid2, Stack } from "@mui/material";
 import { FileDropzone } from "../../ui-kit/dropzone/dropzone";
 import { Dropdown } from "../../ui-kit/dropdown/dropdown";
 import { styles } from "./style";
@@ -17,6 +10,7 @@ import { GLDropdowns } from "../../composed/gl-dropdowns/gl-dropdowns";
 import { Header } from "../../composed/header/header";
 import { DataValidityInfo } from "../../composed/data-validity-info/data-validity-info";
 import { BasicDataOverview } from "../../basic-data-overview/basic-data-overview";
+import { Loader } from "../../ui-kit/loader-overlay/loader-overlay";
 
 export function ReversaReclassificationAnalysis() {
   const {
@@ -42,6 +36,7 @@ export function ReversaReclassificationAnalysis() {
   } = useReversalReclassificationAnalysis();
 
   // Memoized computed values
+  const isUploadedGl = currentStep.includes(AnalysisStep.UPLOADED_GL);
   const isCoaUploadStep = currentStep.includes(AnalysisStep.TO_UPLOAD_COA);
   const isAnalyzeStep = currentStep.includes(AnalysisStep.TO_ANALYZE);
   const isAnalyzedStep = currentStep.includes(AnalysisStep.ANALYZED);
@@ -71,12 +66,7 @@ export function ReversaReclassificationAnalysis() {
   );
   return (
     <>
-      <Backdrop
-        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={loadingStatus}
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
+      <Loader loadingStatus={loadingStatus} />
       <Stack style={styles.root} spacing={2}>
         <Header
           title="Reversal/Reclassification analysis"
@@ -88,7 +78,7 @@ export function ReversaReclassificationAnalysis() {
             <FileDropzoneSection
               onDrop={onGeneralLedgerDrop}
               text="Drop GL file here"
-              uploaded={isCoaUploadStep}
+              uploaded={isUploadedGl}
             >
               <GLDropdowns
                 glHeaderOptions={glHeaderOptions}
