@@ -5,7 +5,7 @@ import { RefObject } from "react";
 export type AnyType = string | number | boolean | object;
 
 export const getElipsis = (text: string, maxLength?: number) => {
-  return text?.length < (maxLength ?? 53)
+  return typeof text !== "string" || text?.length < (maxLength ?? 53)
     ? text
     : `${text?.slice(0, maxLength ? maxLength - 3 : 48)}...`;
 };
