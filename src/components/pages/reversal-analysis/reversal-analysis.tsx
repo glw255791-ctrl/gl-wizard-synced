@@ -1,15 +1,15 @@
-import { Button, Card, Grid2, Stack } from "@mui/material";
+import { Grid2, Stack } from "@mui/material";
 import { FileDropzone } from "../../ui-kit/dropzone/dropzone";
 import { Dropdown } from "../../ui-kit/dropdown/dropdown";
 import { styles } from "./style";
 import { AnalysisStep, useReversalAnalysis } from "./reversal-analysis-model";
-import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
 import { GLDropdowns } from "../../composed/gl-dropdowns/gl-dropdowns";
 import { DataValidityInfo } from "../../composed/data-validity-info/data-validity-info";
 import { Header } from "../../composed/header/header";
 import { DataOverview } from "../../analysed-data-overview/analysed-data-overview";
 import { BasicDataOverview } from "../../basic-data-overview/basic-data-overview";
 import { Loader } from "../../ui-kit/loader-overlay/loader-overlay";
+import { ActionButton } from "../../composed/action-button/action-button";
 
 export function ReversalAnalysis() {
   const {
@@ -39,30 +39,6 @@ export function ReversalAnalysis() {
   const isAnalyzeStep = currentStep.includes(AnalysisStep.TO_ANALYZE);
   const isAnalyzedStep = currentStep.includes(AnalysisStep.ANALYZED);
 
-  // Reusable component for file dropzone with dropdowns
-  const FileDropzoneSection = ({
-    onDrop,
-    text,
-    uploaded,
-    children,
-    isDisabled,
-  }: {
-    onDrop: (files: File[]) => void;
-    text: string;
-    uploaded: boolean;
-    children: React.ReactNode;
-    isDisabled?: boolean;
-  }) => (
-    <Card style={isDisabled ? styles.disabledCard : styles.card}>
-      <Grid2 container spacing={2} height="100%">
-        <Grid2 size={6}>
-          <FileDropzone onDrop={onDrop} text={text} uploaded={uploaded} />
-        </Grid2>
-        <Grid2 size={6}>{children}</Grid2>
-      </Grid2>
-    </Card>
-  );
-
   return (
     <>
       <Loader loadingStatus={loadingStatus} />
@@ -71,7 +47,7 @@ export function ReversalAnalysis() {
 
         <Grid2 container spacing={2}>
           <Grid2 size={6}>
-            <FileDropzoneSection
+            <FileDropzone
               onDrop={onGeneralLedgerDrop}
               text="Drop GL file here"
               uploaded={isUploadedGl}
@@ -81,11 +57,11 @@ export function ReversalAnalysis() {
                 selectedHeaders={selectedHeaders}
                 onChangeGlHeader={onChangeGlHeader}
               />
-            </FileDropzoneSection>
+            </FileDropzone>
           </Grid2>
 
           <Grid2 size={6}>
-            <FileDropzoneSection
+            <FileDropzone
               onDrop={onChartOfAccountsDrop}
               text="Drop CoA file here"
               uploaded={isAnalyzeStep}
@@ -109,7 +85,7 @@ export function ReversalAnalysis() {
                   }
                 />
               </Stack>
-            </FileDropzoneSection>
+            </FileDropzone>
           </Grid2>
         </Grid2>
 
@@ -123,23 +99,10 @@ export function ReversalAnalysis() {
           </Grid2>
 
           <Grid2 size={6}>
-            <Card style={isAnalyzeStep ? styles.card : styles.disabledCard}>
-              <Stack sx={styles.buttonsWrapper}>
-                <Grid2 container spacing={5} sx={styles.progressAndBtnWrapper}>
-                  <Grid2 size={6} />
-                  <Grid2 size={6}>
-                    <Button
-                      onClick={onPressAnalyzeData}
-                      variant="contained"
-                      sx={{ ...styles.button, backgroundColor: "#204795" }}
-                      endIcon={<TroubleshootIcon />}
-                    >
-                      Process
-                    </Button>
-                  </Grid2>
-                </Grid2>
-              </Stack>
-            </Card>
+            <ActionButton
+              isAnalyzeStep={isAnalyzeStep}
+              onPressAnalyzeData={onPressAnalyzeData}
+            />
           </Grid2>
         </Grid2>
 

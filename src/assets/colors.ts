@@ -4,4 +4,7 @@ export const colors = {
   tifanyBlue: "#B8E0D2",
   honeydew: "#D6EADF",
   fairyTale: "#EAC4D5",
+  action: "#204795",
+  excelHighligh: "#CCCCCC",
+  excelBtn: "#1D6F42",
 };

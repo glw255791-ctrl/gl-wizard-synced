@@ -1,13 +1,4 @@
-import {
-  Backdrop,
-  Button,
-  Card,
-  CircularProgress,
-  Grid2,
-  Stack,
-  Typography,
-} from "@mui/material";
-import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
+import { Grid2, Stack } from "@mui/material";
 import { FileDropzone } from "../../ui-kit/dropzone/dropzone";
 import { Dropdown } from "../../ui-kit/dropdown/dropdown";
 import { Header } from "../../composed/header/header";
@@ -17,7 +8,8 @@ import { BasicDataOverview } from "../../basic-data-overview/basic-data-overview
 import { DataOverview } from "../../analysed-data-overview/analysed-data-overview";
 import { AnalysisStep, useGeneralAnalysis } from "./general-analysis-model";
 import { styles } from "./style";
-import { colors } from "../../../assets/colors";
+import { Loader } from "../../ui-kit/loader-overlay/loader-overlay";
+import { ActionButton } from "../../composed/action-button/action-button";
 
 export function GeneralAnalysis() {
   const {
@@ -47,53 +39,9 @@ export function GeneralAnalysis() {
   const isAnalyzeStep = currentStep.includes(AnalysisStep.TO_ANALYZE);
   const isAnalyzedStep = currentStep.includes(AnalysisStep.ANALYZED);
 
-  // Reusable component for file dropzone with dropdowns
-  const FileDropzoneSection = ({
-    onDrop,
-    text,
-    uploaded,
-    children,
-    isDisabled,
-  }: {
-    onDrop: (files: File[]) => void;
-    text: string;
-    uploaded: boolean;
-    children: React.ReactNode;
-    isDisabled?: boolean;
-  }) => (
-    <Card style={isDisabled ? styles.disabledCard : styles.card}>
-      <Grid2 container spacing={2} height="100%">
-        <Grid2 size={6}>
-          <FileDropzone onDrop={onDrop} text={text} uploaded={uploaded} />
-        </Grid2>
-        <Grid2 size={6}>{children}</Grid2>
-      </Grid2>
-    </Card>
-  );
-
   return (
     <>
-      <Backdrop
-        sx={{
-          color: colors.vistaBlue,
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-        }}
-        open={loadingStatus}
-      >
-        <Stack
-          style={{
-            backgroundColor: "#fff",
-            borderRadius: 45,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 15,
-            padding: 15,
-          }}
-        >
-          <Typography>Analysing, this may take a while...</Typography>
-          <CircularProgress color="inherit" />
-        </Stack>
-      </Backdrop>
+      <Loader loadingStatus={loadingStatus} />
 
       <Stack sx={styles.root} spacing={2}>
         <Header
@@ -103,7 +51,7 @@ export function GeneralAnalysis() {
 
         <Grid2 container spacing={2}>
           <Grid2 size={6}>
-            <FileDropzoneSection
+            <FileDropzone
               onDrop={onGeneralLedgerDrop}
               text="Drop GL file here"
               uploaded={isUploadedGl}
@@ -113,11 +61,11 @@ export function GeneralAnalysis() {
                 selectedHeaders={selectedHeaders}
                 onChangeGlHeader={onChangeGlHeader}
               />
-            </FileDropzoneSection>
+            </FileDropzone>
           </Grid2>
 
           <Grid2 size={6}>
-            <FileDropzoneSection
+            <FileDropzone
               onDrop={onChartOfAccountsDrop}
               text="Drop CoA file here"
               uploaded={isAnalyzeStep}
@@ -141,7 +89,7 @@ export function GeneralAnalysis() {
                   }
                 />
               </Stack>
-            </FileDropzoneSection>
+            </FileDropzone>
           </Grid2>
         </Grid2>
 
@@ -155,23 +103,10 @@ export function GeneralAnalysis() {
           </Grid2>
 
           <Grid2 size={6}>
-            <Card style={isAnalyzeStep ? styles.card : styles.disabledCard}>
-              <Stack sx={styles.buttonsWrapper}>
-                <Grid2 container spacing={5} sx={styles.progressAndBtnWrapper}>
-                  <Grid2 size={6} />
-                  <Grid2 size={6}>
-                    <Button
-                      onClick={onPressAnalyzeData}
-                      variant="contained"
-                      sx={{ ...styles.button, backgroundColor: "#204795" }}
-                      endIcon={<TroubleshootIcon />}
-                    >
-                      Process
-                    </Button>
-                  </Grid2>
-                </Grid2>
-              </Stack>
-            </Card>
+            <ActionButton
+              isAnalyzeStep={isAnalyzeStep}
+              onPressAnalyzeData={onPressAnalyzeData}
+            />
           </Grid2>
         </Grid2>
 

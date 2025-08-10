@@ -1,6 +1,7 @@
 import { CommonProps } from "@mui/material/OverridableComponent";
 
 import { colors } from "../../../assets/colors";
+import { AnyType } from "./functions";
 export const styles: Record<string, CommonProps["style"]> = {
   root: {},
   tableScrollableWrapper: {
@@ -119,4 +120,69 @@ export const styles: Record<string, CommonProps["style"]> = {
   selectedRow: {
     backgroundColor: colors.fairyTale,
   },
+  excelBtn: {
+    backgroundClip: colors.excelBtn,
+  },
+  cellBaseStyle: {
+    padding: "0 5px",
+    borderRightStyle: "solid",
+    wordWrap: "break-word",
+    overflowWrap: "break-word",
+    whiteSpace: "normal",
+    justifyContent: "center",
+    borderBottomStyle: "solid",
+    fontSize: 12,
+  },
+  totalText: {
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  autosizerWrapper: {
+    width: "100%",
+    overflow: "auto",
+    height: 600,
+  },
+};
+
+export const getStylesBasedOnColumn = (
+  column: string,
+  row: Record<string, AnyType>,
+  mappingValue: string,
+  selectedRow?: string
+) => {
+  const isSideHeader = column === "sideHeader";
+  const isTotalColumn = column === "total";
+  const isSelectedRow = selectedRow === row.sideHeader;
+  const isBoldRow =
+    isTotalColumn ||
+    isSideHeader ||
+    row.sideHeader === "Total" ||
+    row.sideHeader === mappingValue;
+
+  return {
+    backgroundColor: isSideHeader
+      ? isSelectedRow
+        ? colors.fairyTale
+        : colors.powderBlue
+      : ((isTotalColumn ? colors.powderBlue : row.bg) as string),
+
+    borderRightWidth: isSideHeader ? 2 : 1,
+    borderRightColor: isSideHeader ? "gray" : colors.honeydew,
+    fontWeight: isBoldRow ? "bold" : "initial",
+    textAlign: isSideHeader ? "left" : "center",
+  };
+};
+
+export const getStylesBasedOnHeader = (
+  rowIndex: number,
+  sortedDataDisplayHeader: Record<string, AnyType>[]
+) => {
+  const lastIndex = Object.keys(sortedDataDisplayHeader[0]).length - 1;
+  const isLastRow = rowIndex === lastIndex;
+
+  return {
+    borderBottomWidth: isLastRow ? 2 : 1,
+    borderBottomColor: isLastRow ? "gray" : colors.honeydew,
+    height: isLastRow ? 22 : 23,
+  };
 };

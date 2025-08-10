@@ -1,4 +1,5 @@
 import { CommonProps } from "@mui/material/OverridableComponent";
+import { colors } from "../../assets/colors";
 
 export const styles: Record<string, CommonProps["style"]> = {
   root: {},
@@ -37,5 +38,17 @@ export const styles: Record<string, CommonProps["style"]> = {
     width: "100%",
     paddingRight: 30,
     justifyContent: "space-between",
+  },
+  optionsWrapper: {
+    maxHeight: 200,
+    overflow: "auto",
+    padding: 5,
+    marginBottom: 10,
+  },
+  optionsBtn: {
+    padding: 2,
+    fontSize: 11,
+    backgroundColor: colors.vistaBlue,
+    color: "white",
   },
 };

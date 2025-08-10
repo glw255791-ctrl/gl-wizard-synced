@@ -1,16 +1,27 @@
 import { Stack, Typography, Checkbox, Button, Tooltip } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import "react-virtualized/styles.css";
 import DownloadIcon from "@mui/icons-material/Download";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelRounded from "@mui/icons-material/CancelRounded";
-import { AnyType, getElipsis } from "./functions";
+import { AnyType, exportTableToExcel, getElipsis } from "./functions";
 
-import { styles } from "./table-style";
+import {
+  getStylesBasedOnColumn,
+  getStylesBasedOnHeader,
+  styles,
+} from "./table-style";
 import { AutoSizer, MultiGrid } from "react-virtualized";
 import { colors } from "../../../assets/colors";
-import saveAs from "file-saver";
-import { Workbook } from "exceljs";
+
+const COLUMN_WIDTH = 250;
+const ROW_HEIGHT = 24;
+const WIDTH_ADJUST = 2;
+const HEIGHT_ADJUST = 73;
+const MAX_CHARS = 35;
+const TOTAL = "total";
+const INCLUDE = "Include";
+const SIDE_HEADER = "sideHeader";
 
 interface Props {
   title: string;
@@ -73,93 +84,41 @@ export const DataTable = (props: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortedDataDisplayHeader, overviewTableData]);
 
-  const exportTableToExcel = async () => {
-    const workbook = new Workbook();
-    const worksheet = workbook.addWorksheet("Sheet1");
+  const onExportClick = useCallback(
+    () => exportTableToExcel(tableRows, sortedDataDisplayHeader, mappingValue),
+    [tableRows, sortedDataDisplayHeader, mappingValue]
+  );
 
-    const rows = tableRows;
-    const headers: string[] = sortedDataDisplayHeader
-      .filter((item) => item.active)
-      .map((item) => item[mappingValue] as string);
-
-    worksheet.addRow([
-      rows[0].sideHeader,
-      ...headers.map((item) => rows[0][item] as string),
-      "total",
-    ]);
-    rows.slice(1).forEach((row) => {
-      const data = headers.map((item) => {
-        return row[item];
-      });
-      if (row.sideHeader !== "Include")
-        worksheet.addRow([row.sideHeader, ...data, row.total]);
-    });
-
-    worksheet.columns.forEach((column) => {
-      column.width = 40;
-    });
-
-    worksheet.eachRow((row, rowNumber) => {
-      row.eachCell((cell, colNumber) => {
-        if (rowNumber === 1) {
-          cell.font = { bold: true };
-          cell.fill = {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: "CCCCCC" },
-          };
-        }
-
-        if (colNumber === 1 || colNumber === headers.length + 2) {
-          cell.fill = {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: "CCCCCC" },
-          };
-        }
-      });
-    });
-
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
-    saveAs(blob, "table_data.xlsx");
-  };
+  const fixedRowCount = useMemo(
+    () => Object.keys(sortedDataDisplayHeader[0]).length,
+    [sortedDataDisplayHeader]
+  );
 
   return (
     <Stack id={id} style={styles.tableScrollableWrapper}>
       <Stack style={styles.tableHeader}>
         <Typography style={styles.tableTitle}>{title}</Typography>
         <Button
-          onClick={exportTableToExcel}
+          onClick={onExportClick}
           variant="contained"
-          style={{
-            ...styles.button,
-            backgroundColor: "#1D6F42",
-          }}
+          style={styles.excelBtn}
           endIcon={<DownloadIcon />}
         >
           Download
         </Button>
       </Stack>
-      <AutoSizer
-        style={{
-          width: "100%",
-          overflow: "auto",
-          height: 600,
-        }}
-      >
+      <AutoSizer style={styles.autosizerWrapper}>
         {({ width, height }) => (
           <MultiGrid
+            key={selectedRow}
             fixedColumnCount={1}
-            fixedRowCount={8}
-            columnWidth={250}
+            fixedRowCount={fixedRowCount}
+            columnWidth={COLUMN_WIDTH}
             columnCount={tableColumns.length}
-            rowHeight={24}
+            rowHeight={ROW_HEIGHT}
             rowCount={tableRows.length}
-            width={width - 2}
-            height={height - 73}
+            width={width - WIDTH_ADJUST}
+            height={height - HEIGHT_ADJUST}
             cellRenderer={({ columnIndex, rowIndex, key, style }) => {
               const column = tableColumns[columnIndex];
               const row = tableRows[rowIndex];
@@ -170,65 +129,37 @@ export const DataTable = (props: Props) => {
                 <div key={key} style={style}>
                   <Tooltip
                     title={
-                      (row[column] as string)?.length > 35
+                      (row[column] as string)?.length > MAX_CHARS
                         ? (row[column] as string)
                         : ""
                     }
                   >
                     <Stack
-                      style={{
-                        padding: "0 5px",
-                        backgroundColor:
-                          column === "sideHeader"
-                            ? selectedRow === row.sideHeader
-                              ? colors.fairyTale
-                              : colors.powderBlue
-                            : ((column === "total"
-                                ? colors.powderBlue
-                                : row.bg) as string),
-                        borderRightWidth: column === "sideHeader" ? 2 : 1,
-                        borderRightStyle: "solid",
-                        borderRightColor:
-                          column === "sideHeader" ? "gray" : colors.honeydew,
-                        wordWrap: "break-word",
-                        overflowWrap: "break-word",
-                        whiteSpace: "normal",
-                        justifyContent: "center",
-                        borderBottomWidth:
-                          rowIndex ===
-                          Object.keys(sortedDataDisplayHeader[0]).length - 1
-                            ? 2
-                            : 1,
-                        borderBottomStyle: "solid",
-                        borderBottomColor:
-                          rowIndex ===
-                          Object.keys(sortedDataDisplayHeader[0]).length - 1
-                            ? "gray"
-                            : colors.honeydew,
-                        fontSize: 12,
-                        height:
-                          rowIndex ===
-                          Object.keys(sortedDataDisplayHeader[0]).length - 1
-                            ? 21
-                            : 23,
-                        fontWeight:
-                          column === "total" ||
-                          column === "sideHeader" ||
-                          row.sideHeader === "Total" ||
-                          row.sideHeader === mappingValue
-                            ? "bold"
-                            : "initial",
-                        textAlign: column === "sideHeader" ? "left" : "center",
+                      onDoubleClick={() => {
+                        setSelectedRow?.(row.sideHeader as string);
                       }}
+                      style={
+                        {
+                          ...styles.cellBaseStyle,
+                          ...getStylesBasedOnColumn(
+                            column,
+                            row,
+                            mappingValue,
+                            selectedRow
+                          ),
+                          ...getStylesBasedOnHeader(
+                            rowIndex,
+                            sortedDataDisplayHeader
+                          ),
+                        } as React.CSSProperties
+                      }
                     >
-                      {row.sideHeader === "Include" ? (
-                        column === "total" ? (
-                          <Typography
-                            style={{ fontSize: 14, fontWeight: "bold" }}
-                          >
+                      {row.sideHeader === INCLUDE ? (
+                        column === TOTAL ? (
+                          <Typography style={styles.totalText}>
                             Total
                           </Typography>
-                        ) : column === "sideHeader" ? (
+                        ) : column === SIDE_HEADER ? (
                           "-"
                         ) : (
                           <Checkbox
@@ -253,7 +184,7 @@ export const DataTable = (props: Props) => {
                           />
                         )
                       ) : row[column] ? (
-                        getElipsis(row[column] as string, 35)
+                        getElipsis(row[column] as string, MAX_CHARS)
                       ) : (
                         ""
                       )}
