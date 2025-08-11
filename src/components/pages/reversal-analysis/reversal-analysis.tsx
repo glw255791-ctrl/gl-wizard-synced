@@ -121,6 +121,8 @@ export function ReversalAnalysis() {
           coaHeaderOptions={coaHeaderOptions}
           title="Analyzed data"
           valueKey={selectedHeaders.glHeaders.value}
+          basicTableData={tableData}
+          basicTableHeader={tableHeader}
           disabled={!isAnalyzedStep}
         />
       </Stack>
