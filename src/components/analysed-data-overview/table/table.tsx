@@ -1,11 +1,23 @@
-import { Stack, Typography, Checkbox, Button, Tooltip } from "@mui/material";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Stack,
+  Typography,
+  Checkbox,
+  Button,
+  Tooltip,
+  IconButton,
+} from "@mui/material";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "react-virtualized/styles.css";
 import DownloadIcon from "@mui/icons-material/Download";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelRounded from "@mui/icons-material/CancelRounded";
-import { AnyType, exportTableToExcel, getElipsis } from "./functions";
-
+import {
+  AnyType,
+  exportBasicTableToExcel,
+  exportTableToExcel,
+  getElipsis,
+} from "./functions";
+import PushPinIcon from "@mui/icons-material/PushPin";
 import {
   getStylesBasedOnColumn,
   getStylesBasedOnHeader,
@@ -13,6 +25,7 @@ import {
 } from "./table-style";
 import { AutoSizer, MultiGrid } from "react-virtualized";
 import { colors } from "../../../assets/colors";
+import { TableHeader } from "../../composed/basic-table/basic-table";
 
 const COLUMN_WIDTH = 250;
 const ROW_HEIGHT = 24;
@@ -31,11 +44,14 @@ interface Props {
   valueKey: string;
   selectedRow?: string;
   id?: string;
+  transitionFunc: React.TransitionStartFunction;
   setSelectedRow?: React.Dispatch<React.SetStateAction<string>>;
   selectedFilter: Filters;
   setDataDisplayHeader: React.Dispatch<
     React.SetStateAction<Record<string, AnyType>[]>
   >;
+  basicTableHeader: TableHeader[];
+  basicTableData: Record<string, string>[];
 }
 
 interface Filters {
@@ -51,6 +67,9 @@ export const DataTable = (props: Props) => {
     selectedRow,
     overviewTableData,
     valueKey,
+    basicTableData,
+    basicTableHeader,
+    transitionFunc,
     id,
     setSelectedRow,
     setDataDisplayHeader,
@@ -94,6 +113,98 @@ export const DataTable = (props: Props) => {
     [sortedDataDisplayHeader]
   );
 
+  const multiGridRef = useRef<MultiGrid>(null);
+
+  // Force MultiGrid to repaint when data changes
+  useEffect(() => {
+    if (multiGridRef.current) {
+      multiGridRef.current.recomputeGridSize();
+      multiGridRef.current.forceUpdateGrids();
+    }
+  }, [sortedDataDisplayHeader, tableRows]);
+
+  const renderIncludeRow = (row: Record<string, AnyType>, column: string) =>
+    column === TOTAL ? (
+      <Typography style={styles.totalText}>Total</Typography>
+    ) : column === SIDE_HEADER ? (
+      "Included in calculation"
+    ) : (
+      renderIncludeCheckbox(row, column)
+    );
+
+  const renderIncludeCheckbox = (
+    row: Record<string, AnyType>,
+    column: string
+  ) => (
+    <Checkbox
+      disableRipple
+      disabled={!!setSelectedRow}
+      checkedIcon={<CheckCircleIcon style={styles.checkedIcon} />}
+      icon={<CancelRounded style={styles.uncheckedIcon} />}
+      value={row[column]}
+      checked={Boolean(row[column])}
+      onChange={(_, checked) =>
+        transitionFunc(() =>
+          setDataDisplayHeader((prev) =>
+            prev.map((header) => ({
+              ...header,
+              active: header[mappingValue] === column ? checked : header.active,
+            }))
+          )
+        )
+      }
+    />
+  );
+
+  const handleDownloadByRow = (value: string) => {
+    const filteredValues = basicTableData.filter(
+      (item) => (item.result as unknown as string[]).join("/") === value
+    );
+    exportBasicTableToExcel(basicTableHeader, filteredValues);
+  };
+
+  const renderCellText = (row: Record<string, AnyType>, column: string) => {
+    const isHeader = row.header;
+    const val = row[column]
+      ? getElipsis(row[column] as string, MAX_CHARS - 5)
+      : "";
+    if (isHeader || column !== SIDE_HEADER) return <Stack>{val}</Stack>;
+    else
+      return (
+        <Stack style={styles.rowLabelWrapper}>
+          {val}
+          <Stack style={styles.rowLabelCell}>
+            {setSelectedRow && (
+              <IconButton
+                style={styles.iconBtn}
+                onClick={() => {
+                  const val = row.sideHeader as string;
+                  if (!row.header)
+                    setSelectedRow?.((prev) => (prev === val ? "" : val));
+                }}
+              >
+                <PushPinIcon
+                  style={{
+                    color:
+                      selectedRow === row.sideHeader
+                        ? "gray"
+                        : colors.fairyTale,
+                    fontSize: 16,
+                  }}
+                />
+              </IconButton>
+            )}
+            <IconButton
+              style={styles.iconBtn}
+              onClick={() => handleDownloadByRow(val)}
+            >
+              <DownloadIcon style={styles.cellDownloadBtn} />
+            </IconButton>
+          </Stack>
+        </Stack>
+      );
+  };
+
   return (
     <Stack id={id} style={styles.tableScrollableWrapper}>
       <Stack style={styles.tableHeader}>
@@ -107,10 +218,13 @@ export const DataTable = (props: Props) => {
           Download
         </Button>
       </Stack>
-      <AutoSizer style={styles.autosizerWrapper}>
+      <AutoSizer
+        style={{ ...styles.autosizerWrapper, height: tableRows.length * 25 }}
+      >
         {({ width, height }) => (
           <MultiGrid
-            key={selectedRow}
+            key={`${selectedRow}`}
+            ref={multiGridRef}
             fixedColumnCount={1}
             fixedRowCount={fixedRowCount}
             columnWidth={COLUMN_WIDTH}
@@ -135,9 +249,6 @@ export const DataTable = (props: Props) => {
                     }
                   >
                     <Stack
-                      onDoubleClick={() => {
-                        setSelectedRow?.(row.sideHeader as string);
-                      }}
                       style={
                         {
                           ...styles.cellBaseStyle,
@@ -154,40 +265,9 @@ export const DataTable = (props: Props) => {
                         } as React.CSSProperties
                       }
                     >
-                      {row.sideHeader === INCLUDE ? (
-                        column === TOTAL ? (
-                          <Typography style={styles.totalText}>
-                            Total
-                          </Typography>
-                        ) : column === SIDE_HEADER ? (
-                          "-"
-                        ) : (
-                          <Checkbox
-                            disabled={!!setSelectedRow}
-                            checkedIcon={
-                              <CheckCircleIcon style={{ color: "green" }} />
-                            }
-                            icon={<CancelRounded style={{ color: "red" }} />}
-                            value={row[column]}
-                            checked={Boolean(row[column])}
-                            onChange={(_, checked) =>
-                              setDataDisplayHeader((prev) =>
-                                prev.map((header) => ({
-                                  ...header,
-                                  active:
-                                    header[mappingValue] === column
-                                      ? checked
-                                      : header.active,
-                                }))
-                              )
-                            }
-                          />
-                        )
-                      ) : row[column] ? (
-                        getElipsis(row[column] as string, MAX_CHARS)
-                      ) : (
-                        ""
-                      )}
+                      {row.sideHeader === INCLUDE
+                        ? renderIncludeRow(row, column)
+                        : renderCellText(row, column)}
                     </Stack>
                   </Tooltip>
                 </div>

@@ -9,11 +9,12 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { styles } from "./analysed-data-overview.style";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 
 import { Dropdown, DropdownItem } from "../ui-kit/dropdown/dropdown";
 import { DataTable } from "./table/table";
 import { Loader } from "../ui-kit/loader-overlay/loader-overlay";
+import { TableHeader } from "../composed/basic-table/basic-table";
 
 type AnyType = string | number | boolean | object;
 
@@ -28,6 +29,8 @@ interface Props {
   setDataDisplayHeader: React.Dispatch<
     React.SetStateAction<Record<string, AnyType>[]>
   >;
+  basicTableHeader: TableHeader[];
+  basicTableData: Record<string, string>[];
 }
 
 interface Filters {
@@ -44,6 +47,8 @@ export function DataOverview(props: Props) {
     sortedDataDisplayHeader,
     disabled,
     coaHeaderOptions,
+    basicTableData,
+    basicTableHeader,
     setDataDisplayHeader,
   } = props;
 
@@ -68,20 +73,28 @@ export function DataOverview(props: Props) {
   }, [selectedFilter.header, sortedDataDisplayHeader]);
 
   const [loading, setLoading] = useState(false);
+  const [transition, transitionFunc] = useTransition();
 
   useEffect(() => {
+    const commonProps = {
+      transitionFunc,
+      mappingValue,
+      selectedFilter,
+      basicTableData,
+      basicTableHeader,
+      setDataDisplayHeader,
+      valueKey,
+    };
+
     if (selectedFilter.header === "all") {
       setLoading(true);
       setLazyTables([
         <DataTable
           key="all"
           title="All items"
-          mappingValue={mappingValue}
           overviewTableData={overviewTableData}
-          selectedFilter={selectedFilter}
-          setDataDisplayHeader={setDataDisplayHeader}
           sortedDataDisplayHeader={sortedDataDisplayHeader}
-          valueKey={valueKey}
+          {...commonProps}
         />,
       ]);
       setLoading(false);
@@ -128,14 +141,11 @@ export function DataOverview(props: Props) {
           key={value}
           id={value}
           title={value}
-          mappingValue={mappingValue}
+          overviewTableData={filteredOverviewData}
+          sortedDataDisplayHeader={filteredHeader}
           selectedRow={selectedRow}
           setSelectedRow={setSelectedRow}
-          overviewTableData={filteredOverviewData}
-          selectedFilter={selectedFilter}
-          setDataDisplayHeader={setDataDisplayHeader}
-          sortedDataDisplayHeader={filteredHeader}
-          valueKey={valueKey}
+          {...commonProps}
         />
       );
 
@@ -155,7 +165,23 @@ export function DataOverview(props: Props) {
     mappingValue,
     valueKey,
     setDataDisplayHeader,
+    basicTableData,
+    basicTableHeader,
   ]);
+
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const toggleVisibility = () => {
+      if (window.scrollY > 1000) {
+        setVisible(true);
+      } else {
+        setVisible(false);
+      }
+    };
+    window.addEventListener("scroll", toggleVisibility);
+    return () => window.removeEventListener("scroll", toggleVisibility);
+  }, []);
 
   return (
     <Accordion
@@ -165,15 +191,20 @@ export function DataOverview(props: Props) {
       }}
     >
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Loader loadingStatus={loading} />
         <Stack style={styles.summaryWrapper}>
           <Typography>{title}</Typography>
         </Stack>
       </AccordionSummary>
 
       <AccordionDetails>
+        <Loader loadingStatus={loading || transition} />
+        {visible && visible && (
+          <Button variant="contained" href="#top" style={styles.topBtn}>
+            Back to top
+          </Button>
+        )}
         <Stack style={styles.accordionContent}>
-          <Stack style={styles.accordionHeader}>
+          <Stack style={styles.accordionHeader} id="top">
             <Stack style={styles.dropdownWrapper}>
               <Dropdown
                 label="Filter header"

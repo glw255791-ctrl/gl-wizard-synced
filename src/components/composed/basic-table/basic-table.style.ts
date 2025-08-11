@@ -1,6 +1,10 @@
 import { CommonProps } from "@mui/material/OverridableComponent";
 import { colors } from "../../../assets/colors";
 
+const VALUE = "value";
+const RESULT = "result";
+const ACCOUNT = "account";
+
 export const styles: Record<string, CommonProps["style"]> = {
   root: {
     borderRadius: 8,
@@ -26,61 +30,58 @@ export const styles: Record<string, CommonProps["style"]> = {
     fontSize: 20,
     fontWeight: "bold",
   },
-  tableCell: {
-    flex: 1,
-    borderRight: `1px solid ${colors.vistaBlue}`,
-    flexDirection: "row",
-    borderBottom: `1px solid ${colors.vistaBlue}`,
-    backgroundColor: "white",
-    display: "flex",
-    textAlign: "start",
-    justifyContent: "flex-start",
-    alignItems: "center",
-    padding: 4,
+  cellBaseStyle: {
+    padding: "0 5px",
+    borderRightStyle: "solid",
+    wordWrap: "break-word",
+    overflowWrap: "break-word",
+    whiteSpace: "normal",
+    justifyContent: "center",
+    borderBottomStyle: "solid",
+    fontSize: 12,
+    borderRightWidth: 1,
+    borderRightColor: colors.honeydew,
+    fontWeight: "initial",
+    textAlign: "left",
+    borderBottomWidth: 1,
+    borderBottomColor: colors.honeydew,
+    height: 23,
   },
-  resultCell: {
-    padding: 4,
-    flex: 1,
-    borderBottom: `1px solid ${colors.vistaBlue}`,
-    borderRight: `1px solid ${colors.vistaBlue}`,
-    display: "flex",
-    backgroundColor: colors.powderBlue,
-    alignItems: "center",
-    justifyContent: "flex-end",
-    fontWeight: "bold",
-    width: 200,
-  },
-  valueCell: {
-    flex: 1,
-    borderRight: `1px solid ${colors.vistaBlue}`,
-    flexDirection: "row",
-    borderBottom: `1px solid ${colors.vistaBlue}`,
-    display: "flex",
-    textAlign: "start",
-    justifyContent: "flex-end",
-    alignItems: "center",
-    padding: 4,
-    backgroundColor: "white",
-  },
-  accountCell: {
-    flex: 1,
-    borderRight: `1px solid ${colors.vistaBlue}`,
-    flexDirection: "row",
-    borderBottom: `1px solid ${colors.vistaBlue}`,
-    display: "flex",
-    textAlign: "start",
-    fontWeight: "bold",
-    alignItems: "center",
-    padding: 4,
-    backgroundColor: "white",
-  },
-
   headerCell: {
+    borderRightStyle: "solid",
+    borderBottomStyle: "solid",
     flex: 1,
     textAlign: "left",
+    padding: "0 5px",
+    borderRightWidth: 1,
+    borderRightColor: colors.honeydew,
+    fontWeight: "bold",
+    justifyContent: "center",
+    backgroundColor: colors.powderBlue,
+    borderBottomColor: "gray",
+    borderBottomWidth: 2,
+    height: 22,
   },
   autoSizer: {
     width: "100%",
     height: 600,
   },
+  headerWrapper: { margin: 0, height: 24 },
+  columnStyle: { margin: 0 },
+};
+
+export const getCellStyleByHeader = (key: string): React.CSSProperties => {
+  switch (key) {
+    case VALUE:
+      return { textAlign: "right" };
+    case RESULT:
+      return {
+        fontWeight: "bold",
+        backgroundColor: colors.powderBlue,
+      };
+    case ACCOUNT:
+      return { fontWeight: "bold" };
+    default:
+      return {};
+  }
 };

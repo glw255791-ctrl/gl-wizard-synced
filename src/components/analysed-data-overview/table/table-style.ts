@@ -121,7 +121,8 @@ export const styles: Record<string, CommonProps["style"]> = {
     backgroundColor: colors.fairyTale,
   },
   excelBtn: {
-    backgroundClip: colors.excelBtn,
+    borderRadius: 8,
+    backgroundColor: colors.excelBtn,
   },
   cellBaseStyle: {
     padding: "0 5px",
@@ -140,7 +141,17 @@ export const styles: Record<string, CommonProps["style"]> = {
   autosizerWrapper: {
     width: "100%",
     overflow: "auto",
-    height: 600,
+    maxHeight: 600,
+  },
+  checkedIcon: { color: "green", fontSize: 17 },
+  uncheckedIcon: { color: "red", fontSize: 17 },
+  rowLabelCell: { flexDirection: "row", gap: 5, alignItems: "center" },
+  cellDownloadBtn: { color: colors.excelBtn, fontSize: 16 },
+  iconBtn: { padding: 0 },
+  rowLabelWrapper: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
 };
 

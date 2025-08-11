@@ -126,6 +126,8 @@ export function GeneralAnalysis() {
           title="Analyzed data"
           valueKey={selectedHeaders.glHeaders.value}
           disabled={!isAnalyzedStep}
+          basicTableData={tableData}
+          basicTableHeader={tableHeader}
         />
       </Stack>
     </>

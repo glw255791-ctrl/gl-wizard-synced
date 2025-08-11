@@ -51,4 +51,12 @@ export const styles: Record<string, CommonProps["style"]> = {
     backgroundColor: colors.vistaBlue,
     color: "white",
   },
+  topBtn: {
+    position: "fixed",
+    bottom: "20px",
+    right: "20px",
+    borderRadius: 8,
+    backgroundColor: colors.vistaBlue,
+    zIndex: 100,
+  },
 };
