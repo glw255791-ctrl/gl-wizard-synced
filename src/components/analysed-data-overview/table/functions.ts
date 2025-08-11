@@ -71,7 +71,8 @@ export const exportTableToExcel = async (
 
 export const exportBasicTableToExcel = async (
   header: TableHeader[],
-  data: Record<string, string>[]
+  data: Record<string, string>[],
+  title: string
 ) => {
   const workbook = new Workbook();
   const worksheet = workbook.addWorksheet("Sheet1");
@@ -121,5 +122,5 @@ export const exportBasicTableToExcel = async (
   const blob = new Blob([buffer], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
-  saveAs(blob, "table_data.xlsx");
+  saveAs(blob, `${title}.xlsx`);
 };

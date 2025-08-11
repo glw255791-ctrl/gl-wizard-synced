@@ -160,7 +160,7 @@ export const DataTable = (props: Props) => {
     const filteredValues = basicTableData.filter(
       (item) => (item.result as unknown as string[]).join("/") === value
     );
-    exportBasicTableToExcel(basicTableHeader, filteredValues);
+    exportBasicTableToExcel(basicTableHeader, filteredValues, value);
   };
 
   const renderCellText = (row: Record<string, AnyType>, column: string) => {
