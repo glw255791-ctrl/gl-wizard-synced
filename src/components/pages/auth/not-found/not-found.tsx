@@ -12,7 +12,7 @@ export function NotFoundPage() {
           <Typography style={styles.label}>GL Wizard</Typography>
         </Stack>
         <Typography style={styles.message}>
-          The page you requested does not exists.
+          The page you requested does not exist.
         </Typography>
         <Button style={styles.button} onClick={() => navigate(-1)}>
           Back

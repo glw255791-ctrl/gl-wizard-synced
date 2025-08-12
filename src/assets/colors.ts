@@ -7,4 +7,7 @@ export const colors = {
   action: "#204795",
   excelHighligh: "#CCCCCC",
   excelBtn: "#1D6F42",
+  darker: "#4F6367",
+  lighter: "#E5F1F1",
+  medium: "#7A9E9F",
 };

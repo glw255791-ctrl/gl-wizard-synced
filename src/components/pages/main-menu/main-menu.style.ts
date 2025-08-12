@@ -1,23 +1,24 @@
-import { CommonProps } from "@mui/material/OverridableComponent";
-
-export const styles: Record<string, CommonProps["style"]> = {
+import React from "react";
+import { colors } from "../../../assets/colors";
+export const styles: Record<string, React.CSSProperties> = {
   root: {
-    width: "calc(100vw - 6rem)",
-    minHeight: "calc(100vh - 4rem)",
+    flex: 1,
+    height: "calc(100vh - 4rem)",
     justifyContent: "flex-start",
     gap: "1rem",
+    padding: "1rem",
   },
   button: {
     width: "100%",
-    backgroundColor: "white",
     height: "15rem",
     borderRadius: 8,
     fontSize: 20,
     fontWeight: "bold",
     color: "white",
+    backgroundColor: colors.lighter,
   },
   image: {
-    width: 150,
+    width: 30,
     height: "auto",
   },
   label: {

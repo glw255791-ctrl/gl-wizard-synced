@@ -4,6 +4,7 @@ import { colors } from "../../assets/colors";
 export const styles: Record<string, CommonProps["style"]> = {
   root: {},
   accordionRoot: {
+    backgroundColor: colors.lighter,
     borderRadius: 8,
   },
   disabled: {
@@ -48,7 +49,7 @@ export const styles: Record<string, CommonProps["style"]> = {
   optionsBtn: {
     padding: 2,
     fontSize: 11,
-    backgroundColor: colors.vistaBlue,
+    backgroundColor: colors.medium,
     color: "white",
   },
   topBtn: {
@@ -56,7 +57,7 @@ export const styles: Record<string, CommonProps["style"]> = {
     bottom: "20px",
     right: "20px",
     borderRadius: 8,
-    backgroundColor: colors.vistaBlue,
+    backgroundColor: colors.action,
     zIndex: 100,
   },
 };

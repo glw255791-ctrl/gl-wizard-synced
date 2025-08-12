@@ -1,6 +1,6 @@
-import { CommonProps } from "@mui/material/OverridableComponent";
-
-export const styles: Record<string, CommonProps["style"]> = {
+import { colors } from "../../../assets/colors";
+import React from "react";
+export const styles: Record<string, React.CSSProperties> = {
   headerWrapper: {
     flexDirection: "row",
     alignItems: "center",
@@ -13,12 +13,13 @@ export const styles: Record<string, CommonProps["style"]> = {
     flex: 1,
   },
   card: {
-    backgroundColor: "white",
+    backgroundColor: "#4F6367",
     borderRadius: 8,
     padding: 16,
   },
   title: {
     fontWeight: "bold",
+    color: colors.lighter,
   },
   name: {
     fontWeight: "bold",

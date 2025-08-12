@@ -153,7 +153,7 @@ export function useUserManagementModel() {
     },
     {
       key: "deactivate_licence",
-      label: "Deactive licence",
+      label: "Deactivate licence",
       width: 150,
       align: "center",
     },

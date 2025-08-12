@@ -22,11 +22,13 @@ export function Loader(props: Props) {
           flexDirection: "row",
           alignItems: "center",
           gap: 15,
-          padding: 15,
+          padding: "15px 20px",
         }}
       >
-        <Typography>Analysing, this may take a while...</Typography>
-        <CircularProgress color="inherit" />
+        <Typography style={{ color: colors.medium }}>
+          Analysing, this may take a while...
+        </Typography>
+        <CircularProgress style={{ color: colors.medium }} />
       </Stack>
     </Backdrop>
   );

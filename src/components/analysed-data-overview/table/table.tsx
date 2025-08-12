@@ -186,9 +186,7 @@ export const DataTable = (props: Props) => {
                 <PushPinIcon
                   style={{
                     color:
-                      selectedRow === row.sideHeader
-                        ? "gray"
-                        : colors.fairyTale,
+                      selectedRow === row.sideHeader ? "white" : colors.medium,
                     fontSize: 16,
                   }}
                 />
@@ -219,7 +217,11 @@ export const DataTable = (props: Props) => {
         </Button>
       </Stack>
       <AutoSizer
-        style={{ ...styles.autosizerWrapper, height: tableRows.length * 25 }}
+        style={{
+          ...styles.autosizerWrapper,
+          height: tableRows.length * 24 + 17,
+          backgroundColor: colors.medium,
+        }}
       >
         {({ width, height }) => (
           <MultiGrid

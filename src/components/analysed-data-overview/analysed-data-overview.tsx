@@ -192,7 +192,7 @@ export function DataOverview(props: Props) {
     >
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Stack style={styles.summaryWrapper}>
-          <Typography>{title}</Typography>
+          <Typography style={{ fontWeight: "bold" }}>{title}</Typography>
         </Stack>
       </AccordionSummary>
 

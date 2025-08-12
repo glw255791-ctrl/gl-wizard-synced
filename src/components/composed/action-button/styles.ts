@@ -10,16 +10,12 @@ const FULL_HEIGHT_OFFSET = "calc(100% - 2rem)";
 
 export const styles: Record<string, StyleObject> = {
   card: {
-    backgroundColor: "white",
+    backgroundColor: colors.lighter,
     borderRadius: BORDER_RADIUS,
     padding: CARD_PADDING,
     height: FULL_HEIGHT_OFFSET,
   },
   disabledCard: {
-    backgroundColor: "white",
-    borderRadius: BORDER_RADIUS,
-    padding: CARD_PADDING,
-    height: FULL_HEIGHT_OFFSET,
     opacity: DISABLED_OPACITY,
     pointerEvents: "none",
   },
@@ -36,8 +32,9 @@ export const styles: Record<string, StyleObject> = {
     alignItems: "center",
   },
   button: {
-    borderRadius: BORDER_RADIUS,
-    width: "100%",
+    borderRadius: 2,
+    height: 36,
+    width: 200,
     backgroundColor: colors.action,
   },
 };

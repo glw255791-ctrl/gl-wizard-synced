@@ -7,7 +7,9 @@ export const styles: Record<string, CommonProps["style"]> = {
   tableScrollableWrapper: {
     minWidth: 1200,
     borderRadius: 8,
-    border: "1px solid #B8E0D2",
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderColor: colors.medium,
   },
   tableContainer: {
     borderBottomLeftRadius: 8,
@@ -22,38 +24,10 @@ export const styles: Record<string, CommonProps["style"]> = {
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
   },
-  headerSideCell: {
-    fontWeight: "bold",
-    width: 150,
-    minWidth: 150,
-    maxWidth: 150,
-    padding: "2px 4px",
-    flex: 1,
-    fontSize: 10,
-    borderBottom: `1px solid ${colors.powderBlue}`,
-    borderRight: `1px solid ${colors.powderBlue}`,
-    display: "flex",
-    backgroundColor: colors.vistaBlue,
-    alignItems: "center",
-  },
   tableRow: {
     display: "flex",
     flexDirection: "row",
     height: 30,
-  },
-  totalCell: {
-    width: 150,
-    minWidth: 150,
-    maxWidth: 150,
-    borderRight: `1px solid ${colors.powderBlue}`,
-    flexDirection: "row",
-    borderBottom: `1px solid ${colors.powderBlue}`,
-    display: "flex",
-    textAlign: "start",
-    alignItems: "center",
-    fontWeight: "bold",
-    padding: 4,
-    backgroundColor: colors.vistaBlue,
   },
   headerTableCell: {
     width: 150,
@@ -62,8 +36,8 @@ export const styles: Record<string, CommonProps["style"]> = {
     padding: "2px 4px",
     flex: 1,
     fontSize: 10,
-    borderBottom: `1px solid ${colors.vistaBlue}`,
-    borderRight: `1px solid ${colors.vistaBlue}`,
+    borderBottom: `1px solid ${colors.medium}`,
+    borderRight: `1px solid ${colors.medium}`,
     display: "flex",
     backgroundColor: colors.powderBlue,
     alignItems: "center",
@@ -78,40 +52,29 @@ export const styles: Record<string, CommonProps["style"]> = {
     maxWidth: 150,
     padding: "2px 4px",
     flex: 1,
-    borderBottom: `1px solid ${colors.vistaBlue}`,
-    borderRight: `1px solid ${colors.vistaBlue}`,
+    borderBottom: `1px solid ${colors.medium}`,
+    borderRight: `1px solid ${colors.medium}`,
     backgroundColor: colors.powderBlue,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     fontSize: 16,
   },
-  tableCell: {
-    width: 150,
-    minWidth: 150,
-    maxWidth: 150,
-    borderRight: `1px solid ${colors.vistaBlue}`,
-    flexDirection: "row",
-    borderBottom: `1px solid ${colors.vistaBlue}`,
-    display: "flex",
-    textAlign: "start",
-    justifyContent: "flex-start",
-    alignItems: "center",
-    padding: 4,
-  },
   tableRowOverview: {
     display: "flex",
   },
   tableHeader: {
-    width: "calc(100vw - 10rem)",
+    width: "calc(100vw - 161px)",
     padding: "1rem",
-    backgroundColor: `${colors.vistaBlue}`,
+    backgroundColor: colors.medium,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottom: `2px solid ${colors.tifanyBlue}`,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
+    borderTopLeftRadius: 7,
+    borderTopRightRadius: 7,
+    borderBottomWidth: 1,
+    borderBottomStyle: "solid",
+    borderBottomColor: colors.lighter,
   },
   tableTitle: {
     fontSize: 20,
@@ -121,8 +84,9 @@ export const styles: Record<string, CommonProps["style"]> = {
     backgroundColor: colors.fairyTale,
   },
   excelBtn: {
+    width: 200,
     borderRadius: 8,
-    backgroundColor: colors.excelBtn,
+    backgroundColor: colors.action,
   },
   cellBaseStyle: {
     padding: "0 5px",
@@ -142,11 +106,13 @@ export const styles: Record<string, CommonProps["style"]> = {
     width: "100%",
     overflow: "auto",
     maxHeight: 600,
+    borderBottomRightRadius: 7,
+    borderBottomLeftRadius: 7,
   },
   checkedIcon: { color: "green", fontSize: 17 },
   uncheckedIcon: { color: "red", fontSize: 17 },
   rowLabelCell: { flexDirection: "row", gap: 5, alignItems: "center" },
-  cellDownloadBtn: { color: colors.excelBtn, fontSize: 16 },
+  cellDownloadBtn: { color: colors.action, fontSize: 16 },
   iconBtn: { padding: 0 },
   rowLabelWrapper: {
     flexDirection: "row",
@@ -173,13 +139,18 @@ export const getStylesBasedOnColumn = (
   return {
     backgroundColor: isSideHeader
       ? isSelectedRow
-        ? colors.fairyTale
-        : colors.powderBlue
-      : ((isTotalColumn ? colors.powderBlue : row.bg) as string),
+        ? colors.medium
+        : colors.lighter
+      : ((isTotalColumn ? colors.lighter : row.bg) as string),
 
     borderRightWidth: isSideHeader ? 2 : 1,
-    borderRightColor: isSideHeader ? "gray" : colors.honeydew,
+    borderRightColor: isSideHeader ? colors.medium : colors.lighter,
+    borderLeftWidth: isTotalColumn ? 2 : 0,
+    borderLeftStyle: "solid",
+    borderLeftColor: colors.medium,
     fontWeight: isBoldRow ? "bold" : "initial",
+    borderBottomStyle: "solid",
+    borderBottomColor: colors.medium,
     textAlign: isSideHeader ? "left" : "center",
   };
 };
@@ -193,7 +164,7 @@ export const getStylesBasedOnHeader = (
 
   return {
     borderBottomWidth: isLastRow ? 2 : 1,
-    borderBottomColor: isLastRow ? "gray" : colors.honeydew,
+    borderBottomColor: isLastRow ? colors.medium : colors.lighter,
     height: isLastRow ? 22 : 23,
   };
 };

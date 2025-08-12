@@ -8,23 +8,24 @@ const ACCOUNT = "account";
 export const styles: Record<string, CommonProps["style"]> = {
   root: {
     borderRadius: 8,
-    border: `1px solid ${colors.vistaBlue}`,
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderColor: colors.medium,
   },
   tableHeader: {
-    width: "calc(100vw - 10rem)",
+    width: "calc(100vw - 160px)",
     padding: "1rem",
-    backgroundColor: colors.vistaBlue,
+    backgroundColor: colors.medium,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottom: `2px solid ${colors.tifanyBlue}`,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
+    borderTopLeftRadius: 7,
+    borderTopRightRadius: 7,
   },
   downloadBtn: {
     borderRadius: 8,
     width: 200,
-    backgroundColor: "#1D6F42",
+    backgroundColor: colors.action,
   },
   tableTitle: {
     fontSize: 20,
@@ -54,20 +55,24 @@ export const styles: Record<string, CommonProps["style"]> = {
     textAlign: "left",
     padding: "0 5px",
     borderRightWidth: 1,
-    borderRightColor: colors.honeydew,
+    borderRightColor: colors.lighter,
     fontWeight: "bold",
     justifyContent: "center",
-    backgroundColor: colors.powderBlue,
-    borderBottomColor: "gray",
-    borderBottomWidth: 2,
+    backgroundColor: colors.medium,
+    borderTopWidth: 1,
+    borderTopStyle: "solid",
+    borderTopColor: colors.lighter,
     height: 22,
   },
   autoSizer: {
     width: "100%",
     height: 600,
+    backgroundColor: colors.medium,
+    borderBottomLeftRadius: 7,
+    borderBottomRightRadius: 7,
   },
-  headerWrapper: { margin: 0, height: 24 },
-  columnStyle: { margin: 0 },
+  headerWrapper: { margin: 0, height: 24, marginRight: 0.5 },
+  columnStyle: { margin: 0, backgroundColor: "white" },
 };
 
 export const getCellStyleByHeader = (key: string): React.CSSProperties => {
@@ -77,7 +82,7 @@ export const getCellStyleByHeader = (key: string): React.CSSProperties => {
     case RESULT:
       return {
         fontWeight: "bold",
-        backgroundColor: colors.powderBlue,
+        backgroundColor: colors.lighter,
       };
     case ACCOUNT:
       return { fontWeight: "bold" };

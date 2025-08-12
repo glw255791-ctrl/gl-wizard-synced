@@ -22,7 +22,7 @@ self.onmessage = function (e) {
           .map((key, index) => [key, sortedDataDisplayHeader[index][item]])
       ),
       total: "",
-      bg: colors.powderBlue,
+      bg: colors.lighter,
       header: true,
     })),
 
@@ -70,7 +70,7 @@ self.onmessage = function (e) {
             return [key, sum.toFixed(2)];
           })
       ),
-      bg: colors.powderBlue,
+      bg: colors.lighter,
       header: true,
     },
   ];

@@ -5,6 +5,7 @@ import {
   MenuItem,
   SelectChangeEvent,
 } from "@mui/material";
+import { colors } from "../../../assets/colors";
 
 export interface DropdownItem {
   title: string;
@@ -23,14 +24,24 @@ export function Dropdown(props: Props) {
 
   return (
     <Stack>
-      <InputLabel style={{ textAlign: "left", fontSize: 14 }}>
+      <InputLabel
+        style={{ textAlign: "left", fontSize: 14, color: colors.darker }}
+      >
         {label}
       </InputLabel>
       <Select
-        style={{ height: 38, borderRadius: 8 }}
+        style={{
+          height: 38,
+          borderRadius: 8,
+          backgroundColor: "white",
+          color: colors.darker,
+        }}
         sx={{
           "& .MuiSelect-select": {
             textAlign: "left",
+          },
+          "& .MuiOutlinedInput-notchedOutline": {
+            borderColor: colors.darker,
           },
         }}
         MenuProps={{

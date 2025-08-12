@@ -1,16 +1,11 @@
 import { useNavigate } from "react-router";
 import { styles } from "./header-style";
-import {
-  Card,
-  Stack,
-  Breadcrumbs,
-  Typography,
-  IconButton,
-} from "@mui/material";
+import { Stack, Breadcrumbs, Typography, IconButton } from "@mui/material";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useEffect, useState } from "react";
+import { colors } from "../../../assets/colors";
 // import { supabase } from "../../../api/api";
 interface Props {
   title?: string;
@@ -50,7 +45,7 @@ export const Header = (props: Props) => {
   }, []);
 
   return (
-    <Card style={styles.card}>
+    <Stack style={styles.card}>
       <Stack style={styles.headerWrapper}>
         <Stack
           style={{
@@ -60,30 +55,41 @@ export const Header = (props: Props) => {
           }}
         >
           {title && (
-            <IconButton onClick={() => navigate("/")}>
+            <IconButton
+              style={{ color: colors.lighter }}
+              onClick={() => navigate("/")}
+            >
               <ArrowBackIcon />
             </IconButton>
           )}
           {onPressResetBtn && (
-            <IconButton onClick={onPressResetBtn}>
+            <IconButton
+              style={{ color: colors.lighter }}
+              onClick={onPressResetBtn}
+            >
               <RestartAltIcon />
             </IconButton>
           )}
         </Stack>
 
         <Breadcrumbs
-          style={{ flex: 1, justifyContent: "center", display: "flex" }}
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            display: "flex",
+            color: colors.lighter,
+          }}
         >
           <Typography style={title ? {} : styles.title}>GL Wizard</Typography>
           {title && <Typography style={styles.title}>{title}</Typography>}
         </Breadcrumbs>
         <Stack style={styles.headerBtnsWrapper}>
           <Typography style={styles.name}>{user}</Typography>
-          <IconButton onClick={onLogout}>
+          <IconButton style={{ color: colors.lighter }} onClick={onLogout}>
             <LogoutIcon />
           </IconButton>
         </Stack>
       </Stack>
-    </Card>
+    </Stack>
   );
 };

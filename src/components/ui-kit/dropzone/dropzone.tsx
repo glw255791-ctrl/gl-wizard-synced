@@ -15,7 +15,12 @@ export function FileDropzone(props: Props) {
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
   return (
-    <Card style={isDisabled ? styles.disabledCard : styles.card}>
+    <Card
+      style={{
+        ...styles.card,
+        ...(isDisabled ? (styles.disabledCard as React.CSSProperties) : {}),
+      }}
+    >
       <Grid2 container spacing={2} height="100%">
         <Grid2 size={6}>
           <Stack

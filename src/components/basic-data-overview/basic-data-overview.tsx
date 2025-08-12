@@ -27,7 +27,7 @@ export const BasicDataOverview = (props: Props) => {
       }}
     >
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography>{title}</Typography>
+        <Typography style={{ fontWeight: "bold" }}>{title}</Typography>
       </AccordionSummary>
       <AccordionDetails>
         <Stack>

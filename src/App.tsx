@@ -24,7 +24,6 @@ function App() {
     <>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Routes>
-          {/* <Route path="*" element={<Pages.NotFoundPage />} /> */}
           <Route path="/" element={<Navigate to={"/login"} />} />
           <Route element={<LoginPage />} path="/login" />
           <Route
@@ -55,6 +54,7 @@ function App() {
           {/* ANALYSIS */}
 
           <Route element={<UserManagementPage />} path="/user-management" />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </LocalizationProvider>
     </>

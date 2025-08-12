@@ -1,8 +1,9 @@
 import { CommonProps } from "@mui/material/OverridableComponent";
+import { colors } from "../../../assets/colors";
 
 export const styles: Record<string, CommonProps["style"]> = {
   root: {
-    backgroundColor: "white",
+    backgroundColor: colors.lighter,
     borderRadius: 8,
     padding: 16,
     height: "calc(100% - 2rem)",
