@@ -27,6 +27,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import SearchIcon from "@mui/icons-material/Search";
+import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 
 export function UserManagementPage() {
   const {
@@ -107,88 +108,91 @@ export function UserManagementPage() {
 
   return (
     <>
-      <Stack style={styles.root}>
-        <Header title="User management" />
-        <Stack style={styles.searchBlock}>
-          <Stack style={styles.searchField}>
-            <TextField
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              slotProps={{
-                input: {
-                  style: styles.searchInput,
-                  endAdornment:
-                    searchTerm !== "" ? (
-                      <IconButton
-                        style={{ padding: 0 }}
-                        onClick={() => setSearchTerm("")}
-                      >
-                        <CloseIcon />
-                      </IconButton>
-                    ) : (
-                      <SearchIcon />
-                    ),
-                },
-              }}
-            />
+      <PageWrapper>
+        <Stack style={styles.root}>
+          <Header title="User management" />
+          <Stack style={styles.searchBlock}>
+            <Stack style={styles.searchField}>
+              <TextField
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                slotProps={{
+                  input: {
+                    style: styles.searchInput,
+                    endAdornment:
+                      searchTerm !== "" ? (
+                        <IconButton
+                          style={{ padding: 0 }}
+                          onClick={() => setSearchTerm("")}
+                        >
+                          <CloseIcon />
+                        </IconButton>
+                      ) : (
+                        <SearchIcon />
+                      ),
+                  },
+                }}
+              />
+            </Stack>
+            <Button
+              variant="contained"
+              onClick={() =>
+                setModalProps({
+                  date: new Date(),
+                  email: "",
+                  id: "",
+                  modalAction: "INVITE",
+                })
+              }
+              style={styles.btn}
+            >
+              Invite user
+            </Button>
           </Stack>
-          <Button
-            variant="contained"
-            onClick={() =>
-              setModalProps({
-                date: new Date(),
-                email: "",
-                id: "",
-                modalAction: "INVITE",
-              })
-            }
-          >
-            Invite user
-          </Button>
-        </Stack>
-        <TableContainer component={Paper}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                {columns.map((column) => (
-                  <TableCell
-                    key={column.key}
-                    align={column.align}
-                    sx={{ ...styles.columnHeader, width: column.width }}
-                  >
-                    {column.label}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredUserData.length === 0 ? (
+          <TableContainer style={styles.table} component={Paper}>
+            <Table size="small">
+              <TableHead>
                 <TableRow>
-                  <TableCell colSpan={columns.length} align="center">
-                    <Typography variant="body2" color="textSecondary">
-                      No data available
-                    </Typography>
-                  </TableCell>
+                  {columns.map((column) => (
+                    <TableCell
+                      key={column.key}
+                      align={column.align}
+                      sx={{ ...styles.columnHeader, width: column.width }}
+                    >
+                      {column.label}
+                    </TableCell>
+                  ))}
                 </TableRow>
-              ) : (
-                filteredUserData.map((row, index) => (
-                  <TableRow key={index}>
-                    {columns.map((column) => (
-                      <TableCell
-                        key={column.key}
-                        align={column.align}
-                        sx={{ width: column.width }}
-                      >
-                        {renderCellContent(column.key, row)}
-                      </TableCell>
-                    ))}
+              </TableHead>
+              <TableBody>
+                {filteredUserData.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={columns.length} align="center">
+                      <Typography variant="body2" color="textSecondary">
+                        No data available
+                      </Typography>
+                    </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Stack>
+                ) : (
+                  filteredUserData.map((row, index) => (
+                    <TableRow key={index}>
+                      {columns.map((column) => (
+                        <TableCell
+                          key={column.key}
+                          align={column.align}
+                          sx={{ width: column.width }}
+                        >
+                          {renderCellContent(column.key, row)}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Stack>
+      </PageWrapper>
       <Modal open={!!modalProps}>
         <Stack style={styles.modalContent}>
           <Stack style={styles.modalInnerContent}>

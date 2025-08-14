@@ -1,8 +1,9 @@
 import { CommonProps } from "@mui/material/OverridableComponent";
+import { colors } from "../../../assets/colors";
 
 export const styles: Record<string, CommonProps["style"]> = {
   root: {
-    width: "calc(100vw - 6rem)",
+    width: "calc(100vw - 24rem)",
     minHeight: "calc(100vh - 4rem)",
     justifyContent: "flex-start",
     gap: "1rem",
@@ -64,7 +65,7 @@ export const styles: Record<string, CommonProps["style"]> = {
   searchBlock: {
     flex: 1,
     maxHeight: "60px",
-    backgroundColor: "white",
+    backgroundColor: colors.lighter,
     borderRadius: 8,
     alignItems: "center",
     flexDirection: "row",
@@ -76,9 +77,20 @@ export const styles: Record<string, CommonProps["style"]> = {
     flexDirection: "row",
     gap: 5,
     alignItems: "center",
+    backgroundColor: "white",
+    borderRadius: 8,
   },
   searchInput: {
     borderRadius: 8,
     height: 40,
+  },
+  btn: {
+    borderRadius: 8,
+    backgroundColor: colors.action,
+    width: 200,
+  },
+  table: {
+    backgroundColor: colors.lighter,
+    borderRadius: 8,
   },
 };

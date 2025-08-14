@@ -64,7 +64,7 @@ export const styles: Record<string, CommonProps["style"]> = {
     display: "flex",
   },
   tableHeader: {
-    width: "calc(100vw - 161px)",
+    width: "calc(100vw - 28rem)",
     padding: "1rem",
     backgroundColor: colors.medium,
     flexDirection: "row",

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router";
 import { styles } from "./header-style";
-import { Stack, Breadcrumbs, Typography, IconButton } from "@mui/material";
+import { Stack, Typography, IconButton } from "@mui/material";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -47,13 +47,7 @@ export const Header = (props: Props) => {
   return (
     <Stack style={styles.card}>
       <Stack style={styles.headerWrapper}>
-        <Stack
-          style={{
-            flexDirection: "row",
-            flex: 1,
-            justifyContent: "flex-start",
-          }}
-        >
+        <Stack style={styles.root}>
           {title && (
             <IconButton
               style={{ color: colors.lighter }}
@@ -72,17 +66,8 @@ export const Header = (props: Props) => {
           )}
         </Stack>
 
-        <Breadcrumbs
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            display: "flex",
-            color: colors.lighter,
-          }}
-        >
-          <Typography style={title ? {} : styles.title}>GL Wizard</Typography>
-          {title && <Typography style={styles.title}>{title}</Typography>}
-        </Breadcrumbs>
+        <Typography style={styles.title}>{title ?? "Main Menu"}</Typography>
+
         <Stack style={styles.headerBtnsWrapper}>
           <Typography style={styles.name}>{user}</Typography>
           <IconButton style={{ color: colors.lighter }} onClick={onLogout}>

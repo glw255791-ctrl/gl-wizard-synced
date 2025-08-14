@@ -13,7 +13,7 @@ export const styles: Record<string, CommonProps["style"]> = {
     borderColor: colors.medium,
   },
   tableHeader: {
-    width: "calc(100vw - 160px)",
+    width: "calc(100vw - 28rem + 1px)",
     padding: "1rem",
     backgroundColor: colors.medium,
     flexDirection: "row",

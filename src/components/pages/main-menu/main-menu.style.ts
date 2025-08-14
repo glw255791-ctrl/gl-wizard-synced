@@ -30,4 +30,9 @@ export const styles: Record<string, React.CSSProperties> = {
     justifyContent: "center",
     alignItems: "center",
   },
+  btnLabel: {
+    fontWeight: "bold",
+    color: colors.darker,
+    fontSize: "1.25rem",
+  },
 };

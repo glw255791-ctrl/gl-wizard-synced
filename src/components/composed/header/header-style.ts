@@ -20,10 +20,18 @@ export const styles: Record<string, React.CSSProperties> = {
   title: {
     fontWeight: "bold",
     color: colors.lighter,
+    fontSize: "1.25rem",
   },
+
   name: {
     fontWeight: "bold",
     paddingRight: "1rem",
     color: "gray",
+  },
+
+  root: {
+    flexDirection: "row",
+    flex: 1,
+    justifyContent: "flex-start",
   },
 };

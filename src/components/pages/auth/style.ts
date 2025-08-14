@@ -9,9 +9,8 @@ export const styles: Record<string, CommonProps["style"]> = {
   },
   loginBlock: {
     width: 400,
-    height: 400,
-    backgroundColor: colors.honeydew,
-    borderRadius: 8,
+    backgroundColor: colors.lighter,
+    borderRadius: 16,
     padding: "2rem",
     gap: "1rem",
     justifyContent: "center",
@@ -23,20 +22,21 @@ export const styles: Record<string, CommonProps["style"]> = {
     marginBottom: "-0.5rem",
   },
   label: {
-    color: "#3d9970",
+    color: colors.darker,
     fontWeight: "bold",
     fontSize: "1.5rem",
   },
   message: {
-    color: "#3d9970",
+    color: colors.darker,
     fontSize: "1rem",
     paddingBottom: "1rem",
   },
   button: {
-    backgroundColor: "#3d9970",
+    backgroundColor: colors.action,
     width: "100%",
     color: "white",
     fontSize: "1rem",
+    borderRadius: 8,
   },
   imageAndLogo: {
     paddingBottom: "1rem",

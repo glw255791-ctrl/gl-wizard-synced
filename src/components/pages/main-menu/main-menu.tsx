@@ -1,10 +1,10 @@
-import { Grid2, Stack, Button, Typography } from "@mui/material";
+import { Grid2, Button, Typography, Stack } from "@mui/material";
 import { useNavigate } from "react-router";
 import { styles } from "./main-menu.style";
-import { Header } from "../../composed/header/header";
 // import { supabase } from "../../../api/api";
 import { useEffect, useState } from "react";
-import { colors } from "../../../assets/colors";
+import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
+import { Header } from "../../composed/header/header";
 
 export function MainMenu() {
   const navigate = useNavigate();
@@ -32,74 +32,49 @@ export function MainMenu() {
   }, [navigate]);
 
   return (
-    <Stack style={styles.root}>
-      <Stack style={{ flexDirection: "row" }}>
-        <Stack
-          style={{
-            width: 300,
-            backgroundColor: colors.darker,
-            borderRadius: 8,
-            height: "calc(100vh - 4rem)",
-            alignItems: "center",
-          }}
-        ></Stack>
-        <Stack
-          style={{
-            width: "100%",
-            minHeight: "calc(100vh - 4rem)",
-            justifyContent: "flex-start",
-            padding: "0 1rem 1rem 1rem",
-            gap: "1rem",
-          }}
-        >
-          <Header />
-          <Grid2 container spacing={2}>
-            <Grid2 size={6}>
-              <Button
-                style={styles.button}
-                onClick={() => navigate("/general-analysis")}
-              >
-                <Typography variant="h5" color="#333633" fontWeight={"bold"}>
-                  General analysis
-                </Typography>
-              </Button>
-            </Grid2>
-            <Grid2 size={6}>
-              <Button
-                style={styles.button}
-                onClick={() => navigate("/reversal-analysis")}
-              >
-                <Typography variant="h5" color="#333633" fontWeight={"bold"}>
-                  Reversal
-                </Typography>
-              </Button>
-            </Grid2>
-            <Grid2 size={6}>
-              <Button
-                style={styles.button}
-                onClick={() => navigate("/reversal-reclassification-analysis")}
-              >
-                <Typography variant="h5" color="#333633" fontWeight={"bold"}>
-                  Reversal/reclassification
-                </Typography>
-              </Button>
-            </Grid2>
-
-            {userRole === "ADMIN" && (
-              <Grid2 size={6}>
-                <Button
-                  style={styles.button}
-                  onClick={() => navigate("/user-management")}
-                >
-                  <Typography variant="h5" color="#333633" fontWeight={"bold"}>
-                    User management
-                  </Typography>
-                </Button>
-              </Grid2>
-            )}
+    <PageWrapper>
+      <Stack style={{ gap: "1rem", width: "calc(100vw - 24rem)" }}>
+        <Header />
+        <Grid2 container spacing={2}>
+          <Grid2 size={4}>
+            <Button
+              style={styles.button}
+              onClick={() => navigate("/general-analysis")}
+            >
+              <Typography style={styles.btnLabel}>General analysis</Typography>
+            </Button>
           </Grid2>
-        </Stack>
+          <Grid2 size={4}>
+            <Button
+              style={styles.button}
+              onClick={() => navigate("/reversal-analysis")}
+            >
+              <Typography style={styles.btnLabel}>Reversal</Typography>
+            </Button>
+          </Grid2>
+          <Grid2 size={4}>
+            <Button
+              style={styles.button}
+              onClick={() => navigate("/reversal-reclassification-analysis")}
+            >
+              <Typography style={styles.btnLabel}>
+                Reversal/reclassification
+              </Typography>
+            </Button>
+          </Grid2>
+
+          {userRole === "ADMIN" && (
+            <Grid2 size={6}>
+              <Button
+                style={styles.button}
+                onClick={() => navigate("/user-management")}
+              >
+                <Typography style={styles.btnLabel}>User management</Typography>
+              </Button>
+            </Grid2>
+          )}
+        </Grid2>
       </Stack>
-    </Stack>
+    </PageWrapper>
   );
 }

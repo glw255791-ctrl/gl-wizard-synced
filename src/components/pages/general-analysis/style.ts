@@ -9,7 +9,7 @@ const FULL_HEIGHT_OFFSET = "calc(100% - 2rem)";
 
 export const styles: Record<string, StyleObject> = {
   root: {
-    width: "calc(100vw - 6rem)",
+    width: "calc(100vw - 24rem)",
     minHeight: "calc(100vh - 4rem)",
     justifyContent: "flex-start",
   },

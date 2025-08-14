@@ -111,7 +111,9 @@ export const BasicTable = ({
                   )}
                   headerStyle={styles.headerWrapper}
                   headerRenderer={({ label }) => (
-                    <Stack style={styles.headerCell}>{label}</Stack>
+                    <Stack style={styles.headerCell}>
+                      {getElipsis(label as string, 25)}
+                    </Stack>
                   )}
                   cellDataGetter={({ rowData }) => rowData[item.title]}
                 />

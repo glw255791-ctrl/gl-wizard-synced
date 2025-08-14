@@ -11,6 +11,7 @@ import { DataValidityInfo } from "../../composed/data-validity-info/data-validit
 import { BasicDataOverview } from "../../basic-data-overview/basic-data-overview";
 import { Loader } from "../../ui-kit/loader-overlay/loader-overlay";
 import { ActionButton } from "../../composed/action-button/action-button";
+import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 
 export function ReversaReclassificationAnalysis() {
   const {
@@ -43,91 +44,92 @@ export function ReversaReclassificationAnalysis() {
   return (
     <>
       <Loader loadingStatus={loadingStatus} />
-      <Stack style={styles.root} spacing={2}>
-        <Header
-          title="Reversal/Reclassification analysis"
-          onPressResetBtn={onPressResetBtn}
-        />
+      <PageWrapper>
+        <Stack style={styles.root} spacing={2}>
+          <Header
+            title="Reversal/Reclassification analysis"
+            onPressResetBtn={onPressResetBtn}
+          />
 
-        <Grid2 container spacing={2}>
-          <Grid2 size={6}>
-            <FileDropzone
-              onDrop={onGeneralLedgerDrop}
-              text="Drop GL file here"
-              uploaded={isUploadedGl}
-            >
-              <GLDropdowns
-                glHeaderOptions={glHeaderOptions}
-                selectedHeaders={selectedHeaders}
-                onChangeGlHeader={onChangeGlHeader}
+          <Grid2 container spacing={2}>
+            <Grid2 size={6}>
+              <FileDropzone
+                onDrop={onGeneralLedgerDrop}
+                text="Drop GL file here"
+                uploaded={isUploadedGl}
+              >
+                <GLDropdowns
+                  glHeaderOptions={glHeaderOptions}
+                  selectedHeaders={selectedHeaders}
+                  onChangeGlHeader={onChangeGlHeader}
+                />
+              </FileDropzone>
+            </Grid2>
+
+            <Grid2 size={6}>
+              <FileDropzone
+                onDrop={onChartOfAccountsDrop}
+                text="Drop CoA file here"
+                uploaded={isAnalyzeStep}
+                isDisabled={!isCoaUploadStep}
+              >
+                <Stack spacing={1}>
+                  <Dropdown
+                    label="Mapping value"
+                    items={coaHeaderOptions}
+                    value={selectedHeaders.coaHeaders.mappingValue}
+                    onChange={(event) =>
+                      onChangeCoaHeader(
+                        "mappingValue",
+                        event.target.value as string
+                      )
+                    }
+                  />
+                  <Dropdown
+                    label="Filter by"
+                    items={coaHeaderOptions}
+                    value={selectedFilters.header}
+                    onChange={(event) =>
+                      onChangeCoaFilter("header", event.target.value as string)
+                    }
+                  />
+                  <Dropdown
+                    label="Filter by value"
+                    items={coaFilterOptions}
+                    value={selectedFilters.value}
+                    onChange={(event) =>
+                      onChangeCoaFilter("value", event.target.value as string)
+                    }
+                  />
+                </Stack>
+              </FileDropzone>
+            </Grid2>
+          </Grid2>
+
+          <Grid2 container spacing={2}>
+            <Grid2 size={6}>
+              <DataValidityInfo
+                reviewData={reviewData}
+                error={error}
+                disabled={!isCoaUploadStep}
               />
-            </FileDropzone>
-          </Grid2>
+            </Grid2>
 
-          <Grid2 size={6}>
-            <FileDropzone
-              onDrop={onChartOfAccountsDrop}
-              text="Drop CoA file here"
-              uploaded={isAnalyzeStep}
-              isDisabled={!isCoaUploadStep}
-            >
-              <Stack spacing={1}>
-                <Dropdown
-                  label="Mapping value"
-                  items={coaHeaderOptions}
-                  value={selectedHeaders.coaHeaders.mappingValue}
-                  onChange={(event) =>
-                    onChangeCoaHeader(
-                      "mappingValue",
-                      event.target.value as string
-                    )
-                  }
-                />
-                <Dropdown
-                  label="Filter by"
-                  items={coaHeaderOptions}
-                  value={selectedFilters.header}
-                  onChange={(event) =>
-                    onChangeCoaFilter("header", event.target.value as string)
-                  }
-                />
-                <Dropdown
-                  label="Filter by value"
-                  items={coaFilterOptions}
-                  value={selectedFilters.value}
-                  onChange={(event) =>
-                    onChangeCoaFilter("value", event.target.value as string)
-                  }
-                />
-              </Stack>
-            </FileDropzone>
+            <Grid2 size={6}>
+              <ActionButton
+                isAnalyzeStep={isAnalyzeStep}
+                onPressAnalyzeData={onPressAnalyzeData}
+              />
+            </Grid2>
           </Grid2>
-        </Grid2>
-
-        <Grid2 container spacing={2}>
-          <Grid2 size={6}>
-            <DataValidityInfo
-              reviewData={reviewData}
-              error={error}
-              disabled={!isCoaUploadStep}
-            />
-          </Grid2>
-
-          <Grid2 size={6}>
-            <ActionButton
-              isAnalyzeStep={isAnalyzeStep}
-              onPressAnalyzeData={onPressAnalyzeData}
-            />
-          </Grid2>
-        </Grid2>
-        <BasicDataOverview
-          title="Basic data"
-          reversalReclassification
-          disabled={!isAnalyzedStep}
-          tableData={tableData}
-          tableHeader={tableHeader}
-        />
-        {/* 
+          <BasicDataOverview
+            title="Basic data"
+            reversalReclassification
+            disabled={!isAnalyzedStep}
+            tableData={tableData}
+            tableHeader={tableHeader}
+          />
+          {/* 
         <DataOverview
           mappingValue={selectedHeaders.coaHeaders.mappingValue}
           overviewTableData={overviewTableData}
@@ -138,7 +140,8 @@ export function ReversaReclassificationAnalysis() {
           valueKey={selectedHeaders.glHeaders.value}
           disabled={!isAnalyzedStep}
         /> */}
-      </Stack>
+        </Stack>
+      </PageWrapper>
     </>
   );
 }

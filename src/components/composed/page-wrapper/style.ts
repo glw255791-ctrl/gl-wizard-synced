@@ -1,0 +1,62 @@
+import React from "react";
+import { colors } from "../../../assets/colors";
+export const styles: Record<string, React.CSSProperties> = {
+  root: {
+    width: "calc(100vw - 5rem)",
+    height: "calc(100vh - 4rem)",
+    justifyContent: "flex-start",
+    gap: "1rem",
+    padding: "1rem",
+  },
+  row: {
+    flexDirection: "row",
+    gap: "1rem",
+  },
+  left: {
+    width: 300,
+    backgroundColor: colors.darker,
+    borderRadius: 8,
+    height: "calc(100vh - 5rem)",
+    minHeight: "calc(100vh - 5rem)",
+    alignItems: "center",
+    padding: "1rem 0.5rem",
+  },
+  content: {
+    minHeight: "calc(100vh - 5rem)",
+    justifyContent: "flex-start",
+    gap: "1rem",
+    paddingBottom: "1rem",
+  },
+  menuBtn: {
+    justifyContent: "flex-start",
+    fontSize: "0.9rem",
+    backgroundColor: colors.lighter,
+    color: colors.darker,
+    width: "100%",
+    textTransform: "unset",
+  },
+  menuBtnActive: {
+    backgroundColor: colors.medium,
+    color: "white",
+    fontWeight: "bold",
+  },
+  title: {
+    fontSize: "2rem",
+    fontWeight: "bold",
+  },
+  btnGroupsWrapper: {
+    flex: 1,
+    justifyContent: "space-between",
+    width: "100%",
+    paddingTop: "1rem",
+  },
+  topBtns: {
+    textAlign: "left",
+    gap: "0.5rem",
+    padding: "1.5rem 0",
+    flex: 1,
+  },
+  bottomBtns: {
+    gap: "0.5rem",
+  },
+};
