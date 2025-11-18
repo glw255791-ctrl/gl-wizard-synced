@@ -4,6 +4,7 @@ import {
   Select,
   MenuItem,
   SelectChangeEvent,
+  Checkbox,
 } from "@mui/material";
 import { colors } from "../../../assets/colors";
 
@@ -15,12 +16,13 @@ export interface DropdownItem {
 export interface Props {
   items: DropdownItem[];
   label: string;
-  value: string;
+  value: string | string[];
+  multiple?: boolean;
   onChange: (event: SelectChangeEvent<unknown>) => void;
 }
 
 export function Dropdown(props: Props) {
-  const { items, label, value, onChange } = props;
+  const { items, label, value, multiple, onChange } = props;
 
   return (
     <Stack>
@@ -30,6 +32,7 @@ export function Dropdown(props: Props) {
         {label}
       </InputLabel>
       <Select
+        multiple={multiple}
         style={{
           height: 38,
           borderRadius: 8,
@@ -54,13 +57,17 @@ export function Dropdown(props: Props) {
         }}
         value={value}
         onChange={onChange}
+        {...(multiple ? { renderValue: () => `${value.length} row(s)` } : {})}
       >
-        {items.map(({ title, value }, index) => (
+        {items.map(({ title, value: itemValue }, index) => (
           <MenuItem
             key={`dropdown-item-${index}-${title}`}
-            value={value}
+            value={itemValue}
             style={{ textAlign: "left", fontSize: 14 }}
           >
+            {multiple && (
+              <Checkbox checked={(value as string[]).includes(itemValue)} />
+            )}
             {title}
           </MenuItem>
         ))}

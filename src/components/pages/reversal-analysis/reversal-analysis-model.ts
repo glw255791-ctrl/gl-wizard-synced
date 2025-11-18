@@ -58,6 +58,9 @@ export function useReversalAnalysis() {
 
   const [error, setError] = useState<string | undefined>(undefined);
 
+  const [isWarningModalShown, setIsWarningModalShown] =
+    useState<boolean>(false);
+
   const [loadingStatus, setLoadingStatus] = useState(false);
 
   const [dataDisplayHeader, setDataDisplayHeader] = useState<
@@ -296,6 +299,12 @@ export function useReversalAnalysis() {
     );
 
     worker.onmessage = (event) => {
+      if (
+        event.data.outputVal.some((item: any) =>
+          JSON.stringify(item).includes("not mapped")
+        )
+      )
+        setIsWarningModalShown(true);
       generateOverviewData(
         Object.values(event.data.groupedByJenAndDate).flat()
       );
@@ -455,5 +464,7 @@ export function useReversalAnalysis() {
     selectedHeaders,
     coaHeaderOptions,
     reviewData,
+    isWarningModalShown,
+    setIsWarningModalShown,
   };
 }

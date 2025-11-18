@@ -19,8 +19,7 @@ import { styles } from "./user-management.style";
 import { UserData, useUserManagementModel } from "./user-management-model";
 import EventRepeatIcon from "@mui/icons-material/EventRepeat";
 import EventBusyIcon from "@mui/icons-material/EventBusy";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import AllInclusiveIcon from '@mui/icons-material/AllInclusive';
 import { useEffect } from "react";
 import { Header } from "../../composed/header/header";
 import CloseIcon from "@mui/icons-material/Close";
@@ -52,55 +51,55 @@ export function UserManagementPage() {
 
   const renderCellContent = (key: string, item: UserData) => {
     switch (key) {
-      case "licence_valid_until": {
+      case "licencevaliduntil": {
         const isExpired = dayjs(item[key as keyof UserData]).isBefore(
           dayjs().startOf("day")
         );
         return (
           <Stack style={styles.validDate}>
-            <Typography style={isExpired ? styles.red : styles.green}>
-              {new Date(item[key as keyof UserData]).toLocaleDateString(
-                "de-DE"
-              )}
-            </Typography>
-            {isExpired ? (
+            {item.role !== "admin" ? (<>
+              <Typography style={isExpired ? styles.red : styles.green}>
+                {new Date(item[key as keyof UserData]).toLocaleDateString(
+                  "de-DE"
+                )}
+              </Typography>
+              {/* {isExpired ? (
               <CancelOutlinedIcon style={styles.red} />
             ) : (
               <CheckCircleOutlineIcon style={styles.green} />
-            )}
+            )} */}
+
+              <IconButton
+                onClick={() =>
+                  setModalProps({
+                    modalAction: "EXTEND",
+                    id: item.id,
+                    date: new Date(),
+                    email: "",
+                  })
+                }
+              >
+                <EventRepeatIcon />
+              </IconButton>
+              <IconButton
+                disabled={item.role === "admin"}
+                onClick={() =>
+                  setModalProps({
+                    modalAction: "DEACTIVATE",
+                    id: item.id,
+                    date: dayjs().subtract(1, "day").toDate(),
+                    email: "",
+                  })
+                }
+              >
+                <EventBusyIcon />
+              </IconButton>
+            </>) : <AllInclusiveIcon />}
           </Stack>
-        );
+
+        )
       }
-      case "extend_licence":
-        return (
-          <IconButton
-            onClick={() =>
-              setModalProps({
-                modalAction: "EXTEND",
-                id: item.id,
-                date: new Date(),
-                email: "",
-              })
-            }
-          >
-            <EventRepeatIcon />
-          </IconButton>
-        );
-      case "deactivate_licence":
-        return (
-          <IconButton
-            onClick={() =>
-              setModalProps({
-                modalAction: "DEACTIVATE",
-                id: item.id,
-                date: dayjs().subtract(1, "day").toDate(),
-                email: "",
-              })
-            }
-          >
-            <EventBusyIcon />
-          </IconButton>
-        );
+
       default:
         return item[key as keyof UserData];
     }
@@ -201,8 +200,8 @@ export function UserManagementPage() {
                 {modalProps?.modalAction === "EXTEND"
                   ? "Extend Licence"
                   : modalProps?.modalAction === "DEACTIVATE"
-                  ? "Deactivate Licence"
-                  : "Invite User"}
+                    ? "Deactivate Licence"
+                    : "Invite User"}
               </Typography>
               <IconButton onClick={() => setModalProps(undefined)}>
                 <CloseIcon />
@@ -210,9 +209,17 @@ export function UserManagementPage() {
             </Stack>
 
             <Stack style={styles.modalContentWrapper}>
+
               {modalProps?.modalAction === "EXTEND" && (
                 <>
                   <DatePicker
+                    slotProps={{
+                      textField: {
+                        InputProps: {
+                          style: styles.modalInput,
+                        }
+                      }
+                    }}
                     value={dayjs(modalProps.date)}
                     format="DD.MM.YYYY"
                     minDate={dayjs(new Date())}
@@ -225,13 +232,18 @@ export function UserManagementPage() {
                         };
                       })
                     }
-                    sx={styles.input}
+                    sx={{ ...styles.modalInput, height: 32 }}
                   />
                 </>
               )}
               {modalProps?.modalAction === "INVITE" && (
                 <TextField
-                  label="Email"
+                  placeholder="Enter email"
+                  style={{ ...styles.modalInput, ...styles.modalInputWrapper }}
+                  slotProps={{
+                    input: { style: styles.modalInput }
+                  }}
+
                   onChange={(e) =>
                     setModalProps((prev) => {
                       if (!prev) return prev;
@@ -248,14 +260,14 @@ export function UserManagementPage() {
                   (modalProps.email === "" ||
                     !emailRegex.test(modalProps.email))
                 }
-                style={styles.input}
+                style={styles.modalBtn}
                 onClick={onConfirm}
               >
                 {modalProps?.modalAction === "EXTEND"
                   ? "Extend Licence"
                   : modalProps?.modalAction === "DEACTIVATE"
-                  ? "Deactivate Licence"
-                  : "Invite User"}
+                    ? "Deactivate Licence"
+                    : "Invite User"}
               </Button>
             </Stack>
           </Stack>

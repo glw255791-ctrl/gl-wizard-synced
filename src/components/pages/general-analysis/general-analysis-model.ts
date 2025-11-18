@@ -46,6 +46,8 @@ export enum AnalysisStep {
 
 export function useGeneralAnalysis() {
   const [error, setError] = useState<string | undefined>(undefined);
+  const [isWarningModalShown, setIsWarningModalShown] =
+    useState<boolean>(false);
 
   const [currentStep, setCurrentStep] = useState<AnalysisStep[]>([
     AnalysisStep.TO_UPLOAD_GL,
@@ -66,6 +68,9 @@ export function useGeneralAnalysis() {
   >({});
 
   const [tableData, setTableData] = useState<Record<string, any>[]>([]);
+  const [reversalTableData, setReversalTableData] = useState<
+    Record<string, any>[]
+  >([]);
   const [selectedHeaders, setSelectedHeaders] = useState<SelectedHeaders>({
     glHeaders: {
       account: "",
@@ -147,6 +152,20 @@ export function useGeneralAnalysis() {
       {
         key: "result",
         title: "result",
+      },
+    ],
+    [selectedHeaders.glHeaders]
+  );
+
+  const reversalTableHeader: TableHeader[] = useMemo(
+    () => [
+      ...Object.keys(selectedHeaders.glHeaders).map((item) => ({
+        key: item,
+        title: selectedHeaders.glHeaders[item as keyof GlHeaders],
+      })),
+      {
+        key: "reversal",
+        title: "reversal",
       },
     ],
     [selectedHeaders.glHeaders]
@@ -289,6 +308,37 @@ export function useGeneralAnalysis() {
 
   const onPressAnalyzeData = () => {
     setLoadingStatus(true);
+
+    const reversalWorker = new Worker(
+      new URL("../../../workers/reversal-worker.js", import.meta.url),
+      {
+        type: "module",
+      }
+    );
+
+    reversalWorker.onmessage = (event) => {
+      if (
+        event.data.outputVal.some((item: any) =>
+          JSON.stringify(item).includes("not mapped")
+        )
+      )
+        setIsWarningModalShown(true);
+
+      setReversalTableData(
+        Object.values(event.data.outputVal as Record<string, any>[]).flat()
+      );
+
+      reversalWorker.terminate();
+    };
+
+    reversalWorker.onerror = (error) => {
+      console.error("Worker error:", error);
+      setLoadingStatus(false);
+      reversalWorker.terminate();
+    };
+
+    reversalWorker.postMessage({ rawData, selectedHeaders });
+
     const worker = new Worker(
       new URL("../../../workers/general-worker.js", import.meta.url),
       {
@@ -297,19 +347,22 @@ export function useGeneralAnalysis() {
     );
 
     worker.onmessage = (event) => {
-      if (event.data.type === "complete") {
-        setTableData(event.data.tableData);
-        setOverviewTableData(event.data.overviewTableData);
-        setDataDisplayHeader(event.data.displayHeaders);
-        setCurrentStep((prev) => [...prev, AnalysisStep.ANALYZED]);
-        setLoadingStatus(false);
+      if (
+        event.data.tableData.some((item: any) =>
+          JSON.stringify(item).includes("not mapped")
+        )
+      )
+        setIsWarningModalShown(true);
+      setTableData(event.data.tableData);
+      setOverviewTableData(event.data.overviewTableData);
+      setDataDisplayHeader(event.data.displayHeaders);
+      setCurrentStep((prev) => [...prev, AnalysisStep.ANALYZED]);
 
-        worker.terminate();
+      worker.terminate();
 
-        if (event.data.tableData.find((item: any) => !item.coaData)) {
-          setError("Some rows from GL do not have a CoA");
-          setTimeout(() => setError(undefined), 4000);
-        }
+      if (event.data.tableData.find((item: any) => !item.coaData)) {
+        setError("Some rows from GL do not have a CoA");
+        setTimeout(() => setError(undefined), 4000);
       }
     };
 
@@ -320,6 +373,8 @@ export function useGeneralAnalysis() {
     };
 
     worker.postMessage({ rawData, selectedHeaders });
+
+    setLoadingStatus(false);
   };
 
   const sortedDataDisplayHeader = useMemo(() => {
@@ -353,12 +408,15 @@ export function useGeneralAnalysis() {
     onChartOfAccountsDrop,
     onPressResetBtn,
     setDataDisplayHeader,
+    setIsWarningModalShown,
+    reversalTableData,
     loadingStatus,
     error,
     overviewTableData,
     sortedDataDisplayHeader,
     currentStep,
     tableHeader,
+    reversalTableHeader,
     tableData,
     rawData,
     glHeaderOptions,
@@ -366,5 +424,6 @@ export function useGeneralAnalysis() {
     coaHeaderOptions,
     reviewData,
     dataDisplayHeader,
+    isWarningModalShown,
   };
 }

@@ -12,7 +12,7 @@ export const styles: Record<string, CommonProps["style"]> = {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 15,
+    gap: 5,
   },
   red: {
     color: "red",
@@ -30,10 +30,10 @@ export const styles: Record<string, CommonProps["style"]> = {
     transform: "translate(-50%, -50%)",
     width: 400,
     backgroundColor: "white",
-    borderRadius: 8,
+    borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
-    padding: "15px 0",
+    padding: 0,
   },
   modalInnerContent: {
     flex: 1,
@@ -42,12 +42,13 @@ export const styles: Record<string, CommonProps["style"]> = {
     justifyContent: "flex-start",
   },
   modalHeader: {
-    height: "30px",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "5px 15px 15px 15px",
-    borderBottom: "1px solid gray",
+    padding: "5px 15px",
+    borderBottomStyle: 'solid',
+    borderBottomWidth: 2,
+    borderBottomColor: colors.darker
   },
   black: {
     color: "black",
@@ -61,6 +62,15 @@ export const styles: Record<string, CommonProps["style"]> = {
   },
   input: {
     width: "50%",
+  },
+  modalBtn: {
+    height: 32, borderRadius: 16, paddingLeft: 32, paddingRight: 32, textTransform: "none"
+  },
+  modalInput: {
+    height: 32, borderRadius: 16,
+  },
+  modalInputWrapper: {
+    width: "80%",
   },
   searchBlock: {
     flex: 1,
@@ -78,16 +88,19 @@ export const styles: Record<string, CommonProps["style"]> = {
     gap: 5,
     alignItems: "center",
     backgroundColor: "white",
-    borderRadius: 8,
+    borderRadius: 16,
   },
   searchInput: {
-    borderRadius: 8,
-    height: 40,
+    borderRadius: 16,
+    height: 30,
   },
   btn: {
-    borderRadius: 8,
+    borderRadius: 16,
+    height: 32,
     backgroundColor: colors.action,
-    width: 200,
+    paddingLeft: 32,
+    paddingRight: 32,
+    textTransform: "none",
   },
   table: {
     backgroundColor: colors.lighter,

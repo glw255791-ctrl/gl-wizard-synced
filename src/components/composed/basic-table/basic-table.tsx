@@ -2,7 +2,8 @@ import { Button, Stack, Tooltip, Typography } from "@mui/material";
 import { formatDate } from "date-fns";
 import { getCellStyleByHeader, styles } from "./basic-table.style";
 import DownloadIcon from "@mui/icons-material/Download";
-
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import { Table, Column, AutoSizer } from "react-virtualized";
 import "react-virtualized/styles.css";
 import { getElipsis } from "../../analysed-data-overview/table/functions";
@@ -15,6 +16,7 @@ const ROW_HEIGHT = 24;
 const MAX_CHARS = 20;
 const DATE = "date";
 const RESULT = "result";
+const REVERSAL = "reversal";
 interface Props {
   header: TableHeader[];
   data: Record<string, string>[];
@@ -102,9 +104,34 @@ export const BasicTable = ({
                           ...getCellStyleByHeader(item.key),
                         }}
                       >
-                        {getElipsis(
-                          getCellValueFormatted(item.key, cellData),
-                          MAX_CHARS
+                        {item.key === REVERSAL ? (
+                          cellData === "reversal" ? (
+                            <Stack
+                              style={{
+                                flex: 1,
+                                justifyContent: "flex-start",
+                                alignItems: "center",
+                                flexDirection: "row",
+                                gap: 5,
+                              }}
+                            >
+                              <CheckCircleIcon
+                                style={{ color: "green", fontSize: 22 }}
+                              />
+                              <Typography style={{ fontSize: 14 }}>
+                                Reversal
+                              </Typography>
+                            </Stack>
+                          ) : (
+                            <RemoveCircleIcon
+                              style={{ color: "gray", fontSize: 22 }}
+                            />
+                          )
+                        ) : (
+                          getElipsis(
+                            getCellValueFormatted(item.key, cellData),
+                            MAX_CHARS
+                          )
                         )}
                       </Stack>
                     </Tooltip>

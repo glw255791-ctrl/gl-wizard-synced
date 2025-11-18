@@ -77,6 +77,7 @@ export const exportBasicTableToExcel = async (
   const workbook = new Workbook();
   const worksheet = workbook.addWorksheet("Sheet1");
 
+  console.log(data);
   const fullHeader = Object.keys(data[0]).filter((item) => item !== "coaData");
   worksheet.addRow(fullHeader.map((item) => item));
 

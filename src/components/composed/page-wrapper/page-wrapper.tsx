@@ -9,7 +9,7 @@ import GroupIcon from "@mui/icons-material/Group";
 import HelpCenterIcon from "@mui/icons-material/HelpCenter";
 import PrivacyTipIcon from "@mui/icons-material/PrivacyTip";
 import { useLocation, useNavigate } from "react-router";
-
+import { supabase } from "../../../api/api";
 interface Props {
   children: JSX.Element;
 }
@@ -20,26 +20,25 @@ export function PageWrapper(props: Props) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  const [userRole, setUserRole] = useState<"USER" | "ADMIN">("USER");
+  const [userRole, setUserRole] = useState<"user" | "admin">("user");
   useEffect(() => {
-    setUserRole("USER");
-    // const checkSession = async () => {
-    //   const {
-    //     data: { session },
-    //   } = await supabase.auth.getSession();
-    //   if (session) {
-    //     const { data: profile, error } = await supabase
-    //       .from("profiles")
-    //       .select("user_role")
-    //       .eq("id", session.user.id)
-    //       .single();
-    //     if (error || !profile) {
-    //       return;
-    //     }
-    //     setUserRole(profile.user_role);
-    //   }
-    // };
-    // checkSession();
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", session.user.id)
+          .single();
+        if (error || !profile) {
+          return;
+        }
+        setUserRole(profile.role);
+      }
+    };
+    checkSession();
   }, [navigate]);
 
   return (
@@ -67,10 +66,11 @@ export function PageWrapper(props: Props) {
                 style={{
                   ...styles.menuBtn,
                   ...(pathname === "/general-analysis" && styles.menuBtnActive),
+
                 }}
                 onClick={() => navigate("/general-analysis")}
               >
-                General Analysis
+                GL Transactions Analysis
               </Button>
               <Button
                 startIcon={<RepeatOnIcon />}
@@ -96,7 +96,7 @@ export function PageWrapper(props: Props) {
               >
                 Reversal/Reclassification
               </Button>
-              {userRole === "ADMIN" && (
+              {userRole === "admin" && (
                 <Button
                   startIcon={<GroupIcon />}
                   variant="contained"

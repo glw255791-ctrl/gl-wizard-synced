@@ -33,10 +33,13 @@ export const styles: Record<string, CommonProps["style"]> = {
   },
   button: {
     backgroundColor: colors.action,
-    width: "100%",
     color: "white",
     fontSize: "1rem",
-    borderRadius: 8,
+    borderRadius: 16,
+    height: 32,
+    paddingLeft: 32,
+    paddingRight: 32,
+    textTransform: "none",
   },
   imageAndLogo: {
     paddingBottom: "1rem",

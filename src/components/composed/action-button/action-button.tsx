@@ -16,10 +16,10 @@ export function ActionButton(props: Props) {
         <Button
           onClick={onPressAnalyzeData}
           variant="contained"
-          sx={styles.button}
+          style={styles.button}
           endIcon={<TroubleshootIcon />}
         >
-          Process
+          Generate
         </Button>
       </Stack>
     </Card>

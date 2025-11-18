@@ -123,7 +123,7 @@ export function ReversaReclassificationAnalysis() {
             </Grid2>
           </Grid2>
           <BasicDataOverview
-            title="Basic data"
+            title="GL Data With Transaction Types"
             reversalReclassification
             disabled={!isAnalyzedStep}
             tableData={tableData}
@@ -136,7 +136,7 @@ export function ReversaReclassificationAnalysis() {
           setDataDisplayHeader={setDataDisplayHeader}
           sortedDataDisplayHeader={sortedDataDisplayHeader}
           coaHeaderOptions={coaHeaderOptions}
-          title="Analyzed data"
+          title="Movement Tables"
           valueKey={selectedHeaders.glHeaders.value}
           disabled={!isAnalyzedStep}
         /> */}

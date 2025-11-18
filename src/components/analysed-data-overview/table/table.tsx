@@ -160,6 +160,7 @@ export const DataTable = (props: Props) => {
     const filteredValues = basicTableData.filter(
       (item) => (item.result as unknown as string[]).join("/") === value
     );
+    console.log(basicTableData, filteredValues);
     exportBasicTableToExcel(basicTableHeader, filteredValues, value);
   };
 
@@ -194,7 +195,7 @@ export const DataTable = (props: Props) => {
             )}
             <IconButton
               style={styles.iconBtn}
-              onClick={() => handleDownloadByRow(val)}
+              onClick={() => handleDownloadByRow(String(row[column]))}
             >
               <DownloadIcon style={styles.cellDownloadBtn} />
             </IconButton>

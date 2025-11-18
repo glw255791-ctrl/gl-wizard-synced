@@ -32,9 +32,11 @@ export const styles: Record<string, StyleObject> = {
     alignItems: "center",
   },
   button: {
-    borderRadius: 2,
-    height: 36,
-    width: 200,
+    borderRadius: 16,
+    height: 32,
+    textTransform: "none",
+    paddingLeft: 32,
+    paddingRight: 32,
     backgroundColor: colors.action,
   },
 };

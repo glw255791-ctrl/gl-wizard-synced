@@ -11,6 +11,7 @@ import { styles } from "./style";
 import { Loader } from "../../ui-kit/loader-overlay/loader-overlay";
 import { ActionButton } from "../../composed/action-button/action-button";
 import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
+import { WarningModal } from "../../composed/warning-modal/warning-modal";
 
 export function GeneralAnalysis() {
   const {
@@ -25,6 +26,10 @@ export function GeneralAnalysis() {
     tableData,
     error,
     loadingStatus,
+    isWarningModalShown,
+    reversalTableData,
+    reversalTableHeader,
+    setIsWarningModalShown,
     setDataDisplayHeader,
     onChangeCoaHeader,
     onChangeGlHeader,
@@ -118,10 +123,17 @@ export function GeneralAnalysis() {
           </Grid2>
 
           <BasicDataOverview
-            title="Basic data"
+            title="GL Data With Transaction Types"
             disabled={!isAnalyzedStep}
             tableData={tableData}
             tableHeader={tableHeader}
+          />
+
+          <BasicDataOverview
+            title="GL Data With Reversal Identified"
+            disabled={!isAnalyzedStep}
+            tableData={reversalTableData}
+            tableHeader={reversalTableHeader}
           />
 
           <DataOverview
@@ -130,11 +142,16 @@ export function GeneralAnalysis() {
             setDataDisplayHeader={setDataDisplayHeader}
             sortedDataDisplayHeader={sortedDataDisplayHeader}
             coaHeaderOptions={coaHeaderOptions}
-            title="Analyzed data"
+            title="Movement Tables"
             valueKey={selectedHeaders.glHeaders.value}
             disabled={!isAnalyzedStep}
             basicTableData={tableData}
             basicTableHeader={tableHeader}
+          />
+
+          <WarningModal
+            isOpen={isWarningModalShown}
+            onClose={() => setIsWarningModalShown(false)}
           />
         </Stack>
       </PageWrapper>

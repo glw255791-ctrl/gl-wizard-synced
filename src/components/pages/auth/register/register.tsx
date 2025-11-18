@@ -16,21 +16,15 @@ export function RegisterPage() {
           <Typography style={styles.label}>GL Wizard</Typography>
         </Stack>
         <TextField
-          label="First name"
-          error={!!fieldErrors.firstName}
-          value={registerData.firstName}
-          onChange={(e) => onChangeField("firstName", e.target.value)}
-          style={styles.input}
+          placeholder="Name"
+          error={!!fieldErrors.name}
+          value={registerData.name}
+          onChange={(e) => onChangeField("name", e.target.value)}
+          style={styles.inputWrapper}
+          slotProps={{ input: { style: styles.input } }}
         />
         <TextField
-          label="Last name"
-          error={!!fieldErrors.lastName}
-          value={registerData.lastName}
-          onChange={(e) => onChangeField("lastName", e.target.value)}
-          style={styles.input}
-        />
-        <TextField
-          label="Password"
+          placeholder="Password"
           type="password"
           error={!!fieldErrors.password}
           value={registerData.password}
@@ -38,8 +32,8 @@ export function RegisterPage() {
           onKeyDown={(e) => {
             if (e.key === "Enter") onRegister();
           }}
-          style={styles.input}
-        />
+          slotProps={{ input: { style: styles.input } }}
+          style={styles.inputWrapper} />
         <Button style={styles.button} onClick={onRegister}>
           Register
         </Button>

@@ -4,6 +4,7 @@ import { colors } from "../../../assets/colors";
 const VALUE = "value";
 const RESULT = "result";
 const ACCOUNT = "account";
+const REVERSAL = "reversal";
 
 export const styles: Record<string, CommonProps["style"]> = {
   root: {
@@ -80,6 +81,11 @@ export const getCellStyleByHeader = (key: string): React.CSSProperties => {
     case VALUE:
       return { textAlign: "right" };
     case RESULT:
+      return {
+        fontWeight: "bold",
+        backgroundColor: colors.lighter,
+      };
+    case REVERSAL:
       return {
         fontWeight: "bold",
         backgroundColor: colors.lighter,

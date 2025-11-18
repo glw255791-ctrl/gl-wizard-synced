@@ -1,20 +1,21 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-// import { supabase, supabaseAdmin } from "../../../api/api";
+import { supabase, supabaseAdmin } from "../../../api/api";
 
 export interface Column {
   key: string;
   label: string;
   width?: number;
+  flex?: number;
   align?: "center" | "left" | "right" | "justify" | "inherit";
 }
 
 export interface UserData {
-  first_name: string;
-  last_name: string;
-  licence_valid_until: string;
+  name: string;
+  licencevaliduntil: string;
   email: string;
   id: string;
+  role: string
 }
 
 export interface ModalProps {
@@ -46,116 +47,100 @@ export function useUserManagementModel() {
 
   const loadData = async () => {
     setUserData([]);
-    // try {
-    //   const {
-    //     data: { session },
-    //   } = await supabase.auth.getSession();
-    //   if (!session) {
-    //     return;
-    //   }
-    //   const { data: profiles, error } = await supabase
-    //     .from("profiles")
-    //     .select("*");
-    //   if (error || !profiles) {
-    //     setSnackbarProps({
-    //       message: `Failed to load data. ${error.message}`,
-    //       severity: "error",
-    //       open: true,
-    //     });
-    //     throw new Error();
-    //   }
-    //   setUserData(
-    //     profiles.map(
-    //       ({ first_name, last_name, email, licence_valid_until, id }) => ({
-    //         first_name,
-    //         last_name,
-    //         email,
-    //         licence_valid_until,
-    //         id,
-    //       })
-    //     )
-    //   );
-    // } catch (error) {
-    //   console.warn(error);
-    // }
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        return;
+      }
+      const { data: profiles, error } = await supabase
+        .from("profiles")
+        .select("*");
+      if (error || !profiles) {
+        setSnackbarProps({
+          message: `Failed to load data. ${error.message}`,
+          severity: "error",
+          open: true,
+        });
+        throw new Error();
+      }
+      setUserData(
+        profiles.map(({ full_name, email, licence_valid_until, id, role }) => ({
+          name: full_name,
+          email,
+          licencevaliduntil: licence_valid_until,
+          id,
+          role,
+        }))
+      );
+    } catch (error) {
+      console.warn(error);
+    }
   };
 
   const updateLicenceDate = async (id: string, newDate: Date) => {
-    console.log(id, newDate);
-    // try {
-    //   const { error } = await supabase
-    //     .from("profiles")
-    //     .update({ licence_valid_until: newDate.toISOString() })
-    //     .eq("id", id);
-    //   if (error) {
-    //     setSnackbarProps({
-    //       message: `Failed to update licence. ${error.message}`,
-    //       severity: "error",
-    //       open: true,
-    //     });
-    //     throw new Error();
-    //   }
-    //   setSnackbarProps({
-    //     message: `Licence updated.`,
-    //     severity: "success",
-    //     open: true,
-    //   });
-    // } catch (error) {
-    //   console.warn(error);
-    // }
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ licence_valid_until: newDate.toISOString() })
+        .eq("id", id);
+      if (error) {
+        setSnackbarProps({
+          message: `Failed to update licence. ${error.message}`,
+          severity: "error",
+          open: true,
+        });
+        throw new Error();
+      }
+      setSnackbarProps({
+        message: `Licence updated.`,
+        severity: "success",
+        open: true,
+      });
+    } catch (error) {
+      console.warn(error);
+    }
   };
 
   async function signUpUser(email: string) {
-    console.log(email);
-    // try {
-    //   const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
-    //   if (error) {
-    //     setSnackbarProps({
-    //       message: `Failed to invite user. ${error.message}`,
-    //       severity: "error",
-    //       open: true,
-    //     });
-    //     throw new Error();
-    //   }
-    //   setSnackbarProps({
-    //     message: `User invited.`,
-    //     severity: "success",
-    //     open: true,
-    //   });
-    // } catch (error) {
-    //   console.warn(error);
-    // }
+    try {
+      const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, { redirectTo: `http://localhost:5173/register` });
+      if (error) {
+        setSnackbarProps({
+          message: `Failed to invite user. ${error.message}`,
+          severity: "error",
+          open: true,
+        });
+        throw new Error();
+      }
+      setSnackbarProps({
+        message: `User ${email} invited.`,
+        severity: "success",
+        open: true,
+      });
+    } catch (error) {
+      console.warn(error);
+    }
   }
 
   const columns: Column[] = [
     {
-      key: "first_name",
-      label: "First name",
-      width: 300,
+      key: "name",
+      label: "Name",
+      flex: 3,
     },
     {
-      key: "last_name",
-      label: "Last name",
-      width: 300,
+      key: "email",
+      label: "E-mail",
+      flex: 2,
     },
-    { key: "", label: "" },
     {
-      key: "licence_valid_until",
-      label: "Licence valid until",
+      key: "licencevaliduntil",
+      label: "Licence info",
       width: 200,
       align: "center",
-    },
-    {
-      key: "extend_licence",
-      label: "Extend licence",
-      width: 150,
-      align: "center",
-    },
-    {
-      key: "deactivate_licence",
-      label: "Deactivate licence",
-      width: 150,
-      align: "center",
+      flex: 2
     },
   ];
 
@@ -164,17 +149,19 @@ export function useUserManagementModel() {
 
     return userData.filter(
       (item) =>
-        item.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.last_name.toLowerCase().includes(searchTerm.toLowerCase())
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [userData, searchTerm]);
 
   const onConfirm = async () => {
     if (modalProps?.modalAction === "INVITE") {
       await signUpUser(modalProps.email);
+
     } else {
       if (modalProps?.id && modalProps?.date)
         await updateLicenceDate(modalProps?.id, modalProps?.date);
+
     }
     setModalProps(undefined);
     await loadData();

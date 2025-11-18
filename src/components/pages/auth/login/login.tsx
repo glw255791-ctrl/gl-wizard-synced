@@ -3,20 +3,20 @@ import { styles } from "./login.style";
 import logo from "../logo.png";
 import { useLoginModel } from "./login-model";
 import { useEffect } from "react";
-// import { supabase } from "../../../../api/api";
+import { supabase } from "../../../../api/api";
 export function LoginPage() {
   const { loginData, onChangeField, navigate, fieldErrors, onLogin } =
     useLoginModel();
 
   useEffect(() => {
     const checkSession = async () => {
-      // const {
-      //   data: { session },
-      // } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      // if (session) {
-      navigate("/dashboard");
-      // }
+      if (session) {
+        navigate("/dashboard");
+      }
     };
 
     checkSession();
@@ -29,15 +29,16 @@ export function LoginPage() {
           <Typography style={styles.label}>GL Wizard</Typography>
         </Stack>
         <TextField
-          label="Email"
+          placeholder="Email"
           type="email"
           error={!!fieldErrors.email}
           value={loginData.email}
           onChange={(e) => onChangeField("email", e.target.value)}
-          style={styles.input}
+          style={styles.inputWrapper}
+          slotProps={{ input: { style: styles.input } }}
         />
         <TextField
-          label="Password"
+          placeholder="Password"
           type="password"
           error={!!fieldErrors.password}
           value={loginData.password}
@@ -45,7 +46,8 @@ export function LoginPage() {
           onKeyDown={(e) => {
             if (e.key === "Enter") onLogin();
           }}
-          style={styles.input}
+          style={styles.inputWrapper}
+          slotProps={{ input: { style: styles.input } }}
         />
         <Button style={styles.button} onClick={onLogin}>
           Login

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-// import { supabase } from "../../../../api/api";
+import { supabase } from "../../../../api/api";
 
 export interface LoginData {
   email: string;
@@ -39,11 +39,11 @@ export function useLoginModel() {
       if (!password || !email) {
         throw new Error();
       }
-      // const loginResponse = await supabase.auth.signInWithPassword({
-      //   email,
-      //   password,
-      // });
-      // if (loginResponse.error) throw loginResponse.error;
+      const loginResponse = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (loginResponse.error) throw loginResponse.error;
       navigate("/dashboard");
     } catch (error) {
       if (error instanceof Error) {
