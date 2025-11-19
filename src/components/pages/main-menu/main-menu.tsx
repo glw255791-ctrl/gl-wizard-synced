@@ -41,8 +41,8 @@ export function MainMenu() {
       ...styles.button,
       backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${image})`,
       "&:hover": {
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${image})`,
-        fontSize: "1.21rem",
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${image})`,
+        borderRight: `12px solid #4F6367`,
       }
     };
   };

@@ -1,4 +1,4 @@
-import { Button, Stack, Typography } from "@mui/material";
+import { Alert, Button, Snackbar, Stack, Typography } from "@mui/material";
 import { styles } from "./style";
 import { JSX, useEffect, useState } from "react";
 import WidgetsIcon from "@mui/icons-material/Widgets";
@@ -10,6 +10,7 @@ import HelpCenterIcon from "@mui/icons-material/HelpCenter";
 import PrivacyTipIcon from "@mui/icons-material/PrivacyTip";
 import { useLocation, useNavigate } from "react-router";
 import { supabase } from "../../../api/api";
+import { SnackbarProps } from "../../pages/user-management/user-management-model";
 interface Props {
   children: JSX.Element;
 }
@@ -19,6 +20,11 @@ export function PageWrapper(props: Props) {
 
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const [snackbarProps, setSnackbarProps] = useState<SnackbarProps>({
+    message: "",
+    severity: "",
+    open: false,
+  });
 
   const [userRole, setUserRole] = useState<"user" | "admin">("user");
   useEffect(() => {
@@ -29,13 +35,26 @@ export function PageWrapper(props: Props) {
       if (session) {
         const { data: profile, error } = await supabase
           .from("profiles")
-          .select("role")
+          .select("*")
           .eq("id", session.user.id)
           .single();
         if (error || !profile) {
           return;
         }
+
+        const today = new Date();
+        const expiry = new Date(profile.licence_valid_until);
+        const diffTime = expiry.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays < 14) {
+          setSnackbarProps({
+            message: `Your licence will expire in ${diffDays} days.`,
+            severity: "warning",
+            open: true,
+          });
+        }
         setUserRole(profile.role);
+
       }
     };
     checkSession();
@@ -47,8 +66,7 @@ export function PageWrapper(props: Props) {
       ...(pathname === path && styles.menuBtnActive),
       ...(pathname !== path && {
         '&:hover': {
-          fontSize: '1rem',
-          borderBottom: '2px solid #4F6367'
+          borderLeft: '4px solid #E5F1F1',
         }
       })
     }
@@ -110,20 +128,16 @@ export function PageWrapper(props: Props) {
               <Button
                 startIcon={<HelpCenterIcon />}
                 variant="contained"
-                style={{
-                  ...styles.menuBtn,
-                  ...(pathname === "/1" && styles.menuBtnActive),
-                }}
+                sx={getButtonStyle("/user-manual")}
+                onClick={() => navigate("/user-manual")}
               >
                 User Manual
               </Button>
               <Button
                 startIcon={<PrivacyTipIcon />}
                 variant="contained"
-                style={{
-                  ...styles.menuBtn,
-                  ...(pathname === "/2" && styles.menuBtnActive),
-                }}
+                sx={getButtonStyle("/about")}
+                onClick={() => navigate("/about")}
               >
                 About
               </Button>
@@ -132,6 +146,22 @@ export function PageWrapper(props: Props) {
         </Stack>
         <Stack style={styles.content}>{children}</Stack>
       </Stack>
+      <Snackbar
+        open={snackbarProps.open}
+        anchorOrigin={{ horizontal: "center", vertical: "top" }}
+        autoHideDuration={4000}
+        onClose={() =>
+          setSnackbarProps({ message: "", open: false, severity: "" })
+        }
+      >
+        <Alert
+          severity={snackbarProps.severity as "error" | "success"}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {snackbarProps.message}
+        </Alert>
+      </Snackbar>
     </Stack >
   );
 }

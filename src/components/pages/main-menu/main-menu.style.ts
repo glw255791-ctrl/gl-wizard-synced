@@ -11,7 +11,7 @@ export const styles: Record<string, React.CSSProperties> = {
   button: {
     width: "100%",
     height: "15rem",
-    borderRadius: '1rem',
+    borderRadius: '1rem 0 0 1rem',
     fontSize: '1.2rem',
     fontWeight: "bold",
     color: "white",
@@ -21,9 +21,11 @@ export const styles: Record<string, React.CSSProperties> = {
     backgroundPosition: "center",
     justifyContent: "flex-end",
     alignItems: "flex-end",
-    paddingBottom: "2rem",
-    paddingRight: "2rem",
-    transition: "background-image 0.5s, font-size 0.5s",
+    paddingBottom: "1rem",
+    paddingRight: "1rem",
+    transition: "background-image 0.5s, font-size 0.5s, border-right 0.5s",
+    borderRight: `4px solid ${colors.darker}`,
+    textTransform: "none",
   },
   image: {
     width: 30,

@@ -27,7 +27,7 @@ export interface ModalProps {
 
 export interface SnackbarProps {
   message: string;
-  severity: "error" | "success" | "";
+  severity: "error" | "success" | "warning" | "";
   open: boolean;
 }
 export function useUserManagementModel() {

@@ -14,7 +14,7 @@ export const styles: Record<string, React.CSSProperties> = {
   },
   left: {
     width: 300,
-    backgroundColor: `${colors.lighter}CC`,
+    backgroundColor: `${colors.darker}CC`,
     borderRadius: 8,
     height: "calc(100% - 3rem)",
     minHeight: "calc(100vh - 5rem)",
@@ -30,25 +30,26 @@ export const styles: Record<string, React.CSSProperties> = {
   menuBtn: {
     justifyContent: "flex-start",
     fontSize: "0.99rem",
-    backgroundColor: colors.lighter,
-    color: colors.darker,
+    backgroundColor: `${colors.darker}CC`,
+    color: colors.lighter,
     width: "100%",
     textTransform: "unset",
     borderRadius: 0,
     height: 45,
     transition: "font-size 0.5s",
     borderBottom: '2px solid transparent',
+    borderLeft: '4px solid transparent',
 
   },
   menuBtnActive: {
-    backgroundColor: colors.medium,
     color: "white",
     fontWeight: "bold",
+    borderLeft: '4px solid #E5F1F1',
   },
   title: {
     fontSize: "2rem",
     fontWeight: "bold",
-    color: colors.darker,
+    color: colors.lighter,
   },
   btnGroupsWrapper: {
     flex: 1,
@@ -58,11 +59,11 @@ export const styles: Record<string, React.CSSProperties> = {
   },
   topBtns: {
     textAlign: "left",
-    gap: "0",
+    gap: 2,
     padding: "1.5rem 0",
     flex: 1,
   },
   bottomBtns: {
-    gap: "0",
+    gap: 2
   },
 };

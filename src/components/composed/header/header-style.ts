@@ -13,10 +13,10 @@ export const styles: Record<string, React.CSSProperties> = {
     flex: 1,
   },
   card: {
-    backgroundColor: "#4F6367",
+    backgroundColor: "#4F6367CC",
     borderRadius: 8,
     padding: 16,
-    marginTop: 5
+
   },
   title: {
     fontWeight: "bold",
