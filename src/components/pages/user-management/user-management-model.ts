@@ -105,7 +105,7 @@ export function useUserManagementModel() {
 
   async function signUpUser(email: string) {
     try {
-      const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, { redirectTo: `http://localhost:5173/register` });
+      const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, { redirectTo: `${import.meta.env.VITE_BASE_URL}/register` });
       if (error) {
         setSnackbarProps({
           message: `Failed to invite user. ${error.message}`,
