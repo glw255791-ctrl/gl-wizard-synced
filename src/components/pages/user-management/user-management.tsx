@@ -209,7 +209,30 @@ export function UserManagementPage() {
             </Stack>
 
             <Stack style={styles.modalContentWrapper}>
+              {modalProps?.modalAction === "EXTEND" && <Stack style={styles.modalBtnsWrapper}>
 
+                <Button style={styles.modalBtn} variant="contained" onClick={() => setModalProps((prev) => {
+                  if (!prev) return prev;
+                  return {
+                    ...prev,
+                    date: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+                  };
+                })}>1 month</Button>
+                <Button style={styles.modalBtn} variant="contained" onClick={() => setModalProps((prev) => {
+                  if (!prev) return prev;
+                  return {
+                    ...prev,
+                    date: new Date(new Date().setMonth(new Date().getMonth() + 6)),
+                  };
+                })}>6 months</Button>
+                <Button style={styles.modalBtn} variant="contained" onClick={() => setModalProps((prev) => {
+                  if (!prev) return prev;
+                  return {
+                    ...prev,
+                    date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+                  };
+                })}>1 year</Button>
+              </Stack>}
               {modalProps?.modalAction === "EXTEND" && (
                 <>
                   <DatePicker

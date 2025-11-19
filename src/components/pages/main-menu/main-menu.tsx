@@ -1,10 +1,14 @@
-import { Grid2, Button, Typography, Stack } from "@mui/material";
+import { Grid2, Button, Stack } from "@mui/material";
 import { useNavigate } from "react-router";
 import { styles } from "./main-menu.style";
 import { supabase } from "../../../api/api";
 import { useEffect, useMemo, useState } from "react";
 import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { Header } from "../../composed/header/header";
+import glTransactionsImage from "../../../assets/images/gl-transactions-analysis.jpg";
+import reversalImage from "../../../assets/images/reversal.jpg";
+import reversalReclassificationImage from "../../../assets/images/reversal-reclassification.jpg";
+import userManagementImage from "../../../assets/images/user-management.jpg";
 
 export function MainMenu() {
   const navigate = useNavigate();
@@ -32,47 +36,56 @@ export function MainMenu() {
 
   const isAdmin = useMemo(() => userRole === "admin", [userRole]);
 
+  const getButtonStyle = (image: string) => {
+    return {
+      ...styles.button,
+      backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${image})`,
+      "&:hover": {
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${image})`,
+        fontSize: "1.21rem",
+      }
+    };
+  };
+
   return (
     <PageWrapper>
       <Stack style={{ gap: "1rem", width: "calc(100vw - 24rem)" }}>
         <Header />
-        <Grid2 container spacing={2}>
+        <Grid2 container spacing={3} style={{ padding: '1rem' }}>
           <Grid2 size={6}>
             <Button
-              style={styles.button}
+              sx={getButtonStyle(glTransactionsImage)}
               onClick={() => navigate("/general-analysis")}
             >
-              <Typography style={styles.btnLabel}>
-                GL Transactions Analysis
-              </Typography>
+              GL Transactions Analysis
             </Button>
           </Grid2>
           <Grid2 size={6}>
             <Button
-              style={styles.button}
+              sx={getButtonStyle(reversalImage)}
               onClick={() => navigate("/reversal-analysis")}
             >
-              <Typography style={styles.btnLabel}>Reversal</Typography>
+              Reversal
             </Button>
           </Grid2>
           <Grid2 size={6}>
             <Button
-              style={styles.button}
+              sx={getButtonStyle(reversalReclassificationImage)}
               onClick={() => navigate("/reversal-reclassification-analysis")}
             >
-              <Typography style={styles.btnLabel}>
-                Reversal/reclassification
-              </Typography>
+
+              Reversal/reclassification
+
             </Button>
           </Grid2>
 
           {isAdmin && (
             <Grid2 size={6}>
               <Button
-                style={styles.button}
+                sx={getButtonStyle(userManagementImage)}
                 onClick={() => navigate("/user-management")}
               >
-                <Typography style={styles.btnLabel}>User management</Typography>
+                User management
               </Button>
             </Grid2>
           )}

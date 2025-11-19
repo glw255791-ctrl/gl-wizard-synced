@@ -63,6 +63,12 @@ export const styles: Record<string, CommonProps["style"]> = {
   input: {
     width: "50%",
   },
+  modalBtnsWrapper: {
+    flexDirection: "row",
+    gap: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   modalBtn: {
     height: 32, borderRadius: 16, paddingLeft: 32, paddingRight: 32, textTransform: "none"
   },

@@ -16,6 +16,7 @@ export const styles: Record<string, React.CSSProperties> = {
     backgroundColor: "#4F6367",
     borderRadius: 8,
     padding: 16,
+    marginTop: 5
   },
   title: {
     fontWeight: "bold",
@@ -26,7 +27,9 @@ export const styles: Record<string, React.CSSProperties> = {
   name: {
     fontWeight: "bold",
     paddingRight: "1rem",
-    color: "gray",
+    color: colors.lighter,
+    paddingTop: 2,
+    paddingLeft: 3,
   },
 
   root: {

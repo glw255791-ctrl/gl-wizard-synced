@@ -14,7 +14,7 @@ export const styles: Record<string, React.CSSProperties> = {
   },
   left: {
     width: 300,
-    backgroundColor: colors.lighter,
+    backgroundColor: `${colors.lighter}CC`,
     borderRadius: 8,
     height: "calc(100% - 3rem)",
     minHeight: "calc(100vh - 5rem)",
@@ -29,13 +29,16 @@ export const styles: Record<string, React.CSSProperties> = {
   },
   menuBtn: {
     justifyContent: "flex-start",
-    fontSize: "0.9rem",
+    fontSize: "0.99rem",
     backgroundColor: colors.lighter,
     color: colors.darker,
     width: "100%",
     textTransform: "unset",
     borderRadius: 0,
-    height: 45
+    height: 45,
+    transition: "font-size 0.5s",
+    borderBottom: '2px solid transparent',
+
   },
   menuBtnActive: {
     backgroundColor: colors.medium,

@@ -41,21 +41,31 @@ export function PageWrapper(props: Props) {
     checkSession();
   }, [navigate]);
 
+  const getButtonStyle = (path: string) => {
+    return {
+      ...styles.menuBtn,
+      ...(pathname === path && styles.menuBtnActive),
+      ...(pathname !== path && {
+        '&:hover': {
+          fontSize: '1rem',
+          borderBottom: '2px solid #4F6367'
+        }
+      })
+    }
+  }
+
+
   return (
     <Stack style={styles.root}>
       <Stack style={styles.row}>
         <Stack style={styles.left}>
           <Typography style={styles.title}>GL Wizard</Typography>
-
           <Stack style={styles.btnGroupsWrapper}>
             <Stack style={styles.topBtns}>
               <Button
                 startIcon={<WidgetsIcon />}
                 variant="contained"
-                style={{
-                  ...styles.menuBtn,
-                  ...(pathname === "/dashboard" && styles.menuBtnActive),
-                }}
+                sx={getButtonStyle("/dashboard")}
                 onClick={() => navigate("/dashboard")}
               >
                 Main Menu
@@ -63,11 +73,7 @@ export function PageWrapper(props: Props) {
               <Button
                 startIcon={<TableChartIcon />}
                 variant="contained"
-                style={{
-                  ...styles.menuBtn,
-                  ...(pathname === "/general-analysis" && styles.menuBtnActive),
-
-                }}
+                sx={getButtonStyle("/general-analysis")}
                 onClick={() => navigate("/general-analysis")}
               >
                 GL Transactions Analysis
@@ -75,11 +81,7 @@ export function PageWrapper(props: Props) {
               <Button
                 startIcon={<RepeatOnIcon />}
                 variant="contained"
-                style={{
-                  ...styles.menuBtn,
-                  ...(pathname === "/reversal-analysis" &&
-                    styles.menuBtnActive),
-                }}
+                sx={getButtonStyle("/reversal-analysis")}
                 onClick={() => navigate("/reversal-analysis")}
               >
                 Reversal
@@ -87,11 +89,7 @@ export function PageWrapper(props: Props) {
               <Button
                 startIcon={<ShuffleOnIcon />}
                 variant="contained"
-                style={{
-                  ...styles.menuBtn,
-                  ...(pathname === "/reversal-reclassification-analysis" &&
-                    styles.menuBtnActive),
-                }}
+                sx={getButtonStyle("/reversal-reclassification-analysis")}
                 onClick={() => navigate("/reversal-reclassification-analysis")}
               >
                 Reversal/Reclassification
@@ -100,11 +98,7 @@ export function PageWrapper(props: Props) {
                 <Button
                   startIcon={<GroupIcon />}
                   variant="contained"
-                  style={{
-                    ...styles.menuBtn,
-                    ...(pathname === "/user-management" &&
-                      styles.menuBtnActive),
-                  }}
+                  sx={getButtonStyle("/user-management")}
                   onClick={() => navigate("/user-management")}
                 >
                   User Management
@@ -138,6 +132,6 @@ export function PageWrapper(props: Props) {
         </Stack>
         <Stack style={styles.content}>{children}</Stack>
       </Stack>
-    </Stack>
+    </Stack >
   );
 }

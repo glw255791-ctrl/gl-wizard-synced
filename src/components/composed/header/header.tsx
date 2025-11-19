@@ -6,7 +6,8 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useEffect, useState } from "react";
 import { colors } from "../../../assets/colors";
-// import { supabase } from "../../../api/api";
+import { supabase } from "../../../api/api";
+import PersonIcon from '@mui/icons-material/Person';
 interface Props {
   title?: string;
   onPressResetBtn?: () => void;
@@ -23,25 +24,25 @@ export const Header = (props: Props) => {
   const [user, setUser] = useState("");
 
   useEffect(() => {
-    setUser("");
-    // const checkAuth = async () => {
-    //   const {
-    //     data: { session },
-    //   } = await supabase.auth.getSession();
-    //   if (!session) {
-    //     return;
-    //   }
-    //   const { data: profile, error } = await supabase
-    //     .from("profiles")
-    //     .select("*")
-    //     .eq("id", session.user.id)
-    //     .single();
-    //   if (error || !profile) {
-    //     return;
-    //   }
-    //   setUser(`${profile.first_name} ${profile.last_name}`);
-    // };
-    // checkAuth();
+
+    const checkAuth = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        return;
+      }
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .single();
+      if (error || !profile) {
+        return;
+      }
+      setUser(profile.full_name || '');
+    };
+    checkAuth();
   }, []);
 
   return (
@@ -69,6 +70,7 @@ export const Header = (props: Props) => {
         <Typography style={styles.title}>{title ?? "Main Menu"}</Typography>
 
         <Stack style={styles.headerBtnsWrapper}>
+          <PersonIcon />
           <Typography style={styles.name}>{user}</Typography>
           <IconButton style={{ color: colors.lighter }} onClick={onLogout}>
             <LogoutIcon />

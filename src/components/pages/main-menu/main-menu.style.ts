@@ -11,11 +11,19 @@ export const styles: Record<string, React.CSSProperties> = {
   button: {
     width: "100%",
     height: "15rem",
-    borderRadius: 16,
-    fontSize: 20,
+    borderRadius: '1rem',
+    fontSize: '1.2rem',
     fontWeight: "bold",
     color: "white",
-    backgroundColor: colors.lighter,
+    position: "relative",
+    overflow: "hidden",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
+    paddingBottom: "2rem",
+    paddingRight: "2rem",
+    transition: "background-image 0.5s, font-size 0.5s",
   },
   image: {
     width: 30,
@@ -32,7 +40,7 @@ export const styles: Record<string, React.CSSProperties> = {
   },
   btnLabel: {
     fontWeight: "bold",
-    color: colors.darker,
+    color: colors.lighter,
     fontSize: "1.25rem",
   },
 };
