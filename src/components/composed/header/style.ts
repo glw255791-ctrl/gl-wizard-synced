@@ -40,6 +40,7 @@ export const HeaderBtnsWrapperRight = styled(Stack)({
   alignItems: "center",
   justifyContent: "flex-end",
   flex: 1,
+  color: 'white',
 });
 
 // Display for the user name in the header
@@ -47,5 +48,6 @@ export const NameWrapper = styled(Stack)({
   flexDirection: "row",
   alignItems: "center",
   justifyContent: "flex-start",
-  flex: 1,
+  paddingRight: 15,
+  paddingLeft: 5
 });
