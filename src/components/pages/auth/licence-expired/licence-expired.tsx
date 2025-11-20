@@ -1,23 +1,22 @@
-import { Stack, Button, Box, Typography } from "@mui/material";
-import { styles } from "../style";
+import { Root, LoginBlock, ImageAndLogo, LogoImage, Label, Message, StyledButton } from "../style";
 import logo from "../logo.png";
 import { useNavigate } from "react-router";
 export function LicenceExpiredPage() {
   const navigate = useNavigate();
   return (
-    <Stack style={styles.root}>
-      <Stack style={styles.loginBlock}>
-        <Stack style={styles.imageAndLogo}>
-          <Box component={"img"} style={styles.image} src={logo} />
-          <Typography style={styles.label}>GL Wizard</Typography>
-        </Stack>
-        <Typography style={styles.message}>
+    <Root>
+      <LoginBlock>
+        <ImageAndLogo>
+          <LogoImage src={logo} />
+          <Label>GL Wizard</Label>
+        </ImageAndLogo>
+        <Message>
           Your licence has expired. Please contact administrator to renew.
-        </Typography>
-        <Button style={styles.button} onClick={() => navigate("/login")}>
+        </Message>
+        <StyledButton onClick={() => navigate("/login")}>
           Login
-        </Button>
-      </Stack>
-    </Stack>
+        </StyledButton>
+      </LoginBlock>
+    </Root>
   );
 }

@@ -25,42 +25,32 @@ interface Props {
   onChangeGlHeader: (key: keyof GlHeaders, value: string) => void;
 }
 
-export const GLDropdowns = (props: Props) => {
-  const { glHeaderOptions, selectedHeaders, onChangeGlHeader } = props;
-  return (
-    <Stack spacing={1}>
+const GL_HEADER_FIELDS: Array<{
+  label: string;
+  key: keyof GlHeaders;
+}> = [
+    { label: "Account number", key: "account" },
+    { label: "Journal entry number", key: "jen" },
+    { label: "Date", key: "date" },
+    { label: "Value", key: "value" },
+  ];
+
+export const GLDropdowns = ({
+  glHeaderOptions,
+  selectedHeaders,
+  onChangeGlHeader,
+}: Props) => (
+  <Stack spacing={1}>
+    {GL_HEADER_FIELDS.map(({ label, key }) => (
       <Dropdown
-        label="Account number"
+        key={key}
+        label={label}
         items={glHeaderOptions}
-        value={selectedHeaders.glHeaders.account}
+        value={selectedHeaders.glHeaders[key]}
         onChange={(event) =>
-          onChangeGlHeader("account", event.target.value as string)
+          onChangeGlHeader(key, event.target.value as string)
         }
       />
-      <Dropdown
-        label="Journal entry number"
-        items={glHeaderOptions}
-        value={selectedHeaders.glHeaders.jen}
-        onChange={(event) =>
-          onChangeGlHeader("jen", event.target.value as string)
-        }
-      />
-      <Dropdown
-        label="Date"
-        items={glHeaderOptions}
-        value={selectedHeaders.glHeaders.date}
-        onChange={(event) =>
-          onChangeGlHeader("date", event.target.value as string)
-        }
-      />
-      <Dropdown
-        label="Value"
-        items={glHeaderOptions}
-        value={selectedHeaders.glHeaders.value}
-        onChange={(event) =>
-          onChangeGlHeader("value", event.target.value as string)
-        }
-      />
-    </Stack>
-  );
-};
+    ))}
+  </Stack>
+);

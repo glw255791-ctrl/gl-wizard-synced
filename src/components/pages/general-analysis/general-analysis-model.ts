@@ -92,35 +92,35 @@ export function useGeneralAnalysis() {
       rows: rawData.glData.length,
       total: selectedHeaders.glHeaders.value
         ? rawData.glData.reduce((prev, curr) => {
-            const val = Number(curr[selectedHeaders.glHeaders.value]);
-            return (prev += Number.isNaN(val) ? 0 : val);
-          }, 0)
+          const val = Number(curr[selectedHeaders.glHeaders.value]);
+          return (prev += Number.isNaN(val) ? 0 : val);
+        }, 0)
         : 0,
       startDate: selectedHeaders.glHeaders.date
         ? formatDate(
-            new Date(
-              Math.min(
-                ...rawData.glData
-                  .map((item) => new Date(item[selectedHeaders.glHeaders.date]))
-                  .filter((date) => !isNaN(date.getTime()))
-                  .map((date) => date.getTime())
-              )
-            ),
-            "dd-MM-yyyy"
-          )
+          new Date(
+            Math.min(
+              ...rawData.glData
+                .map((item) => new Date(item[selectedHeaders.glHeaders.date]))
+                .filter((date) => !isNaN(date.getTime()))
+                .map((date) => date.getTime())
+            )
+          ),
+          "dd-MM-yyyy"
+        )
         : "",
       endDate: selectedHeaders.glHeaders.date
         ? formatDate(
-            new Date(
-              Math.max(
-                ...rawData.glData
-                  .map((item) => new Date(item[selectedHeaders.glHeaders.date]))
-                  .filter((date) => !isNaN(date.getTime()))
-                  .map((date) => date.getTime())
-              )
-            ),
-            "dd-MM-yyyy"
-          )
+          new Date(
+            Math.max(
+              ...rawData.glData
+                .map((item) => new Date(item[selectedHeaders.glHeaders.date]))
+                .filter((date) => !isNaN(date.getTime()))
+                .map((date) => date.getTime())
+            )
+          ),
+          "dd-MM-yyyy"
+        )
         : "",
     };
   }, [rawData, selectedHeaders]);

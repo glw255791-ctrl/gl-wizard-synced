@@ -1,82 +1,81 @@
 import { useNavigate } from "react-router";
-import { styles } from "./header-style";
-import { Stack, Typography, IconButton } from "@mui/material";
+import {
+  HeaderBtnsWrapper,
+  HeaderBtnsWrapperRight,
+  HeaderWrapper,
+  IconButtonStyled,
+  NameWrapper,
+  Title,
+  Wrapper
+} from "./style";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import LogoutIcon from "@mui/icons-material/Logout";
+import PersonIcon from "@mui/icons-material/Person";
 import { useEffect, useState } from "react";
-import { colors } from "../../../assets/colors";
 import { supabase } from "../../../api/api";
-import PersonIcon from '@mui/icons-material/Person';
+
 interface Props {
   title?: string;
   onPressResetBtn?: () => void;
 }
-export const Header = (props: Props) => {
-  const { title, onPressResetBtn } = props;
-  const navigate = useNavigate();
 
-  const onLogout = () => {
+export const Header = ({ title, onPressResetBtn }: Props) => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState("");
+
+  const handleLogout = () => {
     localStorage.clear();
     navigate("/logout");
   };
 
-  const [user, setUser] = useState("");
-
   useEffect(() => {
-
     const checkAuth = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
-        return;
-      }
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
       const { data: profile, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", session.user.id)
         .single();
-      if (error || !profile) {
-        return;
-      }
-      setUser(profile.full_name || '');
+
+      if (error || !profile) return;
+
+      setUser(profile.full_name || "");
     };
+
     checkAuth();
   }, []);
 
   return (
-    <Stack style={styles.card}>
-      <Stack style={styles.headerWrapper}>
-        <Stack style={styles.root}>
+    <Wrapper>
+      <HeaderWrapper>
+        <HeaderBtnsWrapper>
           {title && (
-            <IconButton
-              style={{ color: colors.lighter }}
-              onClick={() => navigate("/")}
-            >
+            <IconButtonStyled onClick={() => navigate("/")}>
               <ArrowBackIcon />
-            </IconButton>
+            </IconButtonStyled>
           )}
           {onPressResetBtn && (
-            <IconButton
-              style={{ color: colors.lighter }}
-              onClick={onPressResetBtn}
-            >
+            <IconButtonStyled onClick={onPressResetBtn}>
               <RestartAltIcon />
-            </IconButton>
+            </IconButtonStyled>
           )}
-        </Stack>
+        </HeaderBtnsWrapper>
 
-        <Typography style={styles.title}>{title ?? "Main Menu"}</Typography>
+        <Title>{title ?? "Main Menu"}</Title>
 
-        <Stack style={styles.headerBtnsWrapper}>
+        <HeaderBtnsWrapperRight>
           <PersonIcon />
-          <Typography style={styles.name}>{user}</Typography>
-          <IconButton style={{ color: colors.lighter }} onClick={onLogout}>
+          <NameWrapper>
+            {user}
+          </NameWrapper>
+          <IconButtonStyled onClick={handleLogout}>
             <LogoutIcon />
-          </IconButton>
-        </Stack>
-      </Stack>
-    </Stack>
+          </IconButtonStyled>
+        </HeaderBtnsWrapperRight>
+      </HeaderWrapper>
+    </Wrapper>
   );
 };

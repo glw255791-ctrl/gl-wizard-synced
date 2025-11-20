@@ -1,9 +1,18 @@
-import { Button, Stack, Tooltip, Typography } from "@mui/material";
+import { Stack, Tooltip } from "@mui/material";
 import { formatDate } from "date-fns";
-import { getCellStyleByHeader, styles } from "./basic-table.style";
+import {
+  CheckedIcon,
+  ExcelDownloadButton,
+  getCellStyleByHeader,
+  LabelText,
+  ReversalCellWrapper,
+  styles,
+  TableHeaderStyled,
+  TableTitle,
+  UncheckedIcon,
+  Wrapper,
+} from "./style";
 import DownloadIcon from "@mui/icons-material/Download";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import { Table, Column, AutoSizer } from "react-virtualized";
 import "react-virtualized/styles.css";
 import { getElipsis } from "../../analysed-data-overview/table/functions";
@@ -14,9 +23,11 @@ const HEIGHT_ADJUST = 80;
 const HEADER_HEIGHT = 24;
 const ROW_HEIGHT = 24;
 const MAX_CHARS = 20;
+
 const DATE = "date";
 const RESULT = "result";
 const REVERSAL = "reversal";
+
 interface Props {
   header: TableHeader[];
   data: Record<string, string>[];
@@ -33,10 +44,12 @@ export const BasicTable = ({
   data,
   reversalReclassification,
 }: Props) => {
+  // Utility to format a cell value based on its key/column type
   const getCellValueFormatted = (
     key: string,
     value: string | Date | number | string[]
   ) => {
+    if (!value) return "-";
     switch (key) {
       case DATE:
         return formatDate(value as Date, "dd-MM-yyyy");
@@ -55,18 +68,17 @@ export const BasicTable = ({
   );
 
   return (
-    <Stack style={styles.root}>
-      <Stack style={styles.tableHeader}>
-        <Typography style={styles.tableTitle}>Data overview</Typography>
-        <Button
+    <Wrapper>
+      <TableHeaderStyled>
+        <TableTitle>Data overview</TableTitle>
+        <ExcelDownloadButton
           onClick={onExportTable}
           variant="contained"
-          style={styles.downloadBtn}
           endIcon={<DownloadIcon />}
         >
           Download
-        </Button>
-      </Stack>
+        </ExcelDownloadButton>
+      </TableHeaderStyled>
 
       {data.length > 0 && (
         <AutoSizer style={styles.autoSizer}>
@@ -79,12 +91,12 @@ export const BasicTable = ({
               rowCount={data.length}
               rowGetter={({ index }) => data[index]}
             >
-              {header.map((item, index) => (
+              {header.map((col) => (
                 <Column
+                  key={col.key}
+                  label={col.title}
+                  dataKey={col.key}
                   style={styles.columnStyle}
-                  key={index}
-                  label={item.title}
-                  dataKey={item.key}
                   width={width / header.length}
                   minWidth={width / header.length}
                   maxWidth={width / header.length}
@@ -92,44 +104,30 @@ export const BasicTable = ({
                   cellRenderer={({ cellData }) => (
                     <Tooltip
                       title={
-                        getCellValueFormatted(item.key, cellData)?.length >
-                        MAX_CHARS
-                          ? getCellValueFormatted(item.key, cellData)
+                        String(getCellValueFormatted(col.key, cellData)).length >
+                          MAX_CHARS
+                          ? getCellValueFormatted(col.key, cellData)
                           : ""
                       }
                     >
                       <Stack
                         style={{
                           ...styles.cellBaseStyle,
-                          ...getCellStyleByHeader(item.key),
+                          ...getCellStyleByHeader(col.key),
                         }}
                       >
-                        {item.key === REVERSAL ? (
+                        {col.key === REVERSAL ? (
                           cellData === "reversal" ? (
-                            <Stack
-                              style={{
-                                flex: 1,
-                                justifyContent: "flex-start",
-                                alignItems: "center",
-                                flexDirection: "row",
-                                gap: 5,
-                              }}
-                            >
-                              <CheckCircleIcon
-                                style={{ color: "green", fontSize: 22 }}
-                              />
-                              <Typography style={{ fontSize: 14 }}>
-                                Reversal
-                              </Typography>
-                            </Stack>
+                            <ReversalCellWrapper>
+                              <CheckedIcon />
+                              <LabelText>Reversal</LabelText>
+                            </ReversalCellWrapper>
                           ) : (
-                            <RemoveCircleIcon
-                              style={{ color: "gray", fontSize: 22 }}
-                            />
+                            <UncheckedIcon />
                           )
                         ) : (
                           getElipsis(
-                            getCellValueFormatted(item.key, cellData),
+                            getCellValueFormatted(col.key, cellData),
                             MAX_CHARS
                           )
                         )}
@@ -142,13 +140,13 @@ export const BasicTable = ({
                       {getElipsis(label as string, 25)}
                     </Stack>
                   )}
-                  cellDataGetter={({ rowData }) => rowData[item.title]}
+                  cellDataGetter={({ rowData }) => rowData[col.title]}
                 />
               ))}
             </Table>
           )}
         </AutoSizer>
       )}
-    </Stack>
+    </Wrapper>
   );
 };

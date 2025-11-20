@@ -7,78 +7,89 @@ self.onmessage = function (e) {
     colors,
   } = e.data;
 
+  // Build column keys: first sideHeader, then mappingValues of header
   const columns = [
     "sideHeader",
-    ...sortedDataDisplayHeader.map((item) => item[mappingValue]),
+    ...sortedDataDisplayHeader.map(headerObj => headerObj[mappingValue]),
   ];
 
-  const rows = [
-    // Header row
-    ...Object.keys(sortedDataDisplayHeader[0]).map((item) => ({
-      sideHeader: item === "active" ? "Include" : item,
-      ...Object.fromEntries(
-        columns
-          .filter((col) => col !== "sideHeader")
-          .map((key, index) => [key, sortedDataDisplayHeader[index][item]])
-      ),
+  // Generate Header Rows
+  const headerRows = Object.keys(sortedDataDisplayHeader[0]).map((headerKey) => {
+    const headerCells = Object.fromEntries(
+      columns
+        .filter(col => col !== "sideHeader")
+        .map((colKey, colIdx) => [colKey, sortedDataDisplayHeader[colIdx][headerKey]])
+    );
+
+    return {
+      sideHeader: headerKey === "active" ? "Include" : headerKey,
+      ...headerCells,
       total: "",
       bg: colors.lighter,
       header: true,
-    })),
+    };
+  });
 
-    // Data rows
-    ...Object.keys(overviewTableData).map((item) => {
-      const generatedRowObject = Object.fromEntries(
-        columns
-          .filter((col) => col !== "total" && col !== "sideHeader")
-          .map((key) => {
-            const sum = overviewTableData[item]
-              .filter((it) => it.coaData[mappingValue] === key)
-              .reduce((prev, curr) => prev + (curr[valueKey] || 0), 0);
-            return [key, sum.toFixed(2)];
-          })
-      );
+  // Generate Data Rows
+  const dataRows = Object.keys(overviewTableData).map((rowKey) => {
+    // For each column (excluding total/sideHeader), sum up the data per key
+    const valueCells = Object.fromEntries(
+      columns
+        .filter(col => col !== "sideHeader" && col !== "total")
+        .map(colKey => {
+          const sum = overviewTableData[rowKey]
+            .filter(entry => entry.coaData[mappingValue] === colKey)
+            .reduce((acc, entry) => acc + (entry[valueKey] || 0), 0);
+          return [colKey, sum.toFixed(2)];
+        })
+    );
 
-      const total = sortedDataDisplayHeader
-        .filter((item) => item.active)
-        .map((item) => item[mappingValue])
-        .reduce(
-          (prev, curr) => prev + Number(generatedRowObject[curr] || 0),
-          0
-        );
+    // Sum only active columns for total
+    const total = sortedDataDisplayHeader
+      .filter(header => header.active)
+      .map(header => header[mappingValue])
+      .reduce((acc, colKey) => acc + Number(valueCells[colKey] || 0), 0);
 
-      return {
-        sideHeader: item,
-        ...generatedRowObject,
-        total: total.toFixed(2),
-        bg: "white",
-        header: false,
-      };
-    }),
+    return {
+      sideHeader: rowKey,
+      ...valueCells,
+      total: total.toFixed(2),
+      bg: "white",
+      header: false,
+    };
+  });
 
-    // Total row
-    {
-      sideHeader: "Total",
-      ...Object.fromEntries(
-        columns
-          .filter((col) => col !== "total" && col !== "sideHeader")
-          .map((key) => {
-            const sum = Object.values(overviewTableData)
-              .flat()
-              .filter((item) => item.coaData[mappingValue] === key)
-              .reduce((prev, curr) => prev + (curr[valueKey] || 0), 0);
-            return [key, sum.toFixed(2)];
-          })
-      ),
-      bg: colors.lighter,
-      header: true,
-    },
+  // Generate Total Row (across all data entries)
+  const totalRowCells = Object.fromEntries(
+    columns
+      .filter(col => col !== "sideHeader" && col !== "total")
+      .map(colKey => {
+        const sum = Object.values(overviewTableData)
+          .flat()
+          .filter(entry => entry.coaData[mappingValue] === colKey)
+          .reduce((acc, entry) => acc + (entry[valueKey] || 0), 0);
+        return [colKey, sum.toFixed(2)];
+      })
+  );
+  const totalRow = {
+    sideHeader: "Total",
+    ...totalRowCells,
+    bg: colors.lighter,
+    header: true,
+  };
+
+  // Combined all rows
+  const rows = [
+    ...headerRows,
+    ...dataRows,
+    totalRow,
   ];
 
+  // Table measurements
   const width = 250 * columns.length;
   const height =
-    24 * rows.filter((item) => !item.header).length +
-    36 * rows.filter((item) => item.header).length +
+    24 * rows.filter(row => !row.header).length +
+    36 * rows.filter(row => row.header).length +
     24;
 
   self.postMessage({

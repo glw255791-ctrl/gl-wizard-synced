@@ -1,23 +1,31 @@
-import { Stack, Button, Box, Typography } from "@mui/material";
-import { styles } from "../style";
+import {
+  Root,
+  LoginBlock,
+  ImageAndLogo,
+  LogoImage,
+  Label,
+  Message,
+  StyledButton,
+} from "../style";
 import logo from "../logo.png";
 import { useNavigate } from "react-router";
+
 export function NotFoundPage() {
   const navigate = useNavigate();
   return (
-    <Stack style={styles.root}>
-      <Stack style={styles.loginBlock}>
-        <Stack style={styles.imageAndLogo}>
-          <Box component={"img"} style={styles.image} src={logo} />
-          <Typography style={styles.label}>GL Wizard</Typography>
-        </Stack>
-        <Typography style={styles.message}>
+    <Root>
+      <LoginBlock>
+        <ImageAndLogo>
+          <LogoImage src={logo} />
+          <Label>GL Wizard</Label>
+        </ImageAndLogo>
+        <Message>
           The page you requested does not exist.
-        </Typography>
-        <Button style={styles.button} onClick={() => navigate(-1)}>
+        </Message>
+        <StyledButton onClick={() => navigate(-1)}>
           Back
-        </Button>
-      </Stack>
-    </Stack>
+        </StyledButton>
+      </LoginBlock>
+    </Root>
   );
 }

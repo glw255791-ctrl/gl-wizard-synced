@@ -1,5 +1,5 @@
-import { styled, Stack, Typography, Button } from "@mui/material";
-import { colors } from "../../../assets/colors";
+import { styled, Stack, Typography, Button, Box } from "@mui/material";
+import { colors } from "../../../../assets/colors";
 
 // Root container
 export const Root = styled(Stack)({
@@ -14,7 +14,7 @@ export const LoginBlock = styled(Stack)({
   width: 400,
   backgroundColor: colors.lighter,
   borderRadius: 16,
-  padding: "2rem",
+  padding: "1rem",
   gap: "1rem",
   justifyContent: "center",
   alignItems: "center",
@@ -34,23 +34,17 @@ export const Label = styled(Typography)({
   fontSize: "1.5rem",
 });
 
-// Message style
-export const Message = styled(Typography)({
-  color: colors.darker,
-  fontSize: "1rem",
-  paddingBottom: "1rem",
-});
-
 // Button style
 export const StyledButton = styled(Button)({
-  backgroundColor: colors.action,
   color: "white",
   fontSize: "1rem",
+  textTransform: "none",
   borderRadius: 16,
   height: 32,
   paddingLeft: 32,
   paddingRight: 32,
-  textTransform: "none",
+  backgroundColor: colors.action,
+  marginTop: "1rem"
 });
 
 // Image and logo stack
@@ -58,4 +52,28 @@ export const ImageAndLogo = styled(Stack)({
   paddingBottom: "1rem",
   justifyContent: "center",
   alignItems: "center",
+});
+
+// Input wrapper
+export const InputWrapper = styled(Box)({
+  width: "80%",
+  height: 32,
+  borderRadius: 16,
+});
+
+// Text input style (for inputProps)
+export const StyledInput = {
+  height: 32,
+  borderRadius: 16,
+};
+
+// Error block for all errors
+export const ErrorsBlock = styled(Stack)({
+  minHeight: "3rem",
+});
+
+// Single error text
+export const ErrorText = styled(Typography)({
+  fontSize: "0.75rem",
+  color: "red",
 });

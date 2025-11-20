@@ -117,7 +117,7 @@ export function ReversaReclassificationAnalysis() {
 
             <Grid2 size={6}>
               <ActionButton
-                isAnalyzeStep={isAnalyzeStep}
+                disabled={!isAnalyzeStep}
                 onPressAnalyzeData={onPressAnalyzeData}
               />
             </Grid2>

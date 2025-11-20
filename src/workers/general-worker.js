@@ -46,10 +46,7 @@ self.onmessage = (event) => {
     }
 
     processedRows = chunkEnd;
-    self.postMessage({
-      type: "progress",
-      progress: Math.round((processedRows / totalRows) * 100),
-    });
+
   }
 
   // ===== 3. Group by JEN and Date =====

@@ -1,27 +1,25 @@
-import { Card, Stack, Button } from "@mui/material";
 import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
-import { styles } from "./styles";
+import { ButtonsWrapper, StyledButton, CardStyled } from "./styles";
 
 interface Props {
   onPressAnalyzeData: () => void;
-  isAnalyzeStep: boolean;
+  disabled: boolean;
 }
 export function ActionButton(props: Props) {
-  const { onPressAnalyzeData, isAnalyzeStep } = props;
+  const { onPressAnalyzeData, disabled } = props;
   return (
-    <Card
-      style={{ ...styles.card, ...(!isAnalyzeStep ? styles.disabledCard : {}) }}
+    <CardStyled
+      disabled={disabled}
     >
-      <Stack sx={styles.buttonsWrapper}>
-        <Button
+      <ButtonsWrapper>
+        <StyledButton
           onClick={onPressAnalyzeData}
           variant="contained"
-          style={styles.button}
           endIcon={<TroubleshootIcon />}
         >
           Generate
-        </Button>
-      </Stack>
-    </Card>
+        </StyledButton>
+      </ButtonsWrapper>
+    </CardStyled>
   );
 }

@@ -1,14 +1,17 @@
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from "react";
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
   Stack,
-  Typography,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { styles } from "./analysed-data-overview.style";
-import { useEffect, useMemo, useState, useTransition } from "react";
-
+import { AccordionContent, styles, SummaryWrapper, Title } from "./style";
 import { Dropdown, DropdownItem } from "../ui-kit/dropdown/dropdown";
 import { DataTable } from "./table/table";
 import { Loader } from "../ui-kit/loader-overlay/loader-overlay";
@@ -36,63 +39,59 @@ interface Filters {
   value: string;
 }
 
-export function DataOverview(props: Props) {
-  const {
-    title,
-    mappingValue,
-    valueKey,
-    overviewTableData,
-    sortedDataDisplayHeader,
-    disabled,
-    coaHeaderOptions,
-    basicTableData,
-    basicTableHeader,
-    setDataDisplayHeader,
-  } = props;
-
+export function DataOverview({
+  title,
+  mappingValue,
+  valueKey,
+  overviewTableData,
+  sortedDataDisplayHeader,
+  disabled,
+  coaHeaderOptions,
+  basicTableData,
+  basicTableHeader,
+  setDataDisplayHeader,
+}: Props) {
   const [selectedFilter, setSelectedFilters] = useState<Filters>({
     header: "all",
     value: "",
   });
-
   const [selectedRow, setSelectedRow] = useState<string>("");
+  const [selectedTable, setSelectedTable] = useState("all");
+  const [selectedHeaderRows, setSelectedHeaderRows] = useState<string[]>([]);
   const [lazyTables, setLazyTables] = useState<React.ReactNode[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [transition, transitionFunc] = useTransition();
 
-  // Extract unique values for selected filter
-  const filterValueOptions = useMemo(() => {
+  // Always keep mappingValue included in header rows
+  useEffect(() => {
+    setSelectedHeaderRows([mappingValue]);
+  }, [mappingValue]);
+
+  // Compute filter value options for dropdown
+  const filterValueOptions = useMemo<string[]>(() => {
     if (selectedFilter.header === "all") return [];
-
     const values = sortedDataDisplayHeader
-      .map((item) => item[selectedFilter.header])
+      .map(item => item[selectedFilter.header])
       .filter(Boolean)
-      .map((item) => String(item));
-
+      .map(item => String(item));
     return Array.from(new Set(values));
   }, [selectedFilter.header, sortedDataDisplayHeader]);
 
-  const [loading, setLoading] = useState(false);
-  const [selectedTable, setSelectedTable] = useState("all");
-  const [transition, transitionFunc] = useTransition();
-
-  const [selectedHeaderRows, setSelectedHederRows] = useState<string[]>([]);
-
-  useEffect(() => {
-    setSelectedHederRows([mappingValue]);
-  }, [mappingValue]);
-
+  // Compute table header structure based on selected header rows
   const filteredSortedDataDisplayHeader: Record<string, AnyType>[] = useMemo(
     () =>
-      sortedDataDisplayHeader.map((item) =>
+      sortedDataDisplayHeader.map(item =>
         selectedHeaderRows.reduce(
-          (prev, curr) => ({ ...prev, [curr]: item[curr] }),
-          { active: item.active }
+          (acc, curr) => ({ ...acc, [curr]: item[curr] }),
+          { active: item.active },
         )
       ),
     [selectedHeaderRows, sortedDataDisplayHeader]
   );
 
+  // Generate table(s) each time selection changes
   useEffect(() => {
-    const commonProps = {
+    const commonTableProps = {
       transitionFunc,
       mappingValue,
       selectedFilter,
@@ -110,50 +109,51 @@ export function DataOverview(props: Props) {
           title="All items"
           overviewTableData={overviewTableData}
           sortedDataDisplayHeader={filteredSortedDataDisplayHeader}
-          {...commonProps}
+          {...commonTableProps}
         />,
       ]);
       setLoading(false);
       return;
     }
 
-    setLoading(true); // start loading
+    setLoading(true);
 
-    const filtered = filterValueOptions.filter((v) => v !== "total");
-    let i = 0;
-    const newTables: React.ReactNode[] = [];
+    // Remove 'total' from options shown as individual tables
+    const filteredValues = filterValueOptions.filter(v => v !== "total");
+    let idx = 0;
+    const accumulatedTables: React.ReactNode[] = [];
 
-    const renderNext = () => {
-      if (i >= filtered.length) {
-        setLoading(false); // all tables done
+    const renderNextTable = () => {
+      if (idx >= filteredValues.length) {
+        setLoading(false);
         return;
       }
 
-      const value = filtered[i];
+      const value = filteredValues[idx];
+      // Filter overviewData for rows with at least one subItem matching the filter value
       const filteredOverviewData: Record<string, AnyType> = {};
-
-      for (const key of Object.keys(overviewTableData)) {
-        const subArray = overviewTableData[key] as Record<string, AnyType>[];
+      for (const mainKey of Object.keys(overviewTableData)) {
+        const subArray = overviewTableData[mainKey] as Record<string, AnyType>[];
         if (
-          subArray.find(
-            (subItem) =>
+          subArray.some(
+            subItem =>
               (subItem.coaData as Record<string, AnyType>)?.[
-                selectedFilter.header
+              selectedFilter.header
               ] === value
           )
         ) {
-          filteredOverviewData[key] = overviewTableData[key];
+          filteredOverviewData[mainKey] = overviewTableData[mainKey];
         }
       }
-
+      // Header for just this value/table
       const filteredHeader = filteredSortedDataDisplayHeader.filter(
-        (item) =>
+        item =>
           item[selectedFilter.header] === value ||
           item[mappingValue] === "total"
       );
 
-      if (selectedTable === "all" || selectedTable === value)
-        newTables.push(
+      if (selectedTable === "all" || selectedTable === value) {
+        accumulatedTables.push(
           <DataTable
             key={value}
             id={value}
@@ -162,17 +162,17 @@ export function DataOverview(props: Props) {
             sortedDataDisplayHeader={filteredHeader}
             selectedRow={selectedRow}
             setSelectedRow={setSelectedRow}
-            {...commonProps}
+            {...commonTableProps}
           />
         );
+      }
 
-      setLazyTables([...newTables]);
-      i++;
-
-      setTimeout(renderNext, 0);
+      setLazyTables([...accumulatedTables]);
+      idx += 1;
+      setTimeout(renderNextTable, 0);
     };
 
-    renderNext();
+    renderNextTable();
   }, [
     selectedTable,
     selectedFilter,
@@ -195,16 +195,16 @@ export function DataOverview(props: Props) {
       }}
     >
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Stack style={styles.summaryWrapper}>
-          <Typography style={{ fontWeight: "bold" }}>{title}</Typography>
-        </Stack>
+        <SummaryWrapper>
+          <Title>{title}</Title>
+        </SummaryWrapper>
       </AccordionSummary>
 
       <AccordionDetails>
         <Loader loadingStatus={loading || transition} />
-
-        <Stack style={styles.accordionContent}>
+        <AccordionContent>
           <Stack style={styles.accordionHeader}>
+            {/* Filter header dropdown */}
             <Stack style={styles.dropdownWrapper}>
               <Dropdown
                 label="Filter header"
@@ -213,59 +213,59 @@ export function DataOverview(props: Props) {
                   ...(coaHeaderOptions || []),
                 ]}
                 value={selectedFilter.header}
-                onChange={(event) => {
-                  setDataDisplayHeader((prev) =>
-                    prev.map((item) => ({ ...item, active: true }))
+                onChange={event => {
+                  setDataDisplayHeader(prev =>
+                    prev.map(item => ({ ...item, active: true }))
                   );
-
-                  setSelectedFilters((prev) => ({
+                  setSelectedFilters(prev => ({
                     ...prev,
                     header: String(event.target.value),
                   }));
                 }}
               />
             </Stack>
-
+            {/* Header rows dropdown */}
             <Stack style={styles.dropdownWrapper}>
               <Dropdown
                 multiple
                 items={Object.keys(sortedDataDisplayHeader[0])
-                  .filter((item) => item !== "active")
-                  .map((item) => ({
-                    value: item,
-                    title: item,
-                  }))}
+                  .filter(key => key !== "active")
+                  .map(key => ({
+                    value: key,
+                    title: key,
+                  }))
+                }
                 value={selectedHeaderRows}
-                onChange={(e) => {
+                onChange={e => {
                   const val = e.target.value as string[];
-                  setSelectedHederRows(
+                  setSelectedHeaderRows(
                     !val.includes(mappingValue) ? [...val, mappingValue] : val
                   );
                 }}
                 label="Header rows"
               />
             </Stack>
+            {/* Display Table(s) dropdown (only when filtering by a header) */}
             <Stack style={styles.dropdownWrapper}>
-              {selectedFilter.header !== "all" ? (
+              {selectedFilter.header !== "all" && (
                 <Dropdown
                   label="Display Table(s)"
                   items={[
                     { value: "all", title: "All" },
-                    ...filterValueOptions.map((item) => ({
+                    ...filterValueOptions.map(item => ({
                       value: item,
                       title: item,
                     })),
                   ]}
                   value={selectedTable}
-                  onChange={(event) => {
+                  onChange={event => {
                     setSelectedTable(String(event.target.value));
                   }}
                 />
-              ) : undefined}
+              )}
             </Stack>
           </Stack>
-        </Stack>
-
+        </AccordionContent>
         <Stack style={styles.tablesStack}>{lazyTables}</Stack>
       </AccordionDetails>
     </Accordion>

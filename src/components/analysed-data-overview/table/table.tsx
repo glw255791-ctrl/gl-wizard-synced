@@ -1,30 +1,43 @@
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Stack,
-  Typography,
   Checkbox,
-  Button,
   Tooltip,
-  IconButton,
 } from "@mui/material";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import "react-virtualized/styles.css";
 import DownloadIcon from "@mui/icons-material/Download";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import CancelRounded from "@mui/icons-material/CancelRounded";
+import "react-virtualized/styles.css";
+import { AutoSizer, MultiGrid } from "react-virtualized";
+
 import {
   AnyType,
   exportBasicTableToExcel,
   exportTableToExcel,
   getElipsis,
 } from "./functions";
-import PushPinIcon from "@mui/icons-material/PushPin";
 import {
+  CheckedIcon,
+  UncheckedIcon,
   getStylesBasedOnColumn,
   getStylesBasedOnHeader,
+  RowLabelWrapper,
+  RowLabelCell,
+  IconButtonStyled,
+  PinIcon,
+  DownloadIconStyled,
+  TableScrollableWrapper,
+  TableHeaderStyled,
+  TableTitle,
+  ExcelDownloadButton,
   styles,
-} from "./table-style";
-import { AutoSizer, MultiGrid } from "react-virtualized";
+} from "./style";
 import { colors } from "../../../assets/colors";
+import { TotalText } from "./style";
 import { TableHeader } from "../../composed/basic-table/basic-table";
 
 const COLUMN_WIDTH = 250;
@@ -32,6 +45,7 @@ const ROW_HEIGHT = 24;
 const WIDTH_ADJUST = 2;
 const HEIGHT_ADJUST = 73;
 const MAX_CHARS = 35;
+
 const TOTAL = "total";
 const INCLUDE = "Include";
 const SIDE_HEADER = "sideHeader";
@@ -59,36 +73,34 @@ interface Filters {
   value: string;
 }
 
-export const DataTable = (props: Props) => {
-  const {
-    title,
-    sortedDataDisplayHeader,
-    mappingValue,
-    selectedRow,
-    overviewTableData,
-    valueKey,
-    basicTableData,
-    basicTableHeader,
-    transitionFunc,
-    id,
-    setSelectedRow,
-    setDataDisplayHeader,
-  } = props;
-
+export const DataTable: React.FC<Props> = ({
+  title,
+  sortedDataDisplayHeader,
+  mappingValue,
+  selectedRow,
+  overviewTableData,
+  valueKey,
+  basicTableData,
+  basicTableHeader,
+  transitionFunc,
+  id,
+  setSelectedRow,
+  setDataDisplayHeader,
+}) => {
   const [tableRows, setTableRows] = useState<Record<string, AnyType>[]>([]);
   const [tableColumns, setTableColumns] = useState<string[]>([]);
+  const multiGridRef = useRef<MultiGrid>(null);
 
+  // Generates table data using a Web Worker
   const generateTableData = () => {
     const worker = new Worker(
       new URL("./generate-table-data.js", import.meta.url)
     );
-
     worker.onmessage = (e) => {
       const { columns, rows } = e.data;
       setTableColumns(columns);
       setTableRows(rows);
     };
-
     worker.postMessage({
       sortedDataDisplayHeader,
       overviewTableData,
@@ -103,19 +115,19 @@ export const DataTable = (props: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortedDataDisplayHeader, overviewTableData]);
 
+  // Export table data to Excel
   const onExportClick = useCallback(
     () => exportTableToExcel(tableRows, sortedDataDisplayHeader, mappingValue),
     [tableRows, sortedDataDisplayHeader, mappingValue]
   );
 
+  // Calculate number of fixed header rows
   const fixedRowCount = useMemo(
     () => Object.keys(sortedDataDisplayHeader[0]).length,
     [sortedDataDisplayHeader]
   );
 
-  const multiGridRef = useRef<MultiGrid>(null);
-
-  // Force MultiGrid to repaint when data changes
+  // Force update of grid when data changes
   useEffect(() => {
     if (multiGridRef.current) {
       multiGridRef.current.recomputeGridSize();
@@ -123,15 +135,17 @@ export const DataTable = (props: Props) => {
     }
   }, [sortedDataDisplayHeader, tableRows]);
 
-  const renderIncludeRow = (row: Record<string, AnyType>, column: string) =>
-    column === TOTAL ? (
-      <Typography style={styles.totalText}>Total</Typography>
-    ) : column === SIDE_HEADER ? (
-      "Included in calculation"
-    ) : (
-      renderIncludeCheckbox(row, column)
-    );
+  // Renders the "Include" row with either custom text, total or checkbox
+  const renderIncludeRow = (
+    row: Record<string, AnyType>,
+    column: string
+  ) => {
+    if (column === TOTAL) return <TotalText>Total</TotalText>;
+    if (column === SIDE_HEADER) return "Included in calculation";
+    return renderIncludeCheckbox(row, column);
+  };
 
+  // Renders the checkbox for "Include" row
   const renderIncludeCheckbox = (
     row: Record<string, AnyType>,
     column: string
@@ -139,8 +153,8 @@ export const DataTable = (props: Props) => {
     <Checkbox
       disableRipple
       disabled={!!setSelectedRow}
-      checkedIcon={<CheckCircleIcon style={styles.checkedIcon} />}
-      icon={<CancelRounded style={styles.uncheckedIcon} />}
+      checkedIcon={<CheckedIcon />}
+      icon={<UncheckedIcon />}
       value={row[column]}
       checked={Boolean(row[column])}
       onChange={(_, checked) =>
@@ -156,77 +170,78 @@ export const DataTable = (props: Props) => {
     />
   );
 
+  // Handles Excel export for a specific row
   const handleDownloadByRow = (value: string) => {
     const filteredValues = basicTableData.filter(
       (item) => (item.result as unknown as string[]).join("/") === value
     );
+    // eslint-disable-next-line no-console
     console.log(basicTableData, filteredValues);
     exportBasicTableToExcel(basicTableHeader, filteredValues, value);
   };
 
-  const renderCellText = (row: Record<string, AnyType>, column: string) => {
+  // Renders the content of a cell, including pin & download icons when appropriate
+  const renderCellText = (
+    row: Record<string, AnyType>,
+    column: string
+  ) => {
     const isHeader = row.header;
-    const val = row[column]
-      ? getElipsis(row[column] as string, MAX_CHARS - 5)
-      : "";
-    if (isHeader || column !== SIDE_HEADER) return <Stack>{val}</Stack>;
-    else
-      return (
-        <Stack style={styles.rowLabelWrapper}>
-          {val}
-          <Stack style={styles.rowLabelCell}>
-            {setSelectedRow && (
-              <IconButton
-                style={styles.iconBtn}
-                onClick={() => {
-                  const val = row.sideHeader as string;
-                  if (!row.header)
-                    setSelectedRow?.((prev) => (prev === val ? "" : val));
-                }}
-              >
-                <PushPinIcon
-                  style={{
-                    color:
-                      selectedRow === row.sideHeader ? "white" : colors.medium,
-                    fontSize: 16,
-                  }}
-                />
-              </IconButton>
-            )}
-            <IconButton
-              style={styles.iconBtn}
-              onClick={() => handleDownloadByRow(String(row[column]))}
+    const val =
+      row[column] ?
+        getElipsis(row[column] as string, MAX_CHARS - 5) :
+        "";
+
+    if (isHeader || column !== SIDE_HEADER) {
+      return <Stack>{val}</Stack>;
+    }
+
+    return (
+      <RowLabelWrapper>
+        {val}
+        <RowLabelCell>
+          {setSelectedRow && (
+            <IconButtonStyled
+              onClick={() => {
+                const rowVal = row.sideHeader as string;
+                if (!row.header) {
+                  setSelectedRow((prev) => (prev === rowVal ? "" : rowVal));
+                }
+              }}
             >
-              <DownloadIcon style={styles.cellDownloadBtn} />
-            </IconButton>
-          </Stack>
-        </Stack>
-      );
+              <PinIcon />
+            </IconButtonStyled>
+          )}
+          <IconButtonStyled
+            onClick={() => handleDownloadByRow(String(row[column]))}
+          >
+            <DownloadIconStyled />
+          </IconButtonStyled>
+        </RowLabelCell>
+      </RowLabelWrapper>
+    );
   };
 
   return (
-    <Stack id={id} style={styles.tableScrollableWrapper}>
-      <Stack style={styles.tableHeader}>
-        <Typography style={styles.tableTitle}>{title}</Typography>
-        <Button
+    <TableScrollableWrapper id={id}>
+      <TableHeaderStyled>
+        <TableTitle>{title}</TableTitle>
+        <ExcelDownloadButton
           onClick={onExportClick}
           variant="contained"
-          style={styles.excelBtn}
           endIcon={<DownloadIcon />}
         >
           Download
-        </Button>
-      </Stack>
+        </ExcelDownloadButton>
+      </TableHeaderStyled>
       <AutoSizer
         style={{
           ...styles.autosizerWrapper,
           height: tableRows.length * 24 + 17,
-          backgroundColor: colors.medium,
         }}
       >
         {({ width, height }) => (
           <MultiGrid
-            key={`${selectedRow}`}
+            key={String(selectedRow)}
             ref={multiGridRef}
             fixedColumnCount={1}
             fixedRowCount={fixedRowCount}
@@ -240,17 +255,17 @@ export const DataTable = (props: Props) => {
               const column = tableColumns[columnIndex];
               const row = tableRows[rowIndex];
 
-              if (!row) return <></>;
+              if (!row) return null;
+
+              const tooltipTitle =
+                typeof row[column] === "string" &&
+                  (row[column] as string).length > MAX_CHARS
+                  ? (row[column] as string)
+                  : "";
 
               return (
                 <div key={key} style={style}>
-                  <Tooltip
-                    title={
-                      (row[column] as string)?.length > MAX_CHARS
-                        ? (row[column] as string)
-                        : ""
-                    }
-                  >
+                  <Tooltip title={tooltipTitle}>
                     <Stack
                       style={
                         {
@@ -279,6 +294,6 @@ export const DataTable = (props: Props) => {
           />
         )}
       </AutoSizer>
-    </Stack>
+    </TableScrollableWrapper>
   );
 };
