@@ -1,11 +1,14 @@
-import { Grid2, Button, Stack } from "@mui/material";
+import { Grid2 } from "@mui/material";
 import { useNavigate } from "react-router";
-import { styles } from "./main-menu.style";
+import {
+  ButtonsWrapper,
+  Root,
+  StyledMenuButton,
+} from "./style";
 import { supabase } from "../../../api/api";
 import { useEffect, useMemo, useState } from "react";
 import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { Header } from "../../composed/header/header";
-import { colors } from "../../../assets/colors";
 import glTransactionsImage from "../../../assets/images/gl-transactions-analysis.jpg";
 import reversalImage from "../../../assets/images/reversal.jpg";
 import reversalReclassificationImage from "../../../assets/images/reversal-reclassification.jpg";
@@ -14,7 +17,7 @@ import userManagementImage from "../../../assets/images/user-management.jpg";
 export function MainMenu() {
   const navigate = useNavigate();
 
-  const [userRole, setUserRole] = useState<"user" | "admin">("user");
+  const [userRole, setUserRole] = useState<"user" | "admin" | undefined>(undefined);
   useEffect(() => {
     const checkSession = async () => {
       const {
@@ -37,61 +40,53 @@ export function MainMenu() {
 
   const isAdmin = useMemo(() => userRole === "admin", [userRole]);
 
-  const getButtonStyle = (image: string) => {
-    return {
-      ...styles.button,
-      backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${image})`,
-      "&:hover": {
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${image})`,
-        borderRight: `12px solid ${colors.darker}`,
-      }
-    };
-  };
-
   return (
     <PageWrapper>
-      <Stack style={{ gap: "1rem", width: "calc(100vw - 24rem)" }}>
+      <Root>
         <Header />
-        <Grid2 container spacing={3} style={{ padding: '1rem' }}>
-          <Grid2 size={6}>
-            <Button
-              sx={getButtonStyle(glTransactionsImage)}
-              onClick={() => navigate("/general-analysis")}
-            >
-              GL Transactions Analysis
-            </Button>
-          </Grid2>
-          <Grid2 size={6}>
-            <Button
-              sx={getButtonStyle(reversalImage)}
-              onClick={() => navigate("/reversal-analysis")}
-            >
-              Reversal
-            </Button>
-          </Grid2>
-          <Grid2 size={6}>
-            <Button
-              sx={getButtonStyle(reversalReclassificationImage)}
-              onClick={() => navigate("/reversal-reclassification-analysis")}
-            >
+        {userRole && (
+          <ButtonsWrapper container spacing={3}>
+            <Grid2 size={isAdmin ? 6 : 4}>
+              <StyledMenuButton
+                bgImage={glTransactionsImage}
+                onClick={() => navigate("/general-analysis")}
 
-              Reversal/reclassification
-
-            </Button>
-          </Grid2>
-
-          {isAdmin && (
-            <Grid2 size={6}>
-              <Button
-                sx={getButtonStyle(userManagementImage)}
-                onClick={() => navigate("/user-management")}
               >
-                User management
-              </Button>
+                GL Transactions Analysis
+              </StyledMenuButton>
             </Grid2>
-          )}
-        </Grid2>
-      </Stack>
+            <Grid2 size={isAdmin ? 6 : 4}>
+              <StyledMenuButton
+                bgImage={reversalImage}
+                onClick={() => navigate("/reversal-analysis")}
+
+              >
+                Reversal
+              </StyledMenuButton>
+            </Grid2>
+            <Grid2 size={isAdmin ? 6 : 4}>
+              <StyledMenuButton
+                bgImage={reversalReclassificationImage}
+                onClick={() => navigate("/reversal-reclassification-analysis")}
+
+              >
+                Reversal/reclassification
+              </StyledMenuButton>
+            </Grid2>
+            {isAdmin && (
+              <Grid2 size={6}>
+                <StyledMenuButton
+                  bgImage={userManagementImage}
+                  onClick={() => navigate("/user-management")}
+
+                >
+                  User management
+                </StyledMenuButton>
+              </Grid2>
+            )}
+          </ButtonsWrapper>
+        )}
+      </Root>
     </PageWrapper>
   );
 }

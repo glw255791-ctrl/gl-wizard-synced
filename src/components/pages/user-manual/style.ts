@@ -10,7 +10,7 @@ export const RootStack = styled(Stack)({
 // Wrapper for rows of buttons or content
 export const ButtonsWrapper = styled(Stack)({
   flexDirection: "row",
-  gap: 10,
+  gap: 16,
 });
 
 // Styled button stack for each download button

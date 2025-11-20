@@ -36,7 +36,7 @@ export function PageWrapper({ children }: Props) {
     severity: "",
     open: false,
   });
-  const [userRole, setUserRole] = useState<"user" | "admin">("user");
+  const [userRole, setUserRole] = useState<"user" | "admin" | undefined>(undefined);
 
   useEffect(() => {
     async function checkSession() {
@@ -89,7 +89,7 @@ export function PageWrapper({ children }: Props) {
         <Left>
           <Title>GL Wizard</Title>
           <BtnGroupsWrapper>
-            <TopBtns>
+            {userRole && <>   <TopBtns>
               <MenuButton
                 menuPath="/dashboard"
                 startIcon={<WidgetsIcon />}
@@ -133,24 +133,24 @@ export function PageWrapper({ children }: Props) {
                 </MenuButton>
               )}
             </TopBtns>
-            <BottomBtns>
-              <MenuButton
-                menuPath="/user-manual"
-                startIcon={<HelpCenterIcon />}
-                variant="contained"
-                onClick={() => navigate("/user-manual")}
-              >
-                User Manual
-              </MenuButton>
-              <MenuButton
-                menuPath="/about"
-                startIcon={<PrivacyTipIcon />}
-                variant="contained"
-                onClick={() => navigate("/about")}
-              >
-                About
-              </MenuButton>
-            </BottomBtns>
+              <BottomBtns>
+                <MenuButton
+                  menuPath="/user-manual"
+                  startIcon={<HelpCenterIcon />}
+                  variant="contained"
+                  onClick={() => navigate("/user-manual")}
+                >
+                  User Manual
+                </MenuButton>
+                <MenuButton
+                  menuPath="/about"
+                  startIcon={<PrivacyTipIcon />}
+                  variant="contained"
+                  onClick={() => navigate("/about")}
+                >
+                  About
+                </MenuButton>
+              </BottomBtns></>}
           </BtnGroupsWrapper>
         </Left>
         <Content>{children}</Content>
