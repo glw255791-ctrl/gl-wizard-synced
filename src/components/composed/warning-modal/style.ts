@@ -1,4 +1,5 @@
 import { CSSProperties } from "react";
+import { colors } from "../../../assets/colors";
 
 type StyleObject = CSSProperties;
 
