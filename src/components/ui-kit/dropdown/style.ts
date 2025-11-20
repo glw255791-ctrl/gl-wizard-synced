@@ -15,7 +15,7 @@ export const StyledInputLabel = styled(InputLabel)({
 export const StyledSelect = styled(Select)({
     height: 38,
     borderRadius: 8,
-    backgroundColor: "white",
+    backgroundColor: colors.white,
     color: colors.darker,
     "& .MuiSelect-select": {
         textAlign: "left",

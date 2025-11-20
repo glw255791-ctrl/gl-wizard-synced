@@ -83,7 +83,7 @@ export const styles: Record<string, CommonProps["style"]> = {
     padding: 2,
     fontSize: 11,
     backgroundColor: colors.medium,
-    color: "white",
+    color: colors.white,
   },
 
   topBtn: {

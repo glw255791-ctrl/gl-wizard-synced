@@ -30,7 +30,7 @@ export const StyledDropzoneRoot = styled(Stack)({
   alignContent: "center",
   alignItems: "center",
   color: colors.darker,
-  backgroundColor: "white",
+  backgroundColor: colors.white,
 });
 
 // Styled download done icon

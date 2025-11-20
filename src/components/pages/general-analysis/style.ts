@@ -14,13 +14,13 @@ export const styles: Record<string, StyleObject> = {
     justifyContent: "flex-start",
   },
   card: {
-    backgroundColor: "white",
+    backgroundColor: colors.white,
     borderRadius: BORDER_RADIUS,
     padding: CARD_PADDING,
     height: FULL_HEIGHT_OFFSET,
   },
   disabledCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.white,
     borderRadius: BORDER_RADIUS,
     padding: CARD_PADDING,
     height: FULL_HEIGHT_OFFSET,
@@ -33,7 +33,7 @@ export const styles: Record<string, StyleObject> = {
   divider: {
     height: "70%",
     width: 1,
-    backgroundColor: "gray",
+    backgroundColor: colors.gray,
   },
   disabled: {
     opacity: DISABLED_OPACITY,
@@ -75,7 +75,7 @@ export const styles: Record<string, StyleObject> = {
     width: "100%",
   },
   table: {
-    backgroundColor: "white",
+    backgroundColor: colors.white,
     borderRadius: BORDER_RADIUS,
   },
   accordionRoot: {

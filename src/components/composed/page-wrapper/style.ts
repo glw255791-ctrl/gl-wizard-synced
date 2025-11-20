@@ -52,9 +52,9 @@ export const MenuBtn = styled(Button)({
 
 // Active menu button style
 export const MenuBtnActive = styled(MenuBtn)({
-  color: "white",
+  color: colors.white,
   fontWeight: "bold",
-  borderLeft: '4px solid #E5F1F1',
+  borderLeft: `4px solid ${colors.lighter}`,
 });
 
 // Page title

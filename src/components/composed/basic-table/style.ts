@@ -17,7 +17,7 @@ export const CheckedIcon = styled(CheckCircleIcon)({
 });
 
 export const UncheckedIcon = styled(CancelRounded)({
-  color: "gray",
+  color: colors.gray,
   fontSize: 22,
 });
 
@@ -115,7 +115,7 @@ export const styles: Record<string, CommonProps["style"]> = {
   },
   columnStyle: {
     margin: 0,
-    backgroundColor: "white",
+    backgroundColor: colors.white,
   },
 };
 

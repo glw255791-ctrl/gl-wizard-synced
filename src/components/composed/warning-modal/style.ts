@@ -9,7 +9,7 @@ export const styles: Record<string, StyleObject> = {
     left: "50%",
     transform: "translate(-50%, -50%)",
     width: 400,
-    backgroundColor: "white",
+    backgroundColor: colors.white,
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
@@ -27,14 +27,14 @@ export const styles: Record<string, StyleObject> = {
     justifyContent: "space-between",
     alignItems: "center",
     padding: "5px 15px 15px 15px",
-    borderBottom: "1px solid gray",
+    borderBottom: `1px solid ${colors.gray}`,
   },
   message: {
-    color: "black",
+    color: colors.black,
     textAlign: "center",
   },
   highlight: {
-    color: "black",
+    color: colors.black,
     fontWeight: "bold",
   },
   modalContentWrapper: {
@@ -46,7 +46,7 @@ export const styles: Record<string, StyleObject> = {
   },
   title: {
     textAlign: "center",
-    color: "black",
+    color: colors.black,
     flex: 1,
     fontWeight: "bold",
     fontSize: 20,

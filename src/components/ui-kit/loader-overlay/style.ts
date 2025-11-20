@@ -9,7 +9,7 @@ export const StyledBackdrop = styled(Backdrop)(({ theme }) => ({
 
 // Styled stack container for the loader content
 export const LoaderContent = styled(Stack)({
-  backgroundColor: "#fff",
+  backgroundColor: colors.white,
   borderRadius: 45,
   flexDirection: "row",
   alignItems: "center",

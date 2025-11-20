@@ -5,6 +5,7 @@ import { supabase } from "../../../api/api";
 import { useEffect, useMemo, useState } from "react";
 import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { Header } from "../../composed/header/header";
+import { colors } from "../../../assets/colors";
 import glTransactionsImage from "../../../assets/images/gl-transactions-analysis.jpg";
 import reversalImage from "../../../assets/images/reversal.jpg";
 import reversalReclassificationImage from "../../../assets/images/reversal-reclassification.jpg";
@@ -42,7 +43,7 @@ export function MainMenu() {
       backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${image})`,
       "&:hover": {
         backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${image})`,
-        borderRight: `12px solid #4F6367`,
+        borderRight: `12px solid ${colors.darker}`,
       }
     };
   };

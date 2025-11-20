@@ -15,10 +15,10 @@ export const styles: Record<string, CommonProps["style"]> = {
     gap: 5,
   },
   red: {
-    color: "red",
+    color: colors.red,
   },
   green: {
-    color: "green",
+    color: colors.green,
   },
   columnHeader: {
     fontWeight: "bold",
@@ -29,7 +29,7 @@ export const styles: Record<string, CommonProps["style"]> = {
     left: "50%",
     transform: "translate(-50%, -50%)",
     width: 400,
-    backgroundColor: "white",
+    backgroundColor: colors.white,
     borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
@@ -51,7 +51,7 @@ export const styles: Record<string, CommonProps["style"]> = {
     borderBottomColor: colors.darker
   },
   black: {
-    color: "black",
+    color: colors.black,
   },
   modalContentWrapper: {
     alignItems: "center",
@@ -93,7 +93,7 @@ export const styles: Record<string, CommonProps["style"]> = {
     flexDirection: "row",
     gap: 5,
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: colors.white,
     borderRadius: 16,
   },
   searchInput: {

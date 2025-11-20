@@ -57,5 +57,5 @@ export const ErrorText = styled(Typography)({
 export const Divider = styled(Box)({
   width: "100%",
   height: 1,
-  backgroundColor: "gray",
+  backgroundColor: colors.gray,
 });

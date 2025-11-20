@@ -37,7 +37,7 @@ export const Label = styled(Typography)({
 // Login button
 export const LoginButton = styled(Button)({
   backgroundColor: colors.action,
-  color: "white",
+  color: colors.white,
   fontSize: "1rem",
   textTransform: "none",
   borderRadius: 16,
@@ -75,6 +75,6 @@ export const ErrorsBlock = styled(Stack)({
 // Single error text
 export const ErrorText = styled(Typography)({
   fontSize: "0.75rem",
-  color: "red",
+  color: colors.red,
 });
 

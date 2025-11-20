@@ -14,7 +14,7 @@ export const styles: Record<string, React.CSSProperties> = {
     borderRadius: '1rem 0 0 1rem',
     fontSize: '1.2rem',
     fontWeight: "bold",
-    color: "white",
+    color: colors.white,
     position: "relative",
     overflow: "hidden",
     backgroundSize: "cover",
@@ -32,7 +32,7 @@ export const styles: Record<string, React.CSSProperties> = {
     height: "auto",
   },
   label: {
-    color: "#3d9970",
+    color: colors.oliveGreen,
     fontWeight: "bold",
     fontSize: "1.5rem",
   },

@@ -12,4 +12,8 @@ export const colors = {
   medium: "#7A9E9F",
   red: "#FF0000",
   green: "#008000",
+  white: "#FFFFFF",
+  black: "#000000",
+  gray: "#808080",
+  oliveGreen: "#3d9970",
 };

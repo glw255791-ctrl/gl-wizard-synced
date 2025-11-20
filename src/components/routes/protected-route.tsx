@@ -2,6 +2,7 @@ import { JSX, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Backdrop, CircularProgress } from "@mui/material";
 import { supabase } from "../../api/api";
+import { colors } from "../../assets/colors";
 
 interface ProtectedRouteProps {
   children: JSX.Element;
@@ -65,7 +66,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   if (isAuthorized === null) {
     return (
       <Backdrop
-        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        sx={{ color: colors.white, zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open
       >
         <CircularProgress color="inherit" />

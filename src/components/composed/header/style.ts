@@ -3,7 +3,7 @@ import { colors } from "../../../assets/colors";
 
 // Container for the header section
 export const Wrapper = styled(Card)({
-  backgroundColor: "#4F6367CC",
+  backgroundColor: `${colors.darker}CC`,
   borderRadius: 8,
   padding: 16,
 });
@@ -40,7 +40,7 @@ export const HeaderBtnsWrapperRight = styled(Stack)({
   alignItems: "center",
   justifyContent: "flex-end",
   flex: 1,
-  color: 'white',
+  color: colors.white,
 });
 
 // Display for the user name in the header

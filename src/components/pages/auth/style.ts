@@ -44,7 +44,7 @@ export const Message = styled(Typography)({
 // Button style
 export const StyledButton = styled(Button)({
   backgroundColor: colors.action,
-  color: "white",
+  color: colors.white,
   fontSize: "1rem",
   borderRadius: 16,
   height: 32,
