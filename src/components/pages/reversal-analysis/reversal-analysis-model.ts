@@ -4,6 +4,7 @@ import { Workbook } from "exceljs";
 import { formatDate } from "date-fns";
 import { saveAs } from "file-saver";
 import { TableHeader } from "../../composed/basic-table/basic-table";
+import { exportTableToExcel } from "../../composed/basic-table/functions";
 
 export interface RawData {
   glData: Record<string, any>[];
@@ -58,6 +59,8 @@ export function useReversalAnalysis() {
 
   const [error, setError] = useState<string | undefined>(undefined);
 
+  const [unmappedRows, setUnmappedRows] = useState<Record<string, any>[]>([]);
+
   const [isWarningModalShown, setIsWarningModalShown] =
     useState<boolean>(false);
 
@@ -91,34 +94,34 @@ export function useReversalAnalysis() {
       rows: rawData.glData.length,
       total: selectedHeaders.glHeaders.value
         ? rawData.glData.reduce(
-            (prev, curr) =>
-              (prev += Number(curr[selectedHeaders.glHeaders.value])),
-            0
-          )
+          (prev, curr) =>
+            (prev += Number(curr[selectedHeaders.glHeaders.value])),
+          0
+        )
         : 0,
       startDate: selectedHeaders.glHeaders.date
         ? formatDate(
-            new Date(
-              Math.min(
-                ...rawData.glData.map((item) =>
-                  new Date(item[selectedHeaders.glHeaders.date]).getTime()
-                )
+          new Date(
+            Math.min(
+              ...rawData.glData.map((item) =>
+                new Date(item[selectedHeaders.glHeaders.date]).getTime()
               )
-            ),
-            "dd-MM-yyyy"
-          )
+            )
+          ),
+          "dd-MM-yyyy"
+        )
         : "",
       endDate: selectedHeaders.glHeaders.date
         ? formatDate(
-            new Date(
-              Math.max(
-                ...rawData.glData.map((item) =>
-                  new Date(item[selectedHeaders.glHeaders.date]).getTime()
-                )
+          new Date(
+            Math.max(
+              ...rawData.glData.map((item) =>
+                new Date(item[selectedHeaders.glHeaders.date]).getTime()
               )
-            ),
-            "dd-MM-yyyy"
-          )
+            )
+          ),
+          "dd-MM-yyyy"
+        )
         : "",
     };
   }, [rawData, selectedHeaders]);
@@ -299,12 +302,15 @@ export function useReversalAnalysis() {
     );
 
     worker.onmessage = (event) => {
+      const notMappedRows = event.data.outputVal.filter((item: any) =>
+        JSON.stringify(item).includes("not mapped")
+      );
       if (
-        event.data.outputVal.some((item: any) =>
-          JSON.stringify(item).includes("not mapped")
-        )
-      )
+        notMappedRows.length > 0
+      ) {
+        setUnmappedRows(notMappedRows);
         setIsWarningModalShown(true);
+      }
       generateOverviewData(
         Object.values(event.data.groupedByJenAndDate).flat()
       );
@@ -319,6 +325,7 @@ export function useReversalAnalysis() {
     };
 
     worker.onerror = (error) => {
+      setError(error.message);
       console.error("Worker error:", error);
       setLoadingStatus(false);
       worker.terminate();
@@ -443,6 +450,10 @@ export function useReversalAnalysis() {
     ];
   }, [dataDisplayHeader, selectedHeaders.coaHeaders.mappingValue]);
 
+  const onPressExportUnmappedRows = () => {
+    exportTableToExcel(tableHeader, unmappedRows);
+  };
+
   return {
     onChangeGlHeader,
     onChangeCoaHeader,
@@ -452,6 +463,7 @@ export function useReversalAnalysis() {
     onPressDownloadData,
     onPressResetBtn,
     setDataDisplayHeader,
+    onPressExportUnmappedRows,
     overviewTableData,
     sortedDataDisplayHeader,
     loadingStatus,

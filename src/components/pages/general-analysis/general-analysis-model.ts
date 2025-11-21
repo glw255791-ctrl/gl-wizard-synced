@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Workbook } from "exceljs";
 import { formatDate } from "date-fns";
 import { TableHeader } from "../../composed/basic-table/basic-table";
+import { exportTableToExcel } from "../../composed/basic-table/functions";
 
 export interface RawData {
   glData: Record<string, any>[];
@@ -49,6 +50,7 @@ export function useGeneralAnalysis() {
   const [isWarningModalShown, setIsWarningModalShown] =
     useState<boolean>(false);
 
+
   const [currentStep, setCurrentStep] = useState<AnalysisStep[]>([
     AnalysisStep.TO_UPLOAD_GL,
   ]);
@@ -66,6 +68,8 @@ export function useGeneralAnalysis() {
   const [overviewTableData, setOverviewTableData] = useState<
     Record<string, any>
   >({});
+
+  const [unmappedRows, setUnmappedRows] = useState<Record<string, any>[]>([]);
 
   const [tableData, setTableData] = useState<Record<string, any>[]>([]);
   const [reversalTableData, setReversalTableData] = useState<
@@ -211,6 +215,7 @@ export function useGeneralAnalysis() {
       }));
 
       worker.onerror = (error) => {
+        setError(error.message);
         console.error("Worker error:", error);
         setLoadingStatus(false);
         worker.terminate();
@@ -218,6 +223,7 @@ export function useGeneralAnalysis() {
 
       setCurrentStep((prev) => [...prev, AnalysisStep.UPLOADED_GL]);
       setLoadingStatus(false);
+
       worker.terminate();
     };
   };
@@ -285,6 +291,7 @@ export function useGeneralAnalysis() {
   const onPressResetBtn = () => {
     setCurrentStep([AnalysisStep.TO_UPLOAD_GL]);
     setTableData([]);
+    setError(undefined);
     setRawData({
       coaData: [],
       coaHeaders: [],
@@ -317,12 +324,16 @@ export function useGeneralAnalysis() {
     );
 
     reversalWorker.onmessage = (event) => {
+      const notMappedRows = event.data.outputVal.filter((item: any) =>
+        JSON.stringify(item).includes("not mapped")
+      );
       if (
-        event.data.outputVal.some((item: any) =>
-          JSON.stringify(item).includes("not mapped")
-        )
-      )
+        notMappedRows.length > 0
+      ) {
+        setUnmappedRows(notMappedRows);
+
         setIsWarningModalShown(true);
+      }
 
       setReversalTableData(
         Object.values(event.data.outputVal as Record<string, any>[]).flat()
@@ -332,6 +343,7 @@ export function useGeneralAnalysis() {
     };
 
     reversalWorker.onerror = (error) => {
+      setError(error.message);
       console.error("Worker error:", error);
       setLoadingStatus(false);
       reversalWorker.terminate();
@@ -347,12 +359,15 @@ export function useGeneralAnalysis() {
     );
 
     worker.onmessage = (event) => {
+      const notMappedRows = event.data.tableData.filter((item: any) =>
+        JSON.stringify(item).includes("not mapped")
+      );
       if (
-        event.data.tableData.some((item: any) =>
-          JSON.stringify(item).includes("not mapped")
-        )
-      )
+        notMappedRows.length > 0
+      ) {
+        setUnmappedRows(notMappedRows);
         setIsWarningModalShown(true);
+      }
       setTableData(event.data.tableData);
       setOverviewTableData(event.data.overviewTableData);
       setDataDisplayHeader(event.data.displayHeaders);
@@ -367,6 +382,7 @@ export function useGeneralAnalysis() {
     };
 
     worker.onerror = (error) => {
+      setError(error.message);
       console.error("Worker error:", error);
       setLoadingStatus(false);
       worker.terminate();
@@ -400,6 +416,10 @@ export function useGeneralAnalysis() {
     ];
   }, [dataDisplayHeader, selectedHeaders.coaHeaders.mappingValue]);
 
+  const onPressExportUnmappedRows = () => {
+    exportTableToExcel(tableHeader, unmappedRows);
+  };
+
   return {
     onChangeGlHeader,
     onChangeCoaHeader,
@@ -409,6 +429,7 @@ export function useGeneralAnalysis() {
     onPressResetBtn,
     setDataDisplayHeader,
     setIsWarningModalShown,
+    onPressExportUnmappedRows,
     reversalTableData,
     loadingStatus,
     error,

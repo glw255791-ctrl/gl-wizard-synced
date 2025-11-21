@@ -55,7 +55,6 @@ export function DataOverview({
     header: "all",
     value: "",
   });
-  const [selectedRow, setSelectedRow] = useState<string>("");
   const [selectedTable, setSelectedTable] = useState("all");
   const [selectedHeaderRows, setSelectedHeaderRows] = useState<string[]>([]);
   const [lazyTables, setLazyTables] = useState<React.ReactNode[]>([]);
@@ -64,8 +63,10 @@ export function DataOverview({
 
   // Always keep mappingValue included in header rows
   useEffect(() => {
-    setSelectedHeaderRows([mappingValue]);
-  }, [mappingValue]);
+    setSelectedHeaderRows([selectedFilter.header === 'all' ? mappingValue : selectedFilter.header]);
+  }, [selectedFilter]);
+
+
 
   // Compute filter value options for dropdown
   const filterValueOptions = useMemo<string[]>(() => {
@@ -152,7 +153,10 @@ export function DataOverview({
           item[mappingValue] === "total"
       );
 
-      if (selectedTable === "all" || selectedTable === value) {
+
+      const hasItemInTable = [...new Set(Object.keys(filteredOverviewData).join('/').split('/'))].includes(selectedTable)
+
+      if (selectedTable === "all" || hasItemInTable) {
         accumulatedTables.push(
           <DataTable
             key={value}
@@ -160,8 +164,7 @@ export function DataOverview({
             title={value}
             overviewTableData={filteredOverviewData}
             sortedDataDisplayHeader={filteredHeader}
-            selectedRow={selectedRow}
-            setSelectedRow={setSelectedRow}
+            selectedRow={value === selectedTable ? undefined : selectedTable}
             {...commonTableProps}
           />
         );
@@ -179,7 +182,6 @@ export function DataOverview({
     filterValueOptions,
     overviewTableData,
     filteredSortedDataDisplayHeader,
-    selectedRow,
     mappingValue,
     valueKey,
     setDataDisplayHeader,

@@ -29,6 +29,7 @@ export function GeneralAnalysis() {
     isWarningModalShown,
     reversalTableData,
     reversalTableHeader,
+    onPressExportUnmappedRows,
     setIsWarningModalShown,
     setDataDisplayHeader,
     onChangeCoaHeader,
@@ -92,6 +93,7 @@ export function GeneralAnalysis() {
                   <Dropdown
                     label="Display CoA category"
                     items={coaHeaderOptions}
+                    tooltip="Recommended: FS subgroup"
                     value={selectedHeaders.coaHeaders.displayValue}
                     onChange={(e) =>
                       onChangeCoaHeader(
@@ -124,14 +126,14 @@ export function GeneralAnalysis() {
 
           <BasicDataOverview
             title="GL Data With Transaction Types"
-            disabled={!isAnalyzedStep}
+            disabled={!isAnalyzedStep || !!error}
             tableData={tableData}
             tableHeader={tableHeader}
           />
 
           <BasicDataOverview
             title="GL Data With Reversal Identified"
-            disabled={!isAnalyzedStep}
+            disabled={!isAnalyzedStep || !!error}
             tableData={reversalTableData}
             tableHeader={reversalTableHeader}
           />
@@ -144,13 +146,14 @@ export function GeneralAnalysis() {
             coaHeaderOptions={coaHeaderOptions}
             title="Movement Tables"
             valueKey={selectedHeaders.glHeaders.value}
-            disabled={!isAnalyzedStep}
+            disabled={!isAnalyzedStep || !!error}
             basicTableData={tableData}
             basicTableHeader={tableHeader}
           />
 
           <WarningModal
             isOpen={isWarningModalShown}
+            onPressExportUnmappedRows={onPressExportUnmappedRows}
             onClose={() => setIsWarningModalShown(false)}
           />
         </Stack>

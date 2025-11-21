@@ -117,7 +117,7 @@ export const getStylesBasedOnColumn = (
 ) => {
   const isSideHeader = column === "sideHeader";
   const isTotalColumn = column === "total";
-  const isSelectedRow = selectedRow === row.sideHeader;
+  const isSelectedRow = selectedRow && String(row.sideHeader).split('/').includes(selectedRow)
   const isBoldRow =
     isTotalColumn ||
     isSideHeader ||

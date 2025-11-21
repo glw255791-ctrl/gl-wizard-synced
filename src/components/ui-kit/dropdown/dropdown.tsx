@@ -1,11 +1,12 @@
-import { SelectChangeEvent, Checkbox } from "@mui/material";
+import { SelectChangeEvent, Checkbox, Tooltip } from "@mui/material";
 import {
   DropdownContainer,
   StyledInputLabel,
   StyledSelect,
   StyledMenuItem,
+  LabelWithInfoIcon,
+  StyledInfoIcon,
 } from "./style";
-
 export interface DropdownItem {
   title: string;
   value: string;
@@ -16,15 +17,23 @@ export interface Props {
   label: string;
   value: string | string[];
   multiple?: boolean;
+  tooltip?: string;
   onChange: (event: SelectChangeEvent<unknown>) => void;
 }
 
 export function Dropdown(props: Props) {
-  const { items, label, value, multiple, onChange } = props;
+  const { items, label, value, multiple, onChange, tooltip } = props;
 
   return (
     <DropdownContainer>
-      <StyledInputLabel>{label}</StyledInputLabel>
+      <LabelWithInfoIcon>
+        <StyledInputLabel>{label}</StyledInputLabel>
+        {tooltip && (
+          <Tooltip title={tooltip} placement="right-start">
+            <StyledInfoIcon />
+          </Tooltip>
+        )}
+      </LabelWithInfoIcon>
       <StyledSelect
         multiple={multiple}
         MenuProps={{

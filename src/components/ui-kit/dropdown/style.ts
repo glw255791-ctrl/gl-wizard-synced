@@ -1,5 +1,6 @@
 import { styled, Stack, InputLabel, Select, MenuItem } from "@mui/material";
 import { colors } from "../../../assets/colors";
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 // Container for the dropdown
 export const DropdownContainer = styled(Stack)({});
@@ -23,6 +24,17 @@ export const StyledSelect = styled(Select)({
     "& .MuiOutlinedInput-notchedOutline": {
         borderColor: colors.darker,
     },
+});
+
+export const LabelWithInfoIcon = styled(Stack)({
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+});
+
+export const StyledInfoIcon = styled(InfoOutlinedIcon)({
+    fontSize: 16,
+    color: colors.darker,
 });
 
 // Styled menu item

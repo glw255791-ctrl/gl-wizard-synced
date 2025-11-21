@@ -27,6 +27,7 @@ export function ReversalAnalysis() {
     sortedDataDisplayHeader,
     loadingStatus,
     isWarningModalShown,
+    onPressExportUnmappedRows,
     setIsWarningModalShown,
     setDataDisplayHeader,
     onChangeCoaHeader,
@@ -139,6 +140,7 @@ export function ReversalAnalysis() {
 
           <WarningModal
             isOpen={isWarningModalShown}
+            onPressExportUnmappedRows={onPressExportUnmappedRows}
             onClose={() => setIsWarningModalShown(false)}
           />
         </Stack>

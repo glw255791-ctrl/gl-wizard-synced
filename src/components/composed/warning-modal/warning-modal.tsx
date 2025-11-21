@@ -1,39 +1,56 @@
-import { Modal, Stack, Typography, Button } from "@mui/material";
-import { styles } from "./style";
+import { Modal } from "@mui/material";
+import {
+  ModalContent,
+  ModalInnerContent,
+  ModalHeader,
+  Title,
+  ModalContentWrapper,
+  Message,
+  Highlight,
+  ButtonsWrapper,
+  ButtonStyled,
+} from "./style";
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  onPressExportUnmappedRows: () => void;
 }
 
 export function WarningModal(props: Props) {
-  const { isOpen, onClose } = props;
+  const { isOpen, onClose, onPressExportUnmappedRows } = props;
 
   return (
     <Modal open={isOpen}>
-      <Stack style={styles.modalContent}>
-        <Stack style={styles.modalInnerContent}>
-          <Stack style={styles.modalHeader}>
-            <Typography style={styles.title}>
+      <ModalContent>
+        <ModalInnerContent>
+          <ModalHeader>
+            <Title>
               Not all items are mapped
-            </Typography>
-          </Stack>
+            </Title>
+          </ModalHeader>
 
-          <Stack style={styles.modalContentWrapper}>
-            <Typography style={styles.message}>
+          <ModalContentWrapper>
+            <Message>
               We found account codes in the GL that are not included in the CoA.
               Matching for these items is disabled, and they will be marked as
               ‘not mapped’.
-            </Typography>
-            <Typography style={styles.highlight}>
+            </Message>
+            <Highlight>
               You can continue or upload a new CoA.
-            </Typography>
+            </Highlight>
 
-            <Button variant="contained" onClick={onClose}>
-              Close
-            </Button>
-          </Stack>
-        </Stack>
-      </Stack>
+            <ButtonsWrapper>
+              <ButtonStyled variant="contained" onClick={onPressExportUnmappedRows}>
+                Export Unmapped Rows
+              </ButtonStyled>
+              <ButtonStyled variant="contained" onClick={onClose}>
+                Close
+              </ButtonStyled>
+            </ButtonsWrapper>
+          </ModalContentWrapper>
+        </ModalInnerContent>
+      </ModalContent>
     </Modal>
   );
 }

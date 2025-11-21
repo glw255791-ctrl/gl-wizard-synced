@@ -28,7 +28,6 @@ import {
   RowLabelWrapper,
   RowLabelCell,
   IconButtonStyled,
-  PinIcon,
   DownloadIconStyled,
   TableScrollableWrapper,
   TableHeaderStyled,
@@ -59,7 +58,6 @@ interface Props {
   selectedRow?: string;
   id?: string;
   transitionFunc: React.TransitionStartFunction;
-  setSelectedRow?: React.Dispatch<React.SetStateAction<string>>;
   selectedFilter: Filters;
   setDataDisplayHeader: React.Dispatch<
     React.SetStateAction<Record<string, AnyType>[]>
@@ -84,7 +82,6 @@ export const DataTable: React.FC<Props> = ({
   basicTableHeader,
   transitionFunc,
   id,
-  setSelectedRow,
   setDataDisplayHeader,
 }) => {
   const [tableRows, setTableRows] = useState<Record<string, AnyType>[]>([]);
@@ -152,7 +149,7 @@ export const DataTable: React.FC<Props> = ({
   ) => (
     <Checkbox
       disableRipple
-      disabled={!!setSelectedRow}
+      disabled={!!selectedRow}
       checkedIcon={<CheckedIcon />}
       icon={<UncheckedIcon />}
       value={row[column]}
@@ -175,8 +172,6 @@ export const DataTable: React.FC<Props> = ({
     const filteredValues = basicTableData.filter(
       (item) => (item.result as unknown as string[]).join("/") === value
     );
-    // eslint-disable-next-line no-console
-    console.log(basicTableData, filteredValues);
     exportBasicTableToExcel(basicTableHeader, filteredValues, value);
   };
 
@@ -199,18 +194,7 @@ export const DataTable: React.FC<Props> = ({
       <RowLabelWrapper>
         {val}
         <RowLabelCell>
-          {setSelectedRow && (
-            <IconButtonStyled
-              onClick={() => {
-                const rowVal = row.sideHeader as string;
-                if (!row.header) {
-                  setSelectedRow((prev) => (prev === rowVal ? "" : rowVal));
-                }
-              }}
-            >
-              <PinIcon />
-            </IconButtonStyled>
-          )}
+
           <IconButtonStyled
             onClick={() => handleDownloadByRow(String(row[column]))}
           >

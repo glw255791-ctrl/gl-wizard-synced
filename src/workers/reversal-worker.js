@@ -16,9 +16,9 @@ self.onmessage = (event) => {
 
     return {
       ...item,
-      ...(betterMatchingCoaItem
-        ? {}
-        : { [selectedHeaders.glHeaders.account]: "not mapped" }),
+      // ...(betterMatchingCoaItem
+      //   ? {}
+      //   : { [selectedHeaders.glHeaders.account]: "not mapped" }),
       coaData:
         betterMatchingCoaItem ??
         Object.keys(rawData.coaData[0]).reduce((prev, curr) => {
@@ -29,9 +29,8 @@ self.onmessage = (event) => {
   });
 
   const groupedByJenAndDate = output.reduce((acc, curr) => {
-    const key = `${curr[selectedHeaders.glHeaders.date]}_${
-      curr[selectedHeaders.glHeaders.jen]
-    }`;
+    const key = `${curr[selectedHeaders.glHeaders.date]}_${curr[selectedHeaders.glHeaders.jen]
+      }`;
     if (!acc[key]) acc[key] = [];
     acc[key].push(curr);
     return acc;
@@ -75,9 +74,8 @@ self.onmessage = (event) => {
   const unwrapped = [...Object.values(groupedByJenAndDate).flat()];
 
   const groupedByAccountAndResult = unwrapped.reduce((acc, curr) => {
-    const key = `${curr[selectedHeaders.glHeaders.date]}_${
-      curr[selectedHeaders.glHeaders.account]
-    }_${curr.result.join("/")}`;
+    const key = `${curr[selectedHeaders.glHeaders.date]}_${curr[selectedHeaders.glHeaders.account]
+      }_${curr.result.join("/")}`;
     if (!acc[key]) acc[key] = [];
     acc[key].push(curr);
     return acc;
