@@ -37,7 +37,6 @@ self.onmessage = (event) => {
           break;
         }
       }
-
       output.push({
         ...item,
         ...(!bestMatch ? { [glHeaders.account]: "not mapped" } : {}),

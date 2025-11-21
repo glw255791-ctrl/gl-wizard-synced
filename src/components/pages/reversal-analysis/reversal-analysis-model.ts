@@ -212,7 +212,7 @@ export function useReversalAnalysis() {
     if (!sheet) return;
 
     // Get first row for column names, cast as string[]
-    const columnNames: string[] = (sheet.getRow(1).values as string[]).filter(Boolean);
+    const columnNames: string[] = sheet.getRow(1).values as string[];
 
     // Skip header row, parse data into records
     const rows = sheet
@@ -228,14 +228,14 @@ export function useReversalAnalysis() {
     setRawData(prev => ({
       ...prev,
       coaData: rows,
-      coaHeaders: columnNames,
+      coaHeaders: columnNames.filter(Boolean),
     }));
 
     setSelectedHeaders(prev => ({
       ...prev,
       coaHeaders: {
-        displayValue: columnNames[0],
-        mappingValue: columnNames[0],
+        displayValue: columnNames.filter(Boolean)[0],
+        mappingValue: columnNames.filter(Boolean)[0],
         groupingValue: "",
       },
     }));

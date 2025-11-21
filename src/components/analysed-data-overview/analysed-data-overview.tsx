@@ -65,7 +65,6 @@ export function DataOverview({
 
   // Always keep mappingValue included in header rows
   useEffect(() => {
-    console.log(selectedFilter)
     const row = [mappingValue]
     if (selectedFilter.header !== 'all') {
       row.push(selectedFilter.header)

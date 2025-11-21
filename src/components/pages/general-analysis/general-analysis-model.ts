@@ -245,7 +245,7 @@ export function useGeneralAnalysis() {
     const sheet = workbook.worksheets[0];
     if (!sheet) return;
 
-    const columnNames = (sheet.getRow(1).values as string[]).filter(Boolean);
+    const columnNames: string[] = sheet.getRow(1).values as string[];
 
     const rows = sheet
       .getSheetValues()
@@ -260,15 +260,15 @@ export function useGeneralAnalysis() {
     setRawData(prev => ({
       ...prev,
       coaData: rows,
-      coaHeaders: columnNames,
+      coaHeaders: columnNames.filter(Boolean),
     }));
 
     setSelectedHeaders(prev => ({
       ...prev,
       coaHeaders: {
-        displayValue: columnNames[0],
-        mappingValue: columnNames[0],
-        groupingValue: columnNames[0],
+        displayValue: columnNames.filter(Boolean)[0],
+        mappingValue: columnNames.filter(Boolean)[0],
+        groupingValue: columnNames.filter(Boolean)[0],
       },
     }));
 
@@ -388,7 +388,6 @@ export function useGeneralAnalysis() {
       setLoadingStatus(false);
       worker.terminate();
     };
-
     worker.postMessage({ rawData, selectedHeaders });
 
     setLoadingStatus(false);
