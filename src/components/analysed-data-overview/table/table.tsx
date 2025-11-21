@@ -64,6 +64,7 @@ interface Props {
   >;
   basicTableHeader: TableHeader[];
   basicTableData: Record<string, string>[];
+  dictionaryData: Record<string, any>[];
 }
 
 interface Filters {
@@ -80,6 +81,7 @@ export const DataTable: React.FC<Props> = ({
   valueKey,
   basicTableData,
   basicTableHeader,
+  dictionaryData,
   transitionFunc,
   id,
   setDataDisplayHeader,
@@ -120,7 +122,7 @@ export const DataTable: React.FC<Props> = ({
 
   // Calculate number of fixed header rows
   const fixedRowCount = useMemo(
-    () => Object.keys(sortedDataDisplayHeader[0]).length,
+    () => Object.keys(sortedDataDisplayHeader[0])?.length || 1,
     [sortedDataDisplayHeader]
   );
 
@@ -175,6 +177,22 @@ export const DataTable: React.FC<Props> = ({
     exportBasicTableToExcel(basicTableHeader, filteredValues, value);
   };
 
+  const renderDictionaryCell = (val: string | undefined) => {
+    const values = val?.split("/")
+
+    // Find a dictionary item where item.inputs has all the same elements as values (regardless of order)
+    const dictionaryItem = dictionaryData.find(item => {
+      if (!Array.isArray(item.inputs) || !Array.isArray(values)) return false;
+      if (item.inputs.length !== values.length) return false;
+      // Check if every value is in item.inputs, and vice versa (set equality)
+      const inputsSorted = [...item.inputs].sort();
+      const valuesSorted = [...values].sort();
+      return inputsSorted.find((v, i) => v === valuesSorted[i]);
+    });
+
+    return dictionaryItem?.result ?? val;
+  };
+
   // Renders the content of a cell, including pin & download icons when appropriate
   const renderCellText = (
     row: Record<string, AnyType>,
@@ -192,7 +210,7 @@ export const DataTable: React.FC<Props> = ({
 
     return (
       <RowLabelWrapper>
-        {val}
+        {renderDictionaryCell(val)}
         <RowLabelCell>
 
           <IconButtonStyled

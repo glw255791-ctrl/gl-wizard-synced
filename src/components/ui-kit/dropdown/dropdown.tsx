@@ -37,6 +37,7 @@ export function Dropdown(props: Props) {
       <StyledSelect
         multiple={multiple}
         MenuProps={{
+          disableScrollLock: true,
           PaperProps: {
             style: {
               maxHeight: 200,

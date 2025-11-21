@@ -11,10 +11,7 @@ import {
 } from "../general-analysis/general-analysis-model";
 import { TableHeader } from "../../composed/basic-table/basic-table";
 
-export interface SelectedHeaders {
-  glHeaders: GlHeaders;
-  coaHeaders: CoaHeaders;
-}
+// ---- Interfaces ----
 
 export interface CoaHeaders {
   mappingValue: string;
@@ -22,134 +19,107 @@ export interface CoaHeaders {
   groupingValue: string;
 }
 
+export interface SelectedHeaders {
+  glHeaders: GlHeaders;
+  coaHeaders: CoaHeaders;
+}
+
 export interface CoaFilters {
   header: string;
   value: string;
 }
+
+// ---- Main Hook ----
+
 export function useReversalReclassificationAnalysis() {
-  const [currentStep, setCurrentStep] = useState<AnalysisStep[]>([
-    AnalysisStep.TO_UPLOAD_GL,
-  ]);
+  // --- State ---
+  const [currentStep, setCurrentStep] = useState<AnalysisStep[]>([AnalysisStep.TO_UPLOAD_GL]);
   const [rawData, setRawData] = useState<RawData>({
     glData: [],
     glHeaders: [],
     coaData: [],
     coaHeaders: [],
   });
-
   const [loadingStatus, setLoadingStatus] = useState(false);
-
   const [error, setError] = useState<string | undefined>(undefined);
-
   const [tableData, setTableData] = useState<Record<string, any>[]>([]);
 
-  const [selectedFilters, setSelectedFilters] = useState<CoaFilters>({
-    header: "",
-    value: "",
-  });
+  const [selectedFilters, setSelectedFilters] = useState<CoaFilters>({ header: "", value: "" });
   const [selectedHeaders, setSelectedHeaders] = useState<SelectedHeaders>({
-    glHeaders: {
-      account: "",
-      jen: "",
-      date: "",
-      value: "",
-    },
-    coaHeaders: {
-      mappingValue: "",
-      displayValue: "",
-      groupingValue: "",
-    },
+    glHeaders: { account: "", jen: "", date: "", value: "" },
+    coaHeaders: { mappingValue: "", displayValue: "", groupingValue: "" },
   });
 
+  // --- Derived Values ---
   const reviewData: ReviewData = useMemo(() => {
+    const { glData } = rawData;
+    const valueKey = selectedHeaders.glHeaders.value;
+    const dateKey = selectedHeaders.glHeaders.date;
+
+    const total = valueKey
+      ? glData.reduce((sum, row) => sum + Number(row[valueKey]), 0)
+      : 0;
+
+    let startDate = "";
+    let endDate = "";
+    if (dateKey && glData.length) {
+      const timestamps = glData
+        .map(item => new Date(item[dateKey]).getTime())
+        .filter(Boolean); // Avoid NaN
+
+      if (timestamps.length) {
+        startDate = formatDate(new Date(Math.min(...timestamps)), "dd-MM-yyyy");
+        endDate = formatDate(new Date(Math.max(...timestamps)), "dd-MM-yyyy");
+      }
+    }
+
     return {
-      rows: rawData.glData.length,
-      total: selectedHeaders.glHeaders.value
-        ? rawData.glData.reduce(
-            (prev, curr) =>
-              (prev += Number(curr[selectedHeaders.glHeaders.value])),
-            0
-          )
-        : 0,
-      startDate: selectedHeaders.glHeaders.date
-        ? formatDate(
-            new Date(
-              Math.min(
-                ...rawData.glData.map((item) =>
-                  new Date(item[selectedHeaders.glHeaders.date]).getTime()
-                )
-              )
-            ),
-            "dd-MM-yyyy"
-          )
-        : "",
-      endDate: selectedHeaders.glHeaders.date
-        ? formatDate(
-            new Date(
-              Math.max(
-                ...rawData.glData.map((item) =>
-                  new Date(item[selectedHeaders.glHeaders.date]).getTime()
-                )
-              )
-            ),
-            "dd-MM-yyyy"
-          )
-        : "",
+      rows: glData.length,
+      total,
+      startDate,
+      endDate,
     };
   }, [rawData, selectedHeaders]);
 
   const glHeaderOptions = useMemo(
     () =>
-      rawData.glHeaders.map((item) => ({
-        value: item,
-        title: item,
-      })),
-    [rawData]
+      rawData.glHeaders.map(value => ({ value, title: value })),
+    [rawData.glHeaders]
   );
 
   const coaHeaderOptions = useMemo(
     () =>
-      rawData.coaHeaders.map((item) => ({
-        value: item,
-        title: item,
-      })),
-    [rawData]
+      rawData.coaHeaders.map(value => ({ value, title: value })),
+    [rawData.coaHeaders]
   );
 
-  const coaFilterOptions = useMemo(
-    () =>
-      [
-        ...new Set(
-          rawData.coaData
-            .map((item) => item[selectedFilters.header])
-            .filter(Boolean)
-        ),
-      ].map((item) => ({
-        value: item,
-        title: item,
-      })),
-    [rawData.coaData, selectedFilters]
-  );
+  const coaFilterOptions = useMemo(() => {
+    const uniqueVals = [
+      ...new Set(
+        rawData.coaData
+          .map(item => item[selectedFilters.header])
+          .filter(Boolean)
+      ),
+    ];
+    return uniqueVals.map(value => ({ value, title: value }));
+  }, [rawData.coaData, selectedFilters]);
 
-  const tableHeader: TableHeader[] = useMemo(
-    () => [
-      ...Object.keys(selectedHeaders.glHeaders).map((item) => ({
-        key: item,
-        title: selectedHeaders.glHeaders[item as keyof GlHeaders],
-      })),
-      {
-        key: selectedFilters.header,
-        title: selectedFilters.header,
-      },
-      {
-        key: "result",
-        title: "Rezultat",
-      },
-    ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedHeaders.glHeaders, tableData, selectedFilters]
-  );
+  const tableHeader: TableHeader[] = useMemo(() => {
+    const headers = Object.keys(selectedHeaders.glHeaders).map(key => ({
+      key,
+      title: selectedHeaders.glHeaders[key as keyof GlHeaders],
+    }));
 
+    return [
+      ...headers,
+      { key: selectedFilters.header, title: selectedFilters.header },
+      { key: "result", title: "Rezultat" },
+    ];
+  }, [selectedHeaders.glHeaders, tableData, selectedFilters]);
+
+  // --- Handlers ---
+
+  // General Ledger (GL) upload
   const onGeneralLedgerDrop = async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
@@ -167,35 +137,25 @@ export function useReversalReclassificationAnalysis() {
 
     setLoadingStatus(true);
     const buffer = await file.arrayBuffer();
-
-    const worker = new Worker(new URL("./gl-worker.js", import.meta.url), {
-      type: "module",
-    });
-
+    const worker = new Worker(new URL("./gl-worker.js", import.meta.url), { type: "module" });
     worker.postMessage({ buffer });
 
-    worker.onmessage = (e) => {
-      const { glData, glHeaders, error } = e.data;
-
-      if (error) {
-        setError(error);
+    worker.onmessage = e => {
+      const { glData, glHeaders, error: workerError } = e.data;
+      if (workerError) {
+        setError(workerError);
         setLoadingStatus(false);
         worker.terminate();
         return;
       }
-
-      setRawData((prev) => ({
-        ...prev,
-        glData,
-        glHeaders,
-      }));
-
-      setCurrentStep((prev) => [...prev, AnalysisStep.UPLOADED_GL]);
+      setRawData(prev => ({ ...prev, glData, glHeaders }));
+      setCurrentStep(prev => [...prev, AnalysisStep.UPLOADED_GL]);
       setLoadingStatus(false);
       worker.terminate();
     };
   };
 
+  // Chart of Accounts (CoA) upload
   const onChartOfAccountsDrop = async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
@@ -204,76 +164,72 @@ export function useReversalReclassificationAnalysis() {
     const workbook = new Workbook();
     await workbook.xlsx.load(buffer);
 
-    const sheet = workbook.worksheets[0]; // Get first sheet
+    const sheet = workbook.worksheets[0];
     if (!sheet) return;
 
-    // Get column names
     const columnNames: string[] = sheet.getRow(1).values as string[];
 
-    // Read data
+    // Read data from rows
     const rows = sheet
       .getSheetValues()
-      .slice(2) // Skip header row
+      .slice(2)
       .map((row: any) =>
-        columnNames.reduce((acc, col, index) => {
-          acc[col] = row[index]?.result ?? row[index] ?? "";
+        columnNames.reduce((acc, col, idx) => {
+          acc[col] = row[idx]?.result ?? row[idx] ?? "";
           return acc;
         }, {} as Record<string, any>)
       );
 
-    setRawData((prev) => ({
+    const primaryCol = columnNames.filter(Boolean)[0];
+    setRawData(prev => ({
       ...prev,
       coaData: rows,
       coaHeaders: columnNames.filter(Boolean),
     }));
-    setSelectedHeaders((prev) => ({
+    setSelectedHeaders(prev => ({
       ...prev,
       coaHeaders: {
-        mappingValue: columnNames.filter(Boolean)[0],
+        mappingValue: primaryCol,
         displayValue: "",
         groupingValue: "",
-        filters: {
-          header: "",
-          value: "",
-        },
+        filters: { header: "", value: "" },
       },
     }));
-    setSelectedFilters((prev) => ({
+    setSelectedFilters(prev => ({
       ...prev,
-      header: columnNames.filter(Boolean)[0],
+      header: primaryCol,
     }));
-    setCurrentStep((prev) => [...prev, AnalysisStep.TO_ANALYZE]);
+    setCurrentStep(prev => [...prev, AnalysisStep.TO_ANALYZE]);
   };
 
+  // Header changes for GL
   const onChangeGlHeader = (key: keyof GlHeaders, value: string) => {
-    const newValue = { ...selectedHeaders.glHeaders, [key]: value };
-    setSelectedHeaders((prev) => ({
-      ...prev,
-      glHeaders: newValue,
-    }));
+    const newGlHeaders = { ...selectedHeaders.glHeaders, [key]: value };
+    setSelectedHeaders(prev => ({ ...prev, glHeaders: newGlHeaders }));
 
-    if (!Object.values(newValue).some((item) => item === "")) {
-      setCurrentStep((prev) => [...prev, AnalysisStep.TO_UPLOAD_COA]);
+    if (!Object.values(newGlHeaders).some(item => item === "")) {
+      setCurrentStep(prev => [...prev, AnalysisStep.TO_UPLOAD_COA]);
     }
   };
 
+  // Filter changes for CoA
   const onChangeCoaFilter = (key: keyof CoaFilters, value: string) => {
-    setSelectedFilters((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+    setSelectedFilters(prev => ({ ...prev, [key]: value }));
   };
 
+  // Header changes for CoA
   const onChangeCoaHeader = (key: keyof CoaHeaders, value: string) => {
-    setSelectedHeaders((prev) => ({
+    setSelectedHeaders(prev => ({
       ...prev,
       coaHeaders: { ...prev.coaHeaders, [key]: value },
     }));
   };
 
+  // Reset button
   const onPressResetBtn = () => {
     setCurrentStep([AnalysisStep.TO_UPLOAD_GL]);
     setTableData([]);
+    setError(undefined);
     setRawData({
       coaData: [],
       coaHeaders: [],
@@ -281,50 +237,30 @@ export function useReversalReclassificationAnalysis() {
       glHeaders: [],
     });
     setSelectedHeaders({
-      coaHeaders: {
-        mappingValue: "",
-        displayValue: "",
-        groupingValue: "",
-      },
-      glHeaders: {
-        account: "",
-        date: "",
-        jen: "",
-        value: "",
-      },
+      coaHeaders: { mappingValue: "", displayValue: "", groupingValue: "" },
+      glHeaders: { account: "", date: "", jen: "", value: "" },
     });
-    setSelectedFilters({
-      header: "",
-      value: "",
-    });
+    setSelectedFilters({ header: "", value: "" });
   };
 
+  // Analyze data (runs web worker)
   const onPressAnalyzeData = () => {
     setLoadingStatus(true);
     const worker = new Worker(
-      new URL(
-        "../../../workers/reversal-reclassification-worker.js",
-        import.meta.url
-      ),
-      {
-        type: "module",
-      }
+      new URL("../../../workers/reversal-reclassification-worker.js", import.meta.url),
+      { type: "module" }
     );
 
-    worker.onmessage = (event) => {
+    worker.onmessage = event => {
       setTableData(
-        Object.values(event.data.groupedByAccountAndDate).flat() as Record<
-          string,
-          any
-        >[]
+        Object.values(event.data.groupedByAccountAndDate).flat() as Record<string, any>[]
       );
-
-      setCurrentStep((prev) => [...prev, AnalysisStep.ANALYZED]);
+      setCurrentStep(prev => [...prev, AnalysisStep.ANALYZED]);
       setLoadingStatus(false);
       worker.terminate();
     };
 
-    worker.onerror = (error) => {
+    worker.onerror = error => {
       console.error("Worker error:", error);
       setLoadingStatus(false);
       worker.terminate();
@@ -333,77 +269,69 @@ export function useReversalReclassificationAnalysis() {
     worker.postMessage({ rawData, selectedHeaders, selectedFilters });
   };
 
+  // Download analyzed table as Excel
   const onPressDownloadData = async () => {
-    const dataForExport = tableData.map((item) => {
+    // Prepare export data (no coaData, flatten result if array)
+    const dataForExport = tableData.map(item => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { coaData, ...rest } = item;
-
       return {
         ...rest,
-        result: Array.isArray(rest.result)
-          ? rest.result.join("/")
-          : rest.result,
+        result: Array.isArray(rest.result) ? rest.result.join("/") : rest.result,
       };
     });
 
     const workbook = new Workbook();
     const worksheet = workbook.addWorksheet("Sheet 1");
 
-    // Extract headers from object keys
+    // Get all headers
     const headers = Object.keys(dataForExport[0]);
 
-    // Set column widths and define headers
-    worksheet.columns = headers.map((header) => ({
+    // Setup worksheet columns
+    worksheet.columns = headers.map(header => ({
       header,
       key: header,
-      width: 20, // Adjust width as needed
+      width: 20,
     }));
 
-    // Style headers (bold text, light gray background)
+    // Header style
     const headerRow = worksheet.getRow(0);
-    headerRow.eachCell((cell) => {
+    headerRow.eachCell(cell => {
       cell.font = { bold: true };
       cell.fill = {
         type: "pattern",
         pattern: "solid",
-        fgColor: { argb: "D3D3D3" }, // Light gray background
+        fgColor: { argb: "D3D3D3" },
       };
       cell.alignment = { horizontal: "center", vertical: "middle" };
     });
 
-    // Add rows with formatting
-    dataForExport.forEach((obj: Record<string, any>) => {
-      const row = headers.map((header) => {
-        const value = obj[header];
-
-        // Convert large numbers to string to prevent scientific notation
-        if (typeof value === "number" && value > 999999) {
-          return `${value}`;
-        }
-
-        return value;
+    // Add all data rows
+    dataForExport.forEach(obj => {
+      const row = headers.map(header => {
+        const value = (obj as Record<string, unknown>)[header];
+        return typeof value === "number" && value > 999999 ? `${value}` : value;
       });
 
       const rowInstance = worksheet.addRow(row);
 
-      // Apply light yellow background to the final column
+      // Style the final (result) column
       rowInstance.getCell(headers.length).fill = {
         type: "pattern",
         pattern: "solid",
-        fgColor: { argb: "FFFF99" }, // Light yellow background
+        fgColor: { argb: "FFFF99" },
       };
     });
 
-    // Generate buffer
+    // Write and download
     const buffer = await workbook.xlsx.writeBuffer();
-
-    // Create blob and trigger download
     const blob = new Blob([buffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
     saveAs(blob, "newFile.xlsx");
   };
 
+  // --- Return API ---
   return {
     onChangeGlHeader,
     onChangeCoaHeader,

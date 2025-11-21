@@ -15,11 +15,20 @@ import {
   Alert,
   Snackbar,
 } from "@mui/material";
-import { styles } from "./user-management.style";
+import {
+  RootStack,
+  ValidDateStack,
+  RedText,
+  GreenText,
+  ColumnHeaderText,
+  ModalContentStack,
+  ModalInnerContent,
+  ModalHeader,
+  BlackText,
+} from "./style";
 import { UserData, useUserManagementModel } from "./user-management-model";
 import EventRepeatIcon from "@mui/icons-material/EventRepeat";
 import EventBusyIcon from "@mui/icons-material/EventBusy";
-import AllInclusiveIcon from '@mui/icons-material/AllInclusive';
 import { useEffect } from "react";
 import { Header } from "../../composed/header/header";
 import CloseIcon from "@mui/icons-material/Close";
@@ -47,77 +56,203 @@ export function UserManagementPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const emailRegex =
+    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
   const renderCellContent = (key: string, item: UserData) => {
-    switch (key) {
-      case "licencevaliduntil": {
-        const isExpired = dayjs(item[key as keyof UserData]).isBefore(
-          dayjs().startOf("day")
-        );
-        return (
-          <Stack style={styles.validDate}>
-            {item.role !== "admin" ? (<>
-              <Typography style={isExpired ? styles.red : styles.green}>
-                {new Date(item[key as keyof UserData]).toLocaleDateString(
-                  "de-DE"
-                )}
-              </Typography>
-              {/* {isExpired ? (
-              <CancelOutlinedIcon style={styles.red} />
-            ) : (
-              <CheckCircleOutlineIcon style={styles.green} />
-            )} */}
+    if (key === "licencevaliduntil") {
+      const isExpired = dayjs(item[key as keyof UserData]).isBefore(dayjs().startOf("day"));
+      const dateStr = new Date(item[key as keyof UserData]).toLocaleDateString("de-DE");
 
-              <IconButton
-                onClick={() =>
-                  setModalProps({
-                    modalAction: "EXTEND",
-                    id: item.id,
-                    date: new Date(),
-                    email: "",
-                  })
-                }
-              >
-                <EventRepeatIcon />
-              </IconButton>
-              <IconButton
-                disabled={item.role === "admin"}
-                onClick={() =>
-                  setModalProps({
-                    modalAction: "DEACTIVATE",
-                    id: item.id,
-                    date: dayjs().subtract(1, "day").toDate(),
-                    email: "",
-                  })
-                }
-              >
-                <EventBusyIcon />
-              </IconButton>
-            </>) : <AllInclusiveIcon />}
-          </Stack>
+      return (
+        <ValidDateStack>
+          {isExpired ? (
+            <RedText>{dateStr}</RedText>
+          ) : (
+            <GreenText>{dateStr}</GreenText>
+          )}
+          <IconButton
+            onClick={() =>
+              setModalProps({
+                modalAction: "EXTEND",
+                id: item.id,
+                date: new Date(),
+                email: "",
+              })
+            }
+          >
+            <EventRepeatIcon />
+          </IconButton>
+          <IconButton
+            disabled={item.role === "admin"}
+            onClick={() =>
+              setModalProps({
+                modalAction: "DEACTIVATE",
+                id: item.id,
+                date: dayjs().subtract(1, "day").toDate(),
+                email: "",
+              })
+            }
+          >
+            <EventBusyIcon />
+          </IconButton>
+        </ValidDateStack>
+      );
+    }
 
-        )
-      }
+    return item[key as keyof UserData];
+  };
 
+  const getModalTitle = () => {
+    switch (modalProps?.modalAction) {
+      case "EXTEND":
+        return "Extend Licence";
+      case "DEACTIVATE":
+        return "Deactivate Licence";
       default:
-        return item[key as keyof UserData];
+        return "Invite User";
     }
   };
 
+  const getModalButtonText = getModalTitle;
+
+  // --- Modal action shortcut buttons for EXTEND ---
+  const renderExtendShortcuts = () => (
+    <Stack sx={{ flexDirection: "row", gap: 1, mb: 2 }}>
+      <Button
+        variant="contained"
+        onClick={() =>
+          setModalProps(prev =>
+            prev
+              ? {
+                ...prev,
+                date: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+              }
+              : prev
+          )
+        }
+      >
+        1 month
+      </Button>
+      <Button
+        variant="contained"
+        onClick={() =>
+          setModalProps(prev =>
+            prev
+              ? {
+                ...prev,
+                date: new Date(new Date().setMonth(new Date().getMonth() + 6)),
+              }
+              : prev
+          )
+        }
+      >
+        6 months
+      </Button>
+      <Button
+        variant="contained"
+        onClick={() =>
+          setModalProps(prev =>
+            prev
+              ? {
+                ...prev,
+                date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+              }
+              : prev
+          )
+        }
+      >
+        1 year
+      </Button>
+    </Stack>
+  );
+
+  // --- DatePicker input for EXTEND ---
+  const renderDatePicker = () =>
+    modalProps?.modalAction === "EXTEND" && (
+      <DatePicker
+        slotProps={{
+          textField: {
+            InputProps: {
+              sx: { width: "100%", mb: 2 },
+            },
+          },
+        }}
+        value={dayjs(modalProps.date)}
+        format="DD.MM.YYYY"
+        minDate={dayjs(new Date())}
+        onChange={value =>
+          setModalProps(prev => {
+            if (!prev || !value) return prev;
+            return {
+              ...prev,
+              date: value.toDate(),
+            };
+          })
+        }
+        sx={{ width: "100%", height: 32, mb: 2 }}
+      />
+    );
+
+  // --- Email input for INVITE ---
+  const renderInviteEmailInput = () =>
+    modalProps?.modalAction === "INVITE" && (
+      <TextField
+        placeholder="Enter email"
+        sx={{ width: "100%", mb: 2 }}
+        slotProps={{ input: {} }}
+        onChange={e =>
+          setModalProps(prev => (prev ? { ...prev, email: e.target.value } : prev))
+        }
+      />
+    );
+
+  // --- User List Table or Empty State ---
+  const renderTableBody = () =>
+    filteredUserData.length === 0 ? (
+      <TableRow>
+        <TableCell colSpan={columns.length} align="center">
+          <Typography variant="body2" color="textSecondary">
+            No data available
+          </Typography>
+        </TableCell>
+      </TableRow>
+    ) : (
+      filteredUserData.map((row, index) => (
+        <TableRow key={index}>
+          {columns.map(column => (
+            <TableCell
+              key={column.key}
+              align={column.align}
+              sx={{ width: column.width }}
+            >
+              {renderCellContent(column.key, row)}
+            </TableCell>
+          ))}
+        </TableRow>
+      ))
+    );
+
+  // --- Main Render ---
   return (
     <>
       <PageWrapper>
-        <Stack style={styles.root}>
+        <RootStack>
           <Header title="User management" />
-          <Stack style={styles.searchBlock}>
-            <Stack style={styles.searchField}>
+          <Stack
+            sx={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 2,
+              width: "100%",
+            }}
+          >
+            <Stack sx={{ flex: 1 }}>
               <TextField
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 slotProps={{
                   input: {
-                    style: styles.searchInput,
                     endAdornment:
                       searchTerm !== "" ? (
                         <IconButton
@@ -131,6 +266,7 @@ export function UserManagementPage() {
                       ),
                   },
                 }}
+                sx={{ width: "100%" }}
               />
             </Stack>
             <Button
@@ -143,159 +279,64 @@ export function UserManagementPage() {
                   modalAction: "INVITE",
                 })
               }
-              style={styles.btn}
+              sx={{ ml: 2 }}
             >
               Invite user
             </Button>
           </Stack>
-          <TableContainer style={styles.table} component={Paper}>
+          <TableContainer component={Paper}>
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  {columns.map((column) => (
+                  {columns.map(column => (
                     <TableCell
                       key={column.key}
                       align={column.align}
-                      sx={{ ...styles.columnHeader, width: column.width }}
+                      sx={{ width: column.width }}
                     >
-                      {column.label}
+                      <ColumnHeaderText>{column.label}</ColumnHeaderText>
                     </TableCell>
                   ))}
                 </TableRow>
               </TableHead>
-              <TableBody>
-                {filteredUserData.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} align="center">
-                      <Typography variant="body2" color="textSecondary">
-                        No data available
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredUserData.map((row, index) => (
-                    <TableRow key={index}>
-                      {columns.map((column) => (
-                        <TableCell
-                          key={column.key}
-                          align={column.align}
-                          sx={{ width: column.width }}
-                        >
-                          {renderCellContent(column.key, row)}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
+              <TableBody>{renderTableBody()}</TableBody>
             </Table>
           </TableContainer>
-        </Stack>
+        </RootStack>
       </PageWrapper>
+
+      {/* Modal */}
       <Modal open={!!modalProps}>
-        <Stack style={styles.modalContent}>
-          <Stack style={styles.modalInnerContent}>
-            <Stack style={styles.modalHeader}>
-              <Typography variant="h6" style={styles.black}>
-                {modalProps?.modalAction === "EXTEND"
-                  ? "Extend Licence"
-                  : modalProps?.modalAction === "DEACTIVATE"
-                    ? "Deactivate Licence"
-                    : "Invite User"}
-              </Typography>
+        <ModalContentStack>
+          <ModalInnerContent>
+            <ModalHeader>
+              <BlackText variant="h6">{getModalTitle()}</BlackText>
               <IconButton onClick={() => setModalProps(undefined)}>
                 <CloseIcon />
               </IconButton>
-            </Stack>
+            </ModalHeader>
 
-            <Stack style={styles.modalContentWrapper}>
-              {modalProps?.modalAction === "EXTEND" && <Stack style={styles.modalBtnsWrapper}>
-
-                <Button style={styles.modalBtn} variant="contained" onClick={() => setModalProps((prev) => {
-                  if (!prev) return prev;
-                  return {
-                    ...prev,
-                    date: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-                  };
-                })}>1 month</Button>
-                <Button style={styles.modalBtn} variant="contained" onClick={() => setModalProps((prev) => {
-                  if (!prev) return prev;
-                  return {
-                    ...prev,
-                    date: new Date(new Date().setMonth(new Date().getMonth() + 6)),
-                  };
-                })}>6 months</Button>
-                <Button style={styles.modalBtn} variant="contained" onClick={() => setModalProps((prev) => {
-                  if (!prev) return prev;
-                  return {
-                    ...prev,
-                    date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-                  };
-                })}>1 year</Button>
-              </Stack>}
-              {modalProps?.modalAction === "EXTEND" && (
-                <>
-                  <DatePicker
-                    slotProps={{
-                      textField: {
-                        InputProps: {
-                          style: styles.modalInput,
-                        }
-                      }
-                    }}
-                    value={dayjs(modalProps.date)}
-                    format="DD.MM.YYYY"
-                    minDate={dayjs(new Date())}
-                    onChange={(value) =>
-                      setModalProps((prev) => {
-                        if (!prev || !value) return prev;
-                        return {
-                          ...prev,
-                          date: value.toDate(),
-                        };
-                      })
-                    }
-                    sx={{ ...styles.modalInput, height: 32 }}
-                  />
-                </>
-              )}
-              {modalProps?.modalAction === "INVITE" && (
-                <TextField
-                  placeholder="Enter email"
-                  style={{ ...styles.modalInput, ...styles.modalInputWrapper }}
-                  slotProps={{
-                    input: { style: styles.modalInput }
-                  }}
-
-                  onChange={(e) =>
-                    setModalProps((prev) => {
-                      if (!prev) return prev;
-
-                      return { ...prev, email: e.target.value };
-                    })
-                  }
-                />
-              )}
+            <Stack sx={{ flex: 1, px: 3, py: 2 }}>
+              {modalProps?.modalAction === "EXTEND" && renderExtendShortcuts()}
+              {renderDatePicker()}
+              {renderInviteEmailInput()}
               <Button
                 variant="contained"
                 disabled={
                   modalProps?.modalAction === "INVITE" &&
-                  (modalProps.email === "" ||
-                    !emailRegex.test(modalProps.email))
+                  (modalProps.email === "" || !emailRegex.test(modalProps.email))
                 }
-                style={styles.modalBtn}
+                sx={{ mt: 1, width: "100%" }}
                 onClick={onConfirm}
               >
-                {modalProps?.modalAction === "EXTEND"
-                  ? "Extend Licence"
-                  : modalProps?.modalAction === "DEACTIVATE"
-                    ? "Deactivate Licence"
-                    : "Invite User"}
+                {getModalButtonText()}
               </Button>
             </Stack>
-          </Stack>
-        </Stack>
+          </ModalInnerContent>
+        </ModalContentStack>
       </Modal>
+
+      {/* Snackbar/Alert */}
       <Snackbar
         open={snackbarProps.open}
         anchorOrigin={{ horizontal: "center", vertical: "top" }}

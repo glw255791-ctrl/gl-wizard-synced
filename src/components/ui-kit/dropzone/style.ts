@@ -33,6 +33,19 @@ export const StyledDropzoneRoot = styled(Stack)({
   backgroundColor: colors.white,
 });
 
+// Styled dropzone root (Stack)
+export const StyledAdditionalDropzoneRoot = styled(Stack)({
+  border: `2px dashed ${colors.medium}`,
+  borderRadius: "8px",
+  height: '44.5%',
+  marginTop: 16,
+  justifyContent: "center",
+  alignContent: "center",
+  alignItems: "center",
+  color: colors.darker,
+  backgroundColor: colors.white,
+});
+
 // Styled download done icon
 export const StyledDownloadDoneIcon = styled(DownloadDoneIcon)({
   fontSize: "5rem",

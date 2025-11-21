@@ -1,7 +1,7 @@
 import { Workbook } from "exceljs";
 
-self.onmessage = async (e) => {
-  const { buffer } = e.data;
+self.onmessage = async (event) => {
+  const { buffer } = event.data;
 
   const workbook = new Workbook();
   await workbook.xlsx.load(buffer);
@@ -16,17 +16,17 @@ self.onmessage = async (e) => {
 
   const rows = sheet
     .getSheetValues()
-    .slice(2)
-    .map((row) =>
-      columnNames.reduce((acc, col, index) => {
+    .slice(2) // Skip header and first data row (exceljs uses 1-based arrays)
+    .map((row) => {
+      return columnNames.reduce((acc, col, index) => {
         const cell = row[index];
         acc[col] =
           cell && typeof cell === "object" && "result" in cell
             ? cell.result
             : cell ?? "";
         return acc;
-      }, {})
-    );
+      }, {});
+    });
 
   self.postMessage({
     glData: rows,

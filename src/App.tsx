@@ -19,6 +19,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { UserManualPage } from "./components/pages/user-manual/user-manual";
+import { AboutPage } from "./components/pages/about/about";
 function App() {
   return (
     <>
@@ -55,7 +56,7 @@ function App() {
 
           <Route element={<ProtectedRoute><UserManagementPage /></ProtectedRoute>} path="/user-management" />
           <Route element={<ProtectedRoute><UserManualPage /></ProtectedRoute>} path="/user-manual" />
-
+          <Route element={<ProtectedRoute><AboutPage /></ProtectedRoute>} path="/about" />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </LocalizationProvider>

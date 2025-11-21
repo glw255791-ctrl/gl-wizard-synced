@@ -23,6 +23,7 @@ export const Left = styled(Stack)({
   borderRadius: 8,
   height: "calc(100% - 3rem)",
   minHeight: "calc(100vh - 5rem)",
+  maxHeight: "calc(100vh - 5rem)",
   alignItems: "center",
   padding: "1rem 0",
 });

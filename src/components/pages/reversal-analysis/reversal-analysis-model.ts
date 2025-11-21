@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo, useState } from "react";
 import { Workbook } from "exceljs";
-import { formatDate } from "date-fns";
+import { format as formatDate } from "date-fns";
 import { saveAs } from "file-saver";
 import { TableHeader } from "../../composed/basic-table/basic-table";
 import { exportTableToExcel } from "../../composed/basic-table/functions";
@@ -47,125 +47,79 @@ export enum AnalysisStep {
 }
 
 export function useReversalAnalysis() {
-  const [currentStep, setCurrentStep] = useState<AnalysisStep[]>([
-    AnalysisStep.TO_UPLOAD_GL,
-  ]);
+  // States
+  const [currentStep, setCurrentStep] = useState<AnalysisStep[]>([AnalysisStep.TO_UPLOAD_GL]);
   const [rawData, setRawData] = useState<RawData>({
     glData: [],
     glHeaders: [],
     coaData: [],
     coaHeaders: [],
   });
-
-  const [error, setError] = useState<string | undefined>(undefined);
-
+  const [error, setError] = useState<string | undefined>();
   const [unmappedRows, setUnmappedRows] = useState<Record<string, any>[]>([]);
-
-  const [isWarningModalShown, setIsWarningModalShown] =
-    useState<boolean>(false);
-
+  const [isWarningModalShown, setIsWarningModalShown] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState(false);
 
-  const [dataDisplayHeader, setDataDisplayHeader] = useState<
-    Record<string, any>[]
-  >([]);
-
-  const [overviewTableData, setOverviewTableData] = useState<
-    Record<string, any>
-  >({});
-
+  const [isDictionaryUploaded, setIsDictionaryUploaded] = useState(false);
+  const [dictionaryData, setDictionaryData] = useState<Record<string, any>[]>([]);
+  const [dataDisplayHeader, setDataDisplayHeader] = useState<Record<string, any>[]>([]);
+  const [overviewTableData, setOverviewTableData] = useState<Record<string, any>>({});
   const [tableData, setTableData] = useState<Record<string, any>[]>([]);
+
   const [selectedHeaders, setSelectedHeaders] = useState<SelectedHeaders>({
-    glHeaders: {
-      account: "",
-      jen: "",
-      date: "",
-      value: "",
-    },
-    coaHeaders: {
-      displayValue: "",
-      mappingValue: "",
-      groupingValue: "",
-    },
+    glHeaders: { account: "", jen: "", date: "", value: "" },
+    coaHeaders: { displayValue: "", mappingValue: "", groupingValue: "" },
   });
 
+  // Memoized options and derived state
   const reviewData: ReviewData = useMemo(() => {
+    const { date: dateKey, value: valueKey } = selectedHeaders.glHeaders;
+
+    // Compute totals, start/end dates
+    const rows = rawData.glData.length;
+    const total = valueKey
+      ? rawData.glData.reduce((prev, cur) => prev + Number(cur[valueKey]), 0)
+      : 0;
+
+    const getDateBoundary = (fn: typeof Math.min | typeof Math.max) => {
+      if (!dateKey) return "";
+      const times = rawData.glData.map(item => new Date(item[dateKey]).getTime());
+      if (!times.length) return "";
+      return formatDate(new Date(fn(...times)), "dd-MM-yyyy");
+    };
+
     return {
-      rows: rawData.glData.length,
-      total: selectedHeaders.glHeaders.value
-        ? rawData.glData.reduce(
-          (prev, curr) =>
-            (prev += Number(curr[selectedHeaders.glHeaders.value])),
-          0
-        )
-        : 0,
-      startDate: selectedHeaders.glHeaders.date
-        ? formatDate(
-          new Date(
-            Math.min(
-              ...rawData.glData.map((item) =>
-                new Date(item[selectedHeaders.glHeaders.date]).getTime()
-              )
-            )
-          ),
-          "dd-MM-yyyy"
-        )
-        : "",
-      endDate: selectedHeaders.glHeaders.date
-        ? formatDate(
-          new Date(
-            Math.max(
-              ...rawData.glData.map((item) =>
-                new Date(item[selectedHeaders.glHeaders.date]).getTime()
-              )
-            )
-          ),
-          "dd-MM-yyyy"
-        )
-        : "",
+      rows,
+      total,
+      startDate: getDateBoundary(Math.min),
+      endDate: getDateBoundary(Math.max),
     };
   }, [rawData, selectedHeaders]);
 
   const glHeaderOptions = useMemo(
-    () =>
-      rawData.glHeaders.map((item) => ({
-        value: item,
-        title: item,
-      })),
+    () => rawData.glHeaders.map(item => ({ value: item, title: item })),
     [rawData]
   );
 
   const coaHeaderOptions = useMemo(
-    () =>
-      rawData.coaHeaders.map((item) => ({
-        value: item,
-        title: item,
-      })),
+    () => rawData.coaHeaders.map(item => ({ value: item, title: item })),
     [rawData]
   );
 
-  const tableHeader: TableHeader[] = useMemo(
-    () => [
-      ...Object.keys(selectedHeaders.glHeaders).map((item) => ({
-        key: item,
-        title: selectedHeaders.glHeaders[item as keyof GlHeaders],
-      })),
-      {
-        key: "result",
-        title: "result",
-      },
-      {
-        key: "reversal",
-        title: "reversal",
-      },
-    ],
-    [selectedHeaders.glHeaders]
-  );
+  const tableHeader: TableHeader[] = useMemo(() => [
+    ...Object.keys(selectedHeaders.glHeaders).map((key) => ({
+      key,
+      title: selectedHeaders.glHeaders[key as keyof GlHeaders],
+    })),
+    { key: "result", title: "result" },
+    { key: "reversal", title: "reversal" },
+  ], [selectedHeaders.glHeaders]);
 
-  const onGeneralLedgerDrop = async (acceptedFiles: File[]) => {
+  // Handlers
+
+  const onDictionaryDrop = async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
-
     const validMimeTypes = [
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "application/vnd.ms-excel",
@@ -178,11 +132,54 @@ export function useReversalAnalysis() {
     }
 
     setLoadingStatus(true);
-    const buffer = await file.arrayBuffer();
 
-    const worker = new Worker(new URL("./gl-worker.js", import.meta.url), {
-      type: "module",
-    });
+    const buffer = await file.arrayBuffer();
+    const workerUrl = new URL("../../../workers/dictionary-worker.js", import.meta.url);
+    const worker = new Worker(workerUrl, { type: "module" });
+
+    worker.postMessage({ buffer });
+
+    worker.onmessage = (e) => {
+      const { data, error } = e.data;
+
+      if (error) {
+        setError(error);
+        setLoadingStatus(false);
+        return;
+      }
+
+      setDictionaryData(data);
+      setLoadingStatus(false);
+      setIsDictionaryUploaded(true);
+      worker.terminate();
+    };
+
+    worker.onerror = (error) => {
+      setError(error.message);
+      console.error("Worker error:", error);
+      setLoadingStatus(false);
+      worker.terminate();
+    };
+  };
+
+  const onGeneralLedgerDrop = async (acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (!file) return;
+
+    const validMimeTypes = [
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-excel",
+    ];
+    if (!validMimeTypes.includes(file.type) && !file.name.endsWith(".xlsx")) {
+      setError("Invalid file type. Please upload an Excel file.");
+      setTimeout(() => setError(undefined), 4000);
+      return;
+    }
+
+    setLoadingStatus(true);
+    const buffer = await file.arrayBuffer();
+    const workerUrl = new URL("./gl-worker.js", import.meta.url);
+    const worker = new Worker(workerUrl, { type: "module" });
 
     worker.postMessage({ buffer });
 
@@ -196,13 +193,8 @@ export function useReversalAnalysis() {
         return;
       }
 
-      setRawData((prev) => ({
-        ...prev,
-        glData,
-        glHeaders,
-      }));
-
-      setCurrentStep((prev) => [...prev, AnalysisStep.UPLOADED_GL]);
+      setRawData(prev => ({ ...prev, glData, glHeaders }));
+      setCurrentStep(prev => [...prev, AnalysisStep.UPLOADED_GL]);
       setLoadingStatus(false);
       worker.terminate();
     };
@@ -216,53 +208,55 @@ export function useReversalAnalysis() {
     const workbook = new Workbook();
     await workbook.xlsx.load(buffer);
 
-    const sheet = workbook.worksheets[0]; // Get first sheet
+    const sheet = workbook.worksheets[0];
     if (!sheet) return;
 
-    // Get column names
-    const columnNames: string[] = sheet.getRow(1).values as string[];
+    // Get first row for column names, cast as string[]
+    const columnNames: string[] = (sheet.getRow(1).values as string[]).filter(Boolean);
 
-    // Read data
+    // Skip header row, parse data into records
     const rows = sheet
       .getSheetValues()
-      .slice(2) // Skip header row
+      .slice(2)
       .map((row: any) =>
-        columnNames.reduce((acc, col, index) => {
-          acc[col] = row[index]?.result ?? row[index] ?? "";
+        columnNames.reduce((acc, col, i) => {
+          acc[col] = row[i]?.result ?? row[i] ?? "";
           return acc;
         }, {} as Record<string, any>)
       );
 
-    setRawData((prev) => ({
+    setRawData(prev => ({
       ...prev,
       coaData: rows,
-      coaHeaders: columnNames.filter(Boolean),
+      coaHeaders: columnNames,
     }));
-    setSelectedHeaders((prev) => ({
+
+    setSelectedHeaders(prev => ({
       ...prev,
       coaHeaders: {
-        displayValue: columnNames.filter(Boolean)[0],
-        mappingValue: columnNames.filter(Boolean)[0],
+        displayValue: columnNames[0],
+        mappingValue: columnNames[0],
         groupingValue: "",
       },
     }));
-    setCurrentStep((prev) => [...prev, AnalysisStep.TO_ANALYZE]);
+
+    setCurrentStep(prev => [...prev, AnalysisStep.TO_ANALYZE]);
   };
 
   const onChangeGlHeader = (key: keyof GlHeaders, value: string) => {
-    const newValue = { ...selectedHeaders.glHeaders, [key]: value };
-    setSelectedHeaders((prev) => ({
+    const updatedGlHeaders = { ...selectedHeaders.glHeaders, [key]: value };
+    setSelectedHeaders(prev => ({
       ...prev,
-      glHeaders: newValue,
+      glHeaders: updatedGlHeaders,
     }));
 
-    if (!Object.values(newValue).some((item) => item === "")) {
-      setCurrentStep((prev) => [...prev, AnalysisStep.TO_UPLOAD_COA]);
+    if (Object.values(updatedGlHeaders).every(val => val !== "")) {
+      setCurrentStep(prev => [...prev, AnalysisStep.TO_UPLOAD_COA]);
     }
   };
 
   const onChangeCoaHeader = (key: keyof CoaHeaders, value: string) => {
-    setSelectedHeaders((prev) => ({
+    setSelectedHeaders(prev => ({
       ...prev,
       coaHeaders: { ...prev.coaHeaders, [key]: value },
     }));
@@ -271,6 +265,13 @@ export function useReversalAnalysis() {
   const onPressResetBtn = () => {
     setCurrentStep([AnalysisStep.TO_UPLOAD_GL]);
     setTableData([]);
+    setError(undefined);
+    setUnmappedRows([]);
+    setIsWarningModalShown(false);
+    setDataDisplayHeader([]);
+    setOverviewTableData({});
+    setDictionaryData([]);
+    setIsDictionaryUploaded(false);
     setRawData({
       coaData: [],
       coaHeaders: [],
@@ -278,48 +279,32 @@ export function useReversalAnalysis() {
       glHeaders: [],
     });
     setSelectedHeaders({
-      coaHeaders: {
-        displayValue: "",
-        mappingValue: "",
-        groupingValue: "",
-      },
-      glHeaders: {
-        account: "",
-        date: "",
-        jen: "",
-        value: "",
-      },
+      coaHeaders: { displayValue: "", mappingValue: "", groupingValue: "" },
+      glHeaders: { account: "", date: "", jen: "", value: "" },
     });
   };
 
   const onPressAnalyzeData = () => {
     setLoadingStatus(true);
-    const worker = new Worker(
-      new URL("../../../workers/reversal-worker.js", import.meta.url),
-      {
-        type: "module",
-      }
-    );
+
+    const workerUrl = new URL("../../../workers/reversal-worker.js", import.meta.url);
+    const worker = new Worker(workerUrl, { type: "module" });
 
     worker.onmessage = (event) => {
-      const notMappedRows = event.data.outputVal.filter((item: any) =>
+      const { outputVal, groupedByJenAndDate, condensedDataByResult } = event.data;
+      const notMappedRows = outputVal.filter((item: any) =>
         JSON.stringify(item).includes("not mapped")
       );
-      if (
-        notMappedRows.length > 0
-      ) {
+
+      if (notMappedRows.length > 0) {
         setUnmappedRows(notMappedRows);
         setIsWarningModalShown(true);
       }
-      generateOverviewData(
-        Object.values(event.data.groupedByJenAndDate).flat()
-      );
-      setTableData(
-        Object.values(event.data.outputVal as Record<string, any>[]).flat()
-      );
-      setOverviewTableData(event.data.condensedDataByResult);
 
-      setCurrentStep((prev) => [...prev, AnalysisStep.ANALYZED]);
+      generateOverviewData(Object.values(groupedByJenAndDate).flat());
+      setTableData(Object.values(outputVal as Record<string, any>[]).flat());
+      setOverviewTableData(condensedDataByResult);
+      setCurrentStep(prev => [...prev, AnalysisStep.ANALYZED]);
       setLoadingStatus(false);
       worker.terminate();
     };
@@ -335,19 +320,18 @@ export function useReversalAnalysis() {
   };
 
   const generateOverviewData = (data: any[]) => {
+    const mappingKey = selectedHeaders.coaHeaders.mappingValue;
+
     const existingCoaKeys = [
       ...new Set(
-        data.map(
-          (item) => item.coaData?.[selectedHeaders.coaHeaders.mappingValue]
-        )
+        data.map(item => item.coaData?.[mappingKey])
       ),
     ];
 
     const filteredCoaData = rawData.coaData
-      .filter((item) =>
-        existingCoaKeys.includes(item[selectedHeaders.coaHeaders.mappingValue])
-      )
-      .map((item) => ({ ...item, active: true }));
+      .filter(item => existingCoaKeys.includes(item[mappingKey]))
+      .map(item => ({ ...item, active: true }));
+
     setDataDisplayHeader(filteredCoaData);
   };
 
@@ -355,7 +339,6 @@ export function useReversalAnalysis() {
     const dataForExport = tableData.map((item) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { coaData, ...rest } = item;
-
       return {
         ...rest,
         result: Array.isArray(rest.result)
@@ -370,82 +353,76 @@ export function useReversalAnalysis() {
     // Extract headers from object keys
     const headers = Object.keys(dataForExport[0]);
 
-    // Set column widths and define headers
-    worksheet.columns = headers.map((header) => ({
+    // Define worksheet columns with widths
+    worksheet.columns = headers.map(header => ({
       header,
       key: header,
-      width: 20, // Adjust width as needed
+      width: 20,
     }));
 
-    // Style headers (bold text, light gray background)
-    const headerRow = worksheet.getRow(0);
-    headerRow.eachCell((cell) => {
+    // Style header row
+    worksheet.getRow(0).eachCell(cell => {
       cell.font = { bold: true };
       cell.fill = {
         type: "pattern",
         pattern: "solid",
-        fgColor: { argb: "D3D3D3" }, // Light gray background
+        fgColor: { argb: "D3D3D3" },
       };
       cell.alignment = { horizontal: "center", vertical: "middle" };
     });
 
-    // Add rows with formatting
+    // Add and style data rows
     dataForExport.forEach((obj: Record<string, any>) => {
-      const row = headers.map((header) => {
+      const row = headers.map(header => {
         const value = obj[header];
-
-        // Convert large numbers to string to prevent scientific notation
-        if (typeof value === "number" && value > 999999) {
-          return `${value}`;
-        }
-
-        return value;
+        // Avoid scientific notation for big numbers
+        return typeof value === "number" && value > 999_999
+          ? `${value}`
+          : value;
       });
 
       const rowInstance = worksheet.addRow(row);
 
-      // Apply light yellow background to the final columns
+      // Highlight final columns (result, reversal)
       rowInstance.getCell(headers.length).fill = {
         type: "pattern",
         pattern: "solid",
-        fgColor: { argb: "FFFF99" }, // Light yellow background
+        fgColor: { argb: "FFFF99" },
       };
       rowInstance.getCell(headers.length - 1).fill = {
         type: "pattern",
         pattern: "solid",
-        fgColor: { argb: "FFFF99" }, // Light yellow background
+        fgColor: { argb: "FFFF99" },
       };
     });
 
-    // Generate buffer
+    // Download as XLSX
     const buffer = await workbook.xlsx.writeBuffer();
-
-    // Create blob and trigger download
     const blob = new Blob([buffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
     saveAs(blob, "newFile.xlsx");
   };
 
+  // Derived: sorted display headers (active first, then total, then inactive)
   const sortedDataDisplayHeader = useMemo(() => {
-    const active = dataDisplayHeader
-      .filter((item) => item.active)
-      .sort(
-        (a, b) =>
-          a[selectedHeaders.coaHeaders.mappingValue] -
-          b[selectedHeaders.coaHeaders.mappingValue]
+    const mappingKey = selectedHeaders.coaHeaders.mappingValue;
+
+    const sorted = (arr: Record<string, any>[]) =>
+      arr.sort(
+        (a, b) => {
+          const aVal = a[mappingKey];
+          const bVal = b[mappingKey];
+          return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+        }
       );
 
-    const inactive = dataDisplayHeader
-      .filter((item) => !item.active)
-      .sort(
-        (a, b) =>
-          a[selectedHeaders.coaHeaders.mappingValue] -
-          b[selectedHeaders.coaHeaders.mappingValue]
-      );
+    const active = sorted(dataDisplayHeader.filter(item => item.active));
+    const inactive = sorted(dataDisplayHeader.filter(item => !item.active));
+
     return [
       ...active,
-      { [selectedHeaders.coaHeaders.mappingValue]: "total" },
+      { [mappingKey]: "total" },
       ...inactive,
     ];
   }, [dataDisplayHeader, selectedHeaders.coaHeaders.mappingValue]);
@@ -454,6 +431,7 @@ export function useReversalAnalysis() {
     exportTableToExcel(tableHeader, unmappedRows);
   };
 
+  // Expose handlers and state
   return {
     onChangeGlHeader,
     onChangeCoaHeader,
@@ -464,6 +442,9 @@ export function useReversalAnalysis() {
     onPressResetBtn,
     setDataDisplayHeader,
     onPressExportUnmappedRows,
+    onDictionaryDrop,
+    dictionaryData,
+    isDictionaryUploaded,
     overviewTableData,
     sortedDataDisplayHeader,
     loadingStatus,

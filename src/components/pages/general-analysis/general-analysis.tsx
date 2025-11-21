@@ -6,12 +6,12 @@ import { GLDropdowns } from "../../composed/gl-dropdowns/gl-dropdowns";
 import { DataValidityInfo } from "../../composed/data-validity-info/data-validity-info";
 import { BasicDataOverview } from "../../basic-data-overview/basic-data-overview";
 import { DataOverview } from "../../analysed-data-overview/analysed-data-overview";
-import { AnalysisStep, useGeneralAnalysis } from "./general-analysis-model";
-import { styles } from "./style";
 import { Loader } from "../../ui-kit/loader-overlay/loader-overlay";
 import { ActionButton } from "../../composed/action-button/action-button";
 import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { WarningModal } from "../../composed/warning-modal/warning-modal";
+import { AnalysisStep, useGeneralAnalysis } from "./general-analysis-model";
+import { RootStack } from "./style";
 
 export function GeneralAnalysis() {
   const {
@@ -29,6 +29,9 @@ export function GeneralAnalysis() {
     isWarningModalShown,
     reversalTableData,
     reversalTableHeader,
+    isDictionaryUploaded,
+    dictionaryData,
+    onDictionaryDrop,
     onPressExportUnmappedRows,
     setIsWarningModalShown,
     setDataDisplayHeader,
@@ -40,7 +43,7 @@ export function GeneralAnalysis() {
     onPressResetBtn,
   } = useGeneralAnalysis();
 
-  // Memoized computed values
+  // Step booleans for rendering control
   const isUploadedGl = currentStep.includes(AnalysisStep.UPLOADED_GL);
   const isCoaUploadStep = currentStep.includes(AnalysisStep.TO_UPLOAD_COA);
   const isAnalyzeStep = currentStep.includes(AnalysisStep.TO_ANALYZE);
@@ -50,13 +53,15 @@ export function GeneralAnalysis() {
     <>
       <Loader loadingStatus={loadingStatus} />
       <PageWrapper>
-        <Stack style={styles.root} spacing={2}>
+        <RootStack spacing={2}>
           <Header
             title="GL analysis - Transaction type"
             onPressResetBtn={onPressResetBtn}
           />
 
+          {/* GL and CoA Upload */}
           <Grid2 container spacing={2}>
+            {/* GL Upload */}
             <Grid2 size={6}>
               <FileDropzone
                 onDrop={onGeneralLedgerDrop}
@@ -71,23 +76,24 @@ export function GeneralAnalysis() {
               </FileDropzone>
             </Grid2>
 
+            {/* CoA + Optional Dictionary Upload */}
             <Grid2 size={6}>
               <FileDropzone
                 onDrop={onChartOfAccountsDrop}
                 text="Drop CoA file here"
                 uploaded={isAnalyzeStep}
                 isDisabled={!isCoaUploadStep}
+                onAdditionalDrop={onDictionaryDrop}
+                additionalText="Drop Dictionary file here"
+                additionalUploaded={isDictionaryUploaded}
               >
                 <Stack spacing={1}>
                   <Dropdown
                     label="Matching column GL & CoA"
                     items={coaHeaderOptions}
                     value={selectedHeaders.coaHeaders.mappingValue}
-                    onChange={(e) =>
-                      onChangeCoaHeader(
-                        "mappingValue",
-                        e.target.value as string
-                      )
+                    onChange={e =>
+                      onChangeCoaHeader("mappingValue", e.target.value as string)
                     }
                   />
                   <Dropdown
@@ -95,11 +101,8 @@ export function GeneralAnalysis() {
                     items={coaHeaderOptions}
                     tooltip="Recommended: FS subgroup"
                     value={selectedHeaders.coaHeaders.displayValue}
-                    onChange={(e) =>
-                      onChangeCoaHeader(
-                        "displayValue",
-                        e.target.value as string
-                      )
+                    onChange={e =>
+                      onChangeCoaHeader("displayValue", e.target.value as string)
                     }
                   />
                 </Stack>
@@ -107,6 +110,7 @@ export function GeneralAnalysis() {
             </Grid2>
           </Grid2>
 
+          {/* Data Validity and Analysis Action */}
           <Grid2 container spacing={2}>
             <Grid2 size={6}>
               <DataValidityInfo
@@ -115,7 +119,6 @@ export function GeneralAnalysis() {
                 disabled={!isCoaUploadStep}
               />
             </Grid2>
-
             <Grid2 size={6}>
               <ActionButton
                 disabled={!isAnalyzeStep}
@@ -124,13 +127,13 @@ export function GeneralAnalysis() {
             </Grid2>
           </Grid2>
 
+          {/* Overviews */}
           <BasicDataOverview
             title="GL Data With Transaction Types"
             disabled={!isAnalyzedStep || !!error}
             tableData={tableData}
             tableHeader={tableHeader}
           />
-
           <BasicDataOverview
             title="GL Data With Reversal Identified"
             disabled={!isAnalyzedStep || !!error}
@@ -145,18 +148,20 @@ export function GeneralAnalysis() {
             sortedDataDisplayHeader={sortedDataDisplayHeader}
             coaHeaderOptions={coaHeaderOptions}
             title="Movement Tables"
+            dictionaryData={dictionaryData}
             valueKey={selectedHeaders.glHeaders.value}
             disabled={!isAnalyzedStep || !!error}
             basicTableData={tableData}
             basicTableHeader={tableHeader}
           />
 
+          {/* Unmapped Warning Modal */}
           <WarningModal
             isOpen={isWarningModalShown}
             onPressExportUnmappedRows={onPressExportUnmappedRows}
             onClose={() => setIsWarningModalShown(false)}
           />
-        </Stack>
+        </RootStack>
       </PageWrapper>
     </>
   );

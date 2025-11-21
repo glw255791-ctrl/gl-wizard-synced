@@ -1,7 +1,7 @@
 import { Grid2, Stack } from "@mui/material";
 import { FileDropzone } from "../../ui-kit/dropzone/dropzone";
 import { Dropdown } from "../../ui-kit/dropdown/dropdown";
-import { styles } from "./style";
+import { RootStack } from "./style";
 import { useReversalReclassificationAnalysis } from "./reversal-reclassification-analysis-model";
 
 import { AnalysisStep } from "../general-analysis/general-analysis-model";
@@ -35,7 +35,7 @@ export function ReversaReclassificationAnalysis() {
     onPressResetBtn,
   } = useReversalReclassificationAnalysis();
 
-  // Memoized computed values
+  // Step state flags for easier conditional rendering
   const isUploadedGl = currentStep.includes(AnalysisStep.UPLOADED_GL);
   const isCoaUploadStep = currentStep.includes(AnalysisStep.TO_UPLOAD_COA);
   const isAnalyzeStep = currentStep.includes(AnalysisStep.TO_ANALYZE);
@@ -45,13 +45,16 @@ export function ReversaReclassificationAnalysis() {
     <>
       <Loader loadingStatus={loadingStatus} />
       <PageWrapper>
-        <Stack style={styles.root} spacing={2}>
+        <RootStack spacing={2}>
+
           <Header
             title="Reversal/Reclassification analysis"
             onPressResetBtn={onPressResetBtn}
           />
 
+          {/* GL and CoA upload section */}
           <Grid2 container spacing={2}>
+            {/* General Ledger Upload */}
             <Grid2 size={6}>
               <FileDropzone
                 onDrop={onGeneralLedgerDrop}
@@ -66,6 +69,7 @@ export function ReversaReclassificationAnalysis() {
               </FileDropzone>
             </Grid2>
 
+            {/* Chart of Accounts Upload (with filters) */}
             <Grid2 size={6}>
               <FileDropzone
                 onDrop={onChartOfAccountsDrop}
@@ -79,10 +83,7 @@ export function ReversaReclassificationAnalysis() {
                     items={coaHeaderOptions}
                     value={selectedHeaders.coaHeaders.mappingValue}
                     onChange={(event) =>
-                      onChangeCoaHeader(
-                        "mappingValue",
-                        event.target.value as string
-                      )
+                      onChangeCoaHeader("mappingValue", event.target.value as string)
                     }
                   />
                   <Dropdown
@@ -106,6 +107,7 @@ export function ReversaReclassificationAnalysis() {
             </Grid2>
           </Grid2>
 
+          {/* Data Validity & Analysis Actions */}
           <Grid2 container spacing={2}>
             <Grid2 size={6}>
               <DataValidityInfo
@@ -114,7 +116,6 @@ export function ReversaReclassificationAnalysis() {
                 disabled={!isCoaUploadStep}
               />
             </Grid2>
-
             <Grid2 size={6}>
               <ActionButton
                 disabled={!isAnalyzeStep}
@@ -122,6 +123,8 @@ export function ReversaReclassificationAnalysis() {
               />
             </Grid2>
           </Grid2>
+
+          {/* GL Data Overview */}
           <BasicDataOverview
             title="GL Data With Transaction Types"
             reversalReclassification
@@ -129,18 +132,8 @@ export function ReversaReclassificationAnalysis() {
             tableData={tableData}
             tableHeader={tableHeader}
           />
-          {/* 
-        <DataOverview
-          mappingValue={selectedHeaders.coaHeaders.mappingValue}
-          overviewTableData={overviewTableData}
-          setDataDisplayHeader={setDataDisplayHeader}
-          sortedDataDisplayHeader={sortedDataDisplayHeader}
-          coaHeaderOptions={coaHeaderOptions}
-          title="Movement Tables"
-          valueKey={selectedHeaders.glHeaders.value}
-          disabled={!isAnalyzedStep}
-        /> */}
-        </Stack>
+
+        </RootStack>
       </PageWrapper>
     </>
   );

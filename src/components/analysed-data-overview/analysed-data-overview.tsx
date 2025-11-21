@@ -32,6 +32,7 @@ interface Props {
   >;
   basicTableHeader: TableHeader[];
   basicTableData: Record<string, string>[];
+  dictionaryData: Record<string, any>[];
 }
 
 interface Filters {
@@ -48,6 +49,7 @@ export function DataOverview({
   disabled,
   coaHeaderOptions,
   basicTableData,
+  dictionaryData,
   basicTableHeader,
   setDataDisplayHeader,
 }: Props) {
@@ -63,8 +65,13 @@ export function DataOverview({
 
   // Always keep mappingValue included in header rows
   useEffect(() => {
-    setSelectedHeaderRows([selectedFilter.header === 'all' ? mappingValue : selectedFilter.header]);
-  }, [selectedFilter]);
+    console.log(selectedFilter)
+    const row = [mappingValue]
+    if (selectedFilter.header !== 'all') {
+      row.push(selectedFilter.header)
+    }
+    setSelectedHeaderRows(row);
+  }, [selectedFilter, mappingValue]);
 
 
 
@@ -100,6 +107,7 @@ export function DataOverview({
       basicTableHeader,
       setDataDisplayHeader,
       valueKey,
+      dictionaryData
     };
 
     if (selectedFilter.header === "all") {
@@ -156,7 +164,7 @@ export function DataOverview({
 
       const hasItemInTable = [...new Set(Object.keys(filteredOverviewData).join('/').split('/'))].includes(selectedTable)
 
-      if (selectedTable === "all" || hasItemInTable) {
+      if ((selectedTable === "all" || hasItemInTable)) {
         accumulatedTables.push(
           <DataTable
             key={value}
@@ -170,7 +178,19 @@ export function DataOverview({
         );
       }
 
-      setLazyTables([...accumulatedTables]);
+      setLazyTables([
+        ...accumulatedTables
+      ].sort((a, b) => {
+        // Handle possible null/undefined and ensure a & b are ReactElements with a 'key'
+        const aKey = (a as React.ReactElement)?.key;
+        const bKey = (b as React.ReactElement)?.key;
+
+        // Sort: if a's key === selectedTable, move 'a' to the front
+        if (aKey === selectedTable) return -1;
+        if (bKey === selectedTable) return 1;
+        return 0;
+      }));
+
       idx += 1;
       setTimeout(renderNextTable, 0);
     };

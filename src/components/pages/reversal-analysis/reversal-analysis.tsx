@@ -1,7 +1,7 @@
 import { Grid2, Stack } from "@mui/material";
 import { FileDropzone } from "../../ui-kit/dropzone/dropzone";
 import { Dropdown } from "../../ui-kit/dropdown/dropdown";
-import { styles } from "./style";
+import { RootStack } from "./style";
 import { AnalysisStep, useReversalAnalysis } from "./reversal-analysis-model";
 import { GLDropdowns } from "../../composed/gl-dropdowns/gl-dropdowns";
 import { DataValidityInfo } from "../../composed/data-validity-info/data-validity-info";
@@ -27,6 +27,9 @@ export function ReversalAnalysis() {
     sortedDataDisplayHeader,
     loadingStatus,
     isWarningModalShown,
+    isDictionaryUploaded,
+    dictionaryData,
+    onDictionaryDrop,
     onPressExportUnmappedRows,
     setIsWarningModalShown,
     setDataDisplayHeader,
@@ -38,7 +41,7 @@ export function ReversalAnalysis() {
     onPressResetBtn,
   } = useReversalAnalysis();
 
-  // Memoized computed values
+  // Step booleans for rendering clarity
   const isUploadedGl = currentStep.includes(AnalysisStep.UPLOADED_GL);
   const isCoaUploadStep = currentStep.includes(AnalysisStep.TO_UPLOAD_COA);
   const isAnalyzeStep = currentStep.includes(AnalysisStep.TO_ANALYZE);
@@ -48,10 +51,16 @@ export function ReversalAnalysis() {
     <>
       <Loader loadingStatus={loadingStatus} />
       <PageWrapper>
-        <Stack style={styles.root} spacing={2}>
-          <Header title="Reversal analysis" onPressResetBtn={onPressResetBtn} />
+        <RootStack spacing={2}>
 
+          <Header
+            title="Reversal analysis"
+            onPressResetBtn={onPressResetBtn}
+          />
+
+          {/* GL and CoA Upload Section */}
           <Grid2 container spacing={2}>
+            {/* GL Upload */}
             <Grid2 size={6}>
               <FileDropzone
                 onDrop={onGeneralLedgerDrop}
@@ -66,34 +75,32 @@ export function ReversalAnalysis() {
               </FileDropzone>
             </Grid2>
 
+            {/* CoA & Dictionary Upload */}
             <Grid2 size={6}>
               <FileDropzone
                 onDrop={onChartOfAccountsDrop}
                 text="Drop CoA file here"
                 uploaded={isAnalyzeStep}
                 isDisabled={!isCoaUploadStep}
+                onAdditionalDrop={onDictionaryDrop}
+                additionalText="Drop Dictionary file here"
+                additionalUploaded={isDictionaryUploaded}
               >
                 <Stack spacing={1}>
                   <Dropdown
                     label="Matching column GL & CoA"
                     items={coaHeaderOptions}
                     value={selectedHeaders.coaHeaders.mappingValue}
-                    onChange={(e) =>
-                      onChangeCoaHeader(
-                        "mappingValue",
-                        e.target.value as string
-                      )
+                    onChange={e =>
+                      onChangeCoaHeader("mappingValue", e.target.value as string)
                     }
                   />
                   <Dropdown
                     label="Display CoA category"
                     items={coaHeaderOptions}
                     value={selectedHeaders.coaHeaders.displayValue}
-                    onChange={(e) =>
-                      onChangeCoaHeader(
-                        "displayValue",
-                        e.target.value as string
-                      )
+                    onChange={e =>
+                      onChangeCoaHeader("displayValue", e.target.value as string)
                     }
                   />
                 </Stack>
@@ -101,6 +108,7 @@ export function ReversalAnalysis() {
             </Grid2>
           </Grid2>
 
+          {/* Data Validity & Analysis Actions */}
           <Grid2 container spacing={2}>
             <Grid2 size={6}>
               <DataValidityInfo
@@ -109,7 +117,6 @@ export function ReversalAnalysis() {
                 disabled={!isCoaUploadStep}
               />
             </Grid2>
-
             <Grid2 size={6}>
               <ActionButton
                 disabled={!isAnalyzeStep}
@@ -118,6 +125,7 @@ export function ReversalAnalysis() {
             </Grid2>
           </Grid2>
 
+          {/* GL Data Summary */}
           <BasicDataOverview
             title="GL Data With Reversal Identified"
             disabled={!isAnalyzedStep}
@@ -125,6 +133,7 @@ export function ReversalAnalysis() {
             tableHeader={tableHeader}
           />
 
+          {/* Data Overview */}
           <DataOverview
             mappingValue={selectedHeaders.coaHeaders.mappingValue}
             overviewTableData={overviewTableData}
@@ -132,18 +141,21 @@ export function ReversalAnalysis() {
             sortedDataDisplayHeader={sortedDataDisplayHeader}
             coaHeaderOptions={coaHeaderOptions}
             title="Movement Tables"
+            dictionaryData={dictionaryData}
             valueKey={selectedHeaders.glHeaders.value}
             basicTableData={tableData}
             basicTableHeader={tableHeader}
             disabled={!isAnalyzedStep}
           />
 
+          {/* Warning Modal for Unmapped Rows */}
           <WarningModal
             isOpen={isWarningModalShown}
             onPressExportUnmappedRows={onPressExportUnmappedRows}
             onClose={() => setIsWarningModalShown(false)}
           />
-        </Stack>
+
+        </RootStack>
       </PageWrapper>
     </>
   );

@@ -1,6 +1,5 @@
 import { Workbook } from "exceljs";
 
-// Worker message handler
 self.onmessage = async (event) => {
   const { buffer } = event.data;
 
@@ -14,14 +13,16 @@ self.onmessage = async (event) => {
       return;
     }
 
+    // Get column/header names from the first row
     const columnNames = sheet.getRow(1).values;
 
+    // Build array of row objects using header names as keys
     const rows = sheet
       .getSheetValues()
-      .slice(2)
-      .map((row) =>
-        columnNames.reduce((acc, col, index) => {
-          acc[col] = row[index] || "";
+      .slice(2) // Skip header and first data row (exceljs uses 1-based arrays)
+      .map(row =>
+        columnNames.reduce((acc, col, idx) => {
+          acc[col] = row[idx] || "";
           return acc;
         }, {})
       );
@@ -30,7 +31,7 @@ self.onmessage = async (event) => {
       glData: rows,
       glHeaders: columnNames.filter(Boolean),
     });
-  } catch (err) {
-    self.postMessage({ error: err.message || "Unknown error occurred." });
+  } catch (error) {
+    self.postMessage({ error: error.message || "Unknown error occurred." });
   }
 };

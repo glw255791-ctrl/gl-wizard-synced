@@ -5,13 +5,14 @@ import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { Header } from "../../composed/header/header";
 import {
   RootStack,
-  ButtonsWrapper,
+  ContentWrapper,
   StyledButtonStack,
   TextWrapper,
   StyledIconButton,
   StyledDownloadIcon,
   StyledTitle,
-  StyledList
+  StyledList,
+  ButtonsWrapper
 } from "./style";
 
 export function UserManualPage() {
@@ -19,7 +20,85 @@ export function UserManualPage() {
     <PageWrapper>
       <RootStack>
         <Header title="User Manual" />
-        <ButtonsWrapper>
+        <ContentWrapper>
+          <TextWrapper>
+            <StyledTitle>
+              General Usage
+            </StyledTitle>
+            <StyledList>
+              <li>
+                The General User Manual is a guide for users of the GL Wizard software.
+              </li>
+              <li>
+                Upload your General Ledger (GL) and Chart of Accounts (CoA) files in the supported formats to get started with data analysis.
+              </li>
+              <li>
+                Use the filtering and mapping features on the platform to categorize and analyze your financial data more effectively.
+              </li>
+              <li>
+                After uploading your files, review the data validity section for any errors or missing information.
+              </li>
+              <li>
+                Download template files and sample dictionaries from the Content Download section below to assist with data preparation and mapping.
+              </li>
+            </StyledList>
+          </TextWrapper>
+
+
+          <TextWrapper>
+            <ButtonsWrapper>
+              <StyledTitle>
+                Content Download
+              </StyledTitle>
+              <StyledButtonStack>
+                <Typography>Serbia CoA</Typography>
+                <StyledIconButton
+                  onClick={() => {
+                    const link = document.createElement("a");
+                    link.href = "/assets/files/serbia-coa.xlsx";
+                    link.download = "Serbia_CoA.xlsx";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                >
+                  <DownloadIcon sx={StyledDownloadIcon} />
+                </StyledIconButton>
+              </StyledButtonStack>
+              <StyledButtonStack>
+                <Typography>International CoA</Typography>
+                <StyledIconButton
+                  onClick={() => {
+                    const link = document.createElement("a");
+                    link.href = "/assets/files/international-coa.xlsx";
+                    link.download = "International_CoA.xlsx";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                >
+                  <DownloadIcon sx={StyledDownloadIcon} />
+                </StyledIconButton>
+              </StyledButtonStack>
+              <StyledButtonStack>
+                <Typography>Mapping Dictionary</Typography>
+                <StyledIconButton
+                  onClick={() => {
+                    const link = document.createElement("a");
+                    link.href = "/assets/files/dictionary.xlsx";
+                    link.download = "Dictionary.xlsx";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                >
+                  <DownloadIcon sx={StyledDownloadIcon} />
+                </StyledIconButton>
+              </StyledButtonStack>
+            </ButtonsWrapper>
+          </TextWrapper>
+        </ContentWrapper>
+        <ContentWrapper>
           <TextWrapper>
             <StyledTitle>
               Importing the General Ledger (GL)
@@ -75,40 +154,8 @@ export function UserManualPage() {
               </li>
             </StyledList>
           </TextWrapper>
-        </ButtonsWrapper>
+        </ContentWrapper>
 
-        <ButtonsWrapper>
-          <StyledButtonStack>
-            <Typography>Serbia CoA</Typography>
-            <StyledIconButton
-              onClick={() => {
-                const link = document.createElement("a");
-                link.href = "/assets/files/serbia-coa.xlsx";
-                link.download = "Serbia_CoA.xlsx";
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-              }}
-            >
-              <DownloadIcon sx={StyledDownloadIcon} />
-            </StyledIconButton>
-          </StyledButtonStack>
-          <StyledButtonStack>
-            <Typography>International CoA</Typography>
-            <StyledIconButton
-              onClick={() => {
-                const link = document.createElement("a");
-                link.href = "/assets/files/international-coa.xlsx";
-                link.download = "International_CoA.xlsx";
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-              }}
-            >
-              <DownloadIcon sx={StyledDownloadIcon} />
-            </StyledIconButton>
-          </StyledButtonStack>
-        </ButtonsWrapper>
 
       </RootStack>
     </PageWrapper>

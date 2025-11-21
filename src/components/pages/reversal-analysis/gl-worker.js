@@ -1,6 +1,5 @@
 import { Workbook } from "exceljs";
 
-// Make sure we're in a worker context
 self.onmessage = async (event) => {
   const { buffer } = event.data;
 
@@ -14,27 +13,29 @@ self.onmessage = async (event) => {
       return;
     }
 
+    // Get header/column names from the first row
     const columnNames = sheet.getRow(1).values;
 
+    // Extract all data rows (skip header and use 1-based indexing)
     const rows = sheet
       .getSheetValues()
       .slice(2)
-      .map((row) =>
-        columnNames.reduce((acc, col, index) => {
-          const cell = row[index];
+      .map((row) => {
+        return columnNames.reduce((acc, col, idx) => {
+          const cell = row[idx];
           acc[col] =
             cell && typeof cell === "object" && "result" in cell
               ? cell.result
               : cell ?? "";
           return acc;
-        }, {})
-      );
+        }, {});
+      });
 
     self.postMessage({
       glData: rows,
       glHeaders: columnNames.filter(Boolean),
     });
-  } catch (error) {
-    self.postMessage({ error: error.message || "Unknown error" });
+  } catch (err) {
+    self.postMessage({ error: err?.message || "Unknown error" });
   }
 };
