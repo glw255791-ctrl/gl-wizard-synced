@@ -36,6 +36,7 @@ self.onmessage = async (event) => {
       glHeaders: columnNames.filter(Boolean),
     });
   } catch (err) {
+    console.error(err);
     self.postMessage({ error: err?.message || "Unknown error" });
   }
 };
