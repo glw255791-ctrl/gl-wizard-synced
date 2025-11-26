@@ -177,35 +177,71 @@ export function useReversalAnalysis() {
     }
 
     setLoadingStatus(true);
+    console.log("[GL Upload] Starting file processing...");
+    
     const buffer = await file.arrayBuffer();
-    const workerUrl = new URL("./gl-worker.js", import.meta.url);
-    const worker = new Worker(workerUrl, { type: "module" });
-
-    worker.postMessage({ buffer });
-
-    worker.onmessage = (e) => {
-      const { glData, glHeaders, error } = e.data;
-
-      if (error) {
-        setError(error);
-        setLoadingStatus(false);
-        worker.terminate();
-        return;
-      }
-
+    console.log("[GL Upload] File buffer created", { size: buffer.byteLength });
+    
+    try {
+      const workerUrl = new URL("./gl-worker.js", import.meta.url);
+      console.log("[GL Upload] Worker URL created", { url: workerUrl.href, pathname: workerUrl.pathname });
       
-      worker.onerror = workerError => {
-        setError(workerError.message);
-        console.error("Worker error:", workerError);
+      console.log("[GL Upload] Creating worker...");
+      const worker = new Worker(workerUrl, { type: "module" });
+      console.log("[GL Upload] Worker created successfully");
+
+      // Set up error handler BEFORE posting message
+      worker.onerror = (workerError) => {
+        console.error("[GL Upload] Worker error event:", workerError);
+        console.error("[GL Upload] Error details:", {
+          message: (workerError as ErrorEvent).message,
+          filename: (workerError as ErrorEvent).filename,
+          lineno: (workerError as ErrorEvent).lineno,
+          colno: (workerError as ErrorEvent).colno,
+          error: (workerError as ErrorEvent).error,
+        });
+        const errorMessage = (workerError as ErrorEvent).message 
+          || (workerError as ErrorEvent).filename 
+          ? `Failed to load worker: ${(workerError as ErrorEvent).filename || 'unknown'}`
+          : "Failed to process file. Please try again.";
+        setError(errorMessage);
         setLoadingStatus(false);
         worker.terminate();
       };
 
-      setRawData(prev => ({ ...prev, glData, glHeaders }));
-      setCurrentStep(prev => [...prev, AnalysisStep.UPLOADED_GL]);
+      worker.onmessage = (e) => {
+        console.log("[GL Upload] Message received from worker", { hasData: !!e.data });
+        const { glData, glHeaders, error } = e.data;
+
+        if (error) {
+          console.error("[GL Upload] Worker returned error:", error);
+          setError(error);
+          setLoadingStatus(false);
+          worker.terminate();
+          return;
+        }
+
+        console.log("[GL Upload] Processing successful", {
+          rows: glData?.length,
+          headers: glHeaders?.length,
+        });
+
+        setRawData(prev => ({ ...prev, glData, glHeaders }));
+        setCurrentStep(prev => [...prev, AnalysisStep.UPLOADED_GL]);
+        setLoadingStatus(false);
+        worker.terminate();
+        console.log("[GL Upload] Worker terminated, processing complete");
+      };
+
+      console.log("[GL Upload] Posting message to worker...");
+      worker.postMessage({ buffer });
+      console.log("[GL Upload] Message posted to worker");
+    } catch (err) {
+      console.error("[GL Upload] Error creating worker:", err);
+      const errorMessage = err instanceof Error ? err.message : "Failed to initialize worker";
+      setError(errorMessage);
       setLoadingStatus(false);
-      worker.terminate();
-    };
+    }
   };
 
   const onChartOfAccountsDrop = async (acceptedFiles: File[]) => {
