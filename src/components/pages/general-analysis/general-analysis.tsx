@@ -48,7 +48,6 @@ export function GeneralAnalysis() {
   const isAnalyzeStep = currentStep.includes(AnalysisStep.TO_ANALYZE);
   const isAnalyzedStep = currentStep.includes(AnalysisStep.ANALYZED);
 
-  console.log(reversalTableData)
   return (
     <>
       <Loader loadingStatus={loadingStatus} />
@@ -92,8 +91,11 @@ export function GeneralAnalysis() {
                     label="Matching column GL & CoA"
                     items={coaHeaderOptions}
                     value={selectedHeaders.coaHeaders.mappingValue}
-                    onChange={e =>
-                      onChangeCoaHeader("mappingValue", e.target.value as string)
+                    onChange={(e) =>
+                      onChangeCoaHeader(
+                        "mappingValue",
+                        e.target.value as string
+                      )
                     }
                   />
                   <Dropdown
@@ -101,8 +103,11 @@ export function GeneralAnalysis() {
                     items={coaHeaderOptions}
                     tooltip="Recommended: FS subgroup"
                     value={selectedHeaders.coaHeaders.displayValue}
-                    onChange={e =>
-                      onChangeCoaHeader("displayValue", e.target.value as string)
+                    onChange={(e) =>
+                      onChangeCoaHeader(
+                        "displayValue",
+                        e.target.value as string
+                      )
                     }
                   />
                 </Stack>
@@ -134,7 +139,6 @@ export function GeneralAnalysis() {
             tableData={reversalTableData}
             tableHeader={tableHeader}
           />
-     
 
           <DataOverview
             mappingValue={selectedHeaders.coaHeaders.mappingValue}

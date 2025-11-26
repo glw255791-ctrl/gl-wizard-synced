@@ -5,11 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import {
-  Stack,
-  Checkbox,
-  Tooltip,
-} from "@mui/material";
+import { Stack, Checkbox, Tooltip } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import "react-virtualized/styles.css";
 import { AutoSizer, MultiGrid } from "react-virtualized";
@@ -55,6 +51,7 @@ interface Props {
   title: string;
   sortedDataDisplayHeader: Record<string, AnyType>[];
   mappingValue: string;
+  groupingValue: string;
   overviewTableData: Record<string, AnyType>;
   valueKey: string;
   selectedRow?: string;
@@ -67,7 +64,6 @@ interface Props {
   basicTableHeader: TableHeader[];
   basicTableData: Record<string, string>[];
   dictionaryData: Record<string, any>[];
-  selectedHeaderRows: string[];
 }
 
 interface Filters {
@@ -79,13 +75,13 @@ export const DataTable: React.FC<Props> = ({
   title,
   sortedDataDisplayHeader,
   mappingValue,
+  groupingValue,
   selectedRow,
   overviewTableData,
   valueKey,
   basicTableData,
   basicTableHeader,
-  //TODO
-  // selectedHeaderRows,
+  selectedFilter,
   dictionaryData,
   transitionFunc,
   id,
@@ -102,14 +98,16 @@ export const DataTable: React.FC<Props> = ({
     );
     worker.onmessage = (e) => {
       const { columns, rows } = e.data;
-      setTableColumns(columns);
+      setTableColumns([...new Set(columns as string[])]);
       setTableRows(rows);
     };
     worker.postMessage({
       sortedDataDisplayHeader,
       overviewTableData,
       mappingValue,
+      groupingValue,
       valueKey,
+      selectedFilter,
       colors,
     });
   };
@@ -127,7 +125,10 @@ export const DataTable: React.FC<Props> = ({
 
   // Calculate number of fixed header rows
   const fixedRowCount = useMemo(
-    () => Object.keys(sortedDataDisplayHeader[0])?.length || 1,
+    () =>
+      title === "All items"
+        ? Object.keys(sortedDataDisplayHeader[0])?.length || 1
+        : 2,
     [sortedDataDisplayHeader]
   );
 
@@ -140,10 +141,7 @@ export const DataTable: React.FC<Props> = ({
   }, [sortedDataDisplayHeader, tableRows]);
 
   // Renders the "Include" row with either custom text, total or checkbox
-  const renderIncludeRow = (
-    row: Record<string, AnyType>,
-    column: string
-  ) => {
+  const renderIncludeRow = (row: Record<string, AnyType>, column: string) => {
     if (column === TOTAL) return <TotalText>Total</TotalText>;
     if (column === SIDE_HEADER) return "Included in calculation";
     return renderIncludeCheckbox(row, column);
@@ -156,7 +154,6 @@ export const DataTable: React.FC<Props> = ({
   ) => (
     <Checkbox
       disableRipple
-      disabled={!!selectedRow}
       checkedIcon={<CheckedIcon />}
       icon={<UncheckedIcon />}
       value={row[column]}
@@ -183,18 +180,24 @@ export const DataTable: React.FC<Props> = ({
   };
 
   const downloadGroupedByRow = () => {
-const rows = tableRows.filter(row=> !row.header).map(item=>String(item.sideHeader))
+    const rows = tableRows
+      .filter((row) => !row.header)
+      .map((item) => String(item.sideHeader));
 
-const tableDataByRows = rows.map(row=> basicTableData.filter(item=> (item.result as unknown as string[]).join("/") === row))
+    const tableDataByRows = rows.map((row) =>
+      basicTableData.filter(
+        (item) => (item.result as unknown as string[]).join("/") === row
+      )
+    );
 
-exportMultipleTablesToExcel(basicTableHeader, tableDataByRows, rows)
+    exportMultipleTablesToExcel(basicTableHeader, tableDataByRows, rows);
   };
 
   const renderDictionaryCell = (val: string | undefined) => {
-    const values = val?.split("/")
+    const values = val?.split("/");
 
     // Find a dictionary item where item.inputs has all the same elements as values (regardless of order)
-    const dictionaryItem = dictionaryData.find(item => {
+    const dictionaryItem = dictionaryData.find((item) => {
       if (!Array.isArray(item.inputs) || !Array.isArray(values)) return false;
       if (item.inputs.length !== values.length) return false;
       // Check if every value is in item.inputs, and vice versa (set equality)
@@ -207,15 +210,11 @@ exportMultipleTablesToExcel(basicTableHeader, tableDataByRows, rows)
   };
 
   // Renders the content of a cell, including pin & download icons when appropriate
-  const renderCellText = (
-    row: Record<string, AnyType>,
-    column: string
-  ) => {
+  const renderCellText = (row: Record<string, AnyType>, column: string) => {
     const isHeader = row.header;
-    const val =
-      row[column] ?
-        getElipsis(row[column] as string, MAX_CHARS - 5) :
-        "";
+    const val = row[column]
+      ? getElipsis(row[column] as string, MAX_CHARS - 5)
+      : "";
 
     if (isHeader || column !== SIDE_HEADER) {
       return <Stack>{val}</Stack>;
@@ -225,7 +224,6 @@ exportMultipleTablesToExcel(basicTableHeader, tableDataByRows, rows)
       <RowLabelWrapper>
         {renderDictionaryCell(val)}
         <RowLabelCell>
-
           <IconButtonStyled
             onClick={() => handleDownloadByRow(String(row[column]))}
           >
@@ -241,20 +239,22 @@ exportMultipleTablesToExcel(basicTableHeader, tableDataByRows, rows)
       <TableHeaderStyled>
         <TableTitle>{title}</TableTitle>
         <ButtonsWrapper>
-        <ExcelDownloadButton
-          onClick={onExportClick}
-          variant="contained"
-          endIcon={<DownloadIcon />}
-        >
-          Download
-        </ExcelDownloadButton>
-      {title!=='All items' && <ExcelDownloadButton
-          onClick={downloadGroupedByRow}
-          variant="contained"
-          endIcon={<DownloadIcon />}
-        >
-          Grouped By Row
-        </ExcelDownloadButton>}
+          <ExcelDownloadButton
+            onClick={onExportClick}
+            variant="contained"
+            endIcon={<DownloadIcon />}
+          >
+            Download
+          </ExcelDownloadButton>
+          {title !== "All items" && (
+            <ExcelDownloadButton
+              onClick={downloadGroupedByRow}
+              variant="contained"
+              endIcon={<DownloadIcon />}
+            >
+              Grouped By Row
+            </ExcelDownloadButton>
+          )}
         </ButtonsWrapper>
       </TableHeaderStyled>
       <AutoSizer
@@ -283,7 +283,7 @@ exportMultipleTablesToExcel(basicTableHeader, tableDataByRows, rows)
 
               const tooltipTitle =
                 typeof row[column] === "string" &&
-                  (row[column] as string).length > MAX_CHARS
+                (row[column] as string).length > MAX_CHARS
                   ? (row[column] as string)
                   : "";
 
@@ -300,10 +300,7 @@ exportMultipleTablesToExcel(basicTableHeader, tableDataByRows, rows)
                             mappingValue,
                             selectedRow
                           ),
-                          ...getStylesBasedOnHeader(
-                            rowIndex,
-                            sortedDataDisplayHeader
-                          ),
+                          ...getStylesBasedOnHeader(rowIndex, fixedRowCount),
                         } as React.CSSProperties
                       }
                     >

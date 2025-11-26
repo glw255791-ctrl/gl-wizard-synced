@@ -406,7 +406,11 @@ export function useGeneralAnalysis() {
       .sort((a, b) => a[mappingKey] - b[mappingKey]);
     return [
       ...active,
-      { [mappingKey]: "total" },
+      dataDisplayHeader[0]
+        ? Object.fromEntries(
+            Object.keys(dataDisplayHeader[0]).map((key) => [key, "total"])
+          )
+        : { [mappingKey]: "total" },
       ...inactive,
     ];
   }, [dataDisplayHeader, selectedHeaders.coaHeaders.mappingValue]);

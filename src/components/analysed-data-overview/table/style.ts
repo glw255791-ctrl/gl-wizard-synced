@@ -156,10 +156,9 @@ export const getStylesBasedOnColumn = (
  */
 export const getStylesBasedOnHeader = (
   rowIndex: number,
-  sortedDataDisplayHeader: Record<string, AnyType>[]
+  fixedRowCount: number
 ) => {
-  const lastIndex = Object.keys(sortedDataDisplayHeader[0]).length - 1;
-  const isLastRow = rowIndex === lastIndex;
+  const isLastRow = rowIndex === fixedRowCount - 1;
   return {
     borderBottomWidth: isLastRow ? 2 : 1,
     borderBottomColor: isLastRow ? colors.medium : colors.lighter,

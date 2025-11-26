@@ -59,57 +59,44 @@ export function DataOverview({
     value: "",
   });
   const [selectedTable, setSelectedTable] = useState("all");
-  const [selectedHeaderRows, setSelectedHeaderRows] = useState<string[]>([]);
+  const [groupingValue, setGroupingValue] = useState<string>(mappingValue);
   const [lazyTables, setLazyTables] = useState<React.ReactNode[]>([]);
   const [loading, setLoading] = useState(false);
   const [transition, transitionFunc] = useTransition();
 
   // Always keep mappingValue included in header rows
   useEffect(() => {
-    if (sortedDataDisplayHeader.length > 0) {
-      setSelectedHeaderRows(Object.keys(sortedDataDisplayHeader[0]));
-    }
-  }, [sortedDataDisplayHeader]);
-
-
+    setGroupingValue(
+      selectedFilter.header !== "all" ? selectedFilter.value : mappingValue
+    );
+  }, [selectedFilter, mappingValue, selectedFilter.header]);
 
   // Compute filter value options for dropdown
   const filterValueOptions = useMemo<string[]>(() => {
     if (selectedFilter.header === "all") return [];
     const values = sortedDataDisplayHeader
-      .map(item => item[selectedFilter.header])
+      .map((item) => item[selectedFilter.header])
       .filter(Boolean)
-      .map(item => String(item));
+      .map((item) => String(item));
     return Array.from(new Set(values));
   }, [selectedFilter.header, sortedDataDisplayHeader]);
-
-  // Compute table header structure based on selected header rows
-  const filteredSortedDataDisplayHeader: Record<string, AnyType>[] = useMemo(
-    () =>
-      sortedDataDisplayHeader.map(item =>
-        selectedHeaderRows.reduce(
-          (acc, curr) => ({ ...acc, [curr]: item[curr] }),
-          { active: item.active },
-        )
-      ),
-    [sortedDataDisplayHeader,selectedHeaderRows]
-  );
 
   // Memoize common table props to prevent unnecessary re-renders
   const commonTableProps = useMemo(
     () => ({
       transitionFunc,
       mappingValue,
+      groupingValue,
       selectedFilter,
       basicTableData,
       basicTableHeader,
       setDataDisplayHeader,
       valueKey,
       dictionaryData,
-      selectedHeaderRows,
     }),
     [
       transitionFunc,
+      groupingValue,
       mappingValue,
       selectedFilter,
       basicTableData,
@@ -117,7 +104,6 @@ export function DataOverview({
       setDataDisplayHeader,
       valueKey,
       dictionaryData,
-      selectedHeaderRows,
     ]
   );
 
@@ -129,14 +115,14 @@ export function DataOverview({
           key="all"
           title="All items"
           overviewTableData={overviewTableData}
-          sortedDataDisplayHeader={filteredSortedDataDisplayHeader}
+          sortedDataDisplayHeader={sortedDataDisplayHeader}
           {...commonTableProps}
         />,
       ];
     }
 
     // Remove 'total' from options shown as individual tables
-    const filteredValues = filterValueOptions.filter(v => v !== "total");
+    const filteredValues = filterValueOptions.filter((v) => v !== "total");
     const accumulatedTables: React.ReactNode[] = [];
 
     // Process all tables in a single batch instead of recursively
@@ -144,12 +130,15 @@ export function DataOverview({
       // Filter overviewData for rows with at least one subItem matching the filter value
       const filteredOverviewData: Record<string, AnyType> = {};
       for (const mainKey of Object.keys(overviewTableData)) {
-        const subArray = overviewTableData[mainKey] as Record<string, AnyType>[];
+        const subArray = overviewTableData[mainKey] as Record<
+          string,
+          AnyType
+        >[];
         if (
           subArray.some(
-            subItem =>
+            (subItem) =>
               (subItem.coaData as Record<string, AnyType>)?.[
-              selectedFilter.header
+                selectedFilter.header
               ] === value
           )
         ) {
@@ -157,8 +146,8 @@ export function DataOverview({
         }
       }
       // Header for just this value/table
-      const filteredHeader = filteredSortedDataDisplayHeader.filter(
-        item =>
+      const filteredHeader = sortedDataDisplayHeader.filter(
+        (item) =>
           item[selectedFilter.header] === value ||
           item[mappingValue] === "total"
       );
@@ -167,7 +156,11 @@ export function DataOverview({
         ...new Set(Object.keys(filteredOverviewData).join("/").split("/")),
       ].includes(selectedTable);
 
-      if (selectedTable === "all" ||selectedTable===value|| hasItemInTable) {
+      if (
+        selectedTable === "all" ||
+        selectedTable === value ||
+        hasItemInTable
+      ) {
         accumulatedTables.push(
           <DataTable
             key={value}
@@ -193,7 +186,7 @@ export function DataOverview({
   }, [
     selectedFilter.header,
     overviewTableData,
-    filteredSortedDataDisplayHeader,
+    sortedDataDisplayHeader,
     commonTableProps,
     filterValueOptions,
     selectedFilter,
@@ -204,14 +197,14 @@ export function DataOverview({
   // Generate table(s) each time selection changes - using requestAnimationFrame for better performance
   useEffect(() => {
     setLoading(true);
-    
+
     // Use requestAnimationFrame to batch the work and prevent blocking
     const rafId = requestAnimationFrame(() => {
       const tables = generateTables();
       setLazyTables(tables);
       setTimeout(() => {
         setLoading(false);
-      }, tables.length*100);
+      }, tables.length * 100);
     });
 
     return () => {
@@ -245,35 +238,36 @@ export function DataOverview({
                   ...(coaHeaderOptions || []),
                 ]}
                 value={selectedFilter.header}
-                onChange={event => {
-                  setDataDisplayHeader(prev =>
-                    prev.map(item => ({ ...item, active: true }))
+                onChange={(event) => {
+                  setDataDisplayHeader((prev) =>
+                    prev.map((item) => ({ ...item, active: true }))
                   );
-                  setSelectedFilters(prev => ({
+                  setSelectedFilters((prev) => ({
                     ...prev,
                     header: String(event.target.value),
+                    value: String(event.target.value),
                   }));
                 }}
               />
             </Stack>
             {/* Header rows dropdown */}
             <Stack style={styles.dropdownWrapper}>
-              <Dropdown
-                multiple
-                items={Object.keys(sortedDataDisplayHeader[0])
-                  .filter(key => key !== "active")
-                  .map(key => ({
-                    value: key,
-                    title: key,
-                  }))
-                }
-                value={selectedHeaderRows}
-                onChange={e => {
-                  const val = e.target.value as string[];
-                  setSelectedHeaderRows(val);
-                }}
-                label="Header rows"
-              />
+              {selectedFilter.header !== "all" && (
+                <Dropdown
+                  items={Object.keys(sortedDataDisplayHeader[0])
+                    .filter((key) => key !== "active")
+                    .map((key) => ({
+                      value: key,
+                      title: key,
+                    }))}
+                  value={groupingValue}
+                  onChange={(e) => {
+                    const val = e.target.value as string;
+                    setGroupingValue(val);
+                  }}
+                  label="Grouping value"
+                />
+              )}
             </Stack>
             {/* Display Table(s) dropdown (only when filtering by a header) */}
             <Stack style={styles.dropdownWrapper}>
@@ -282,13 +276,13 @@ export function DataOverview({
                   label="Display Table(s)"
                   items={[
                     { value: "all", title: "All" },
-                    ...filterValueOptions.map(item => ({
+                    ...filterValueOptions.map((item) => ({
                       value: item,
                       title: item,
                     })),
                   ]}
                   value={selectedTable}
-                  onChange={event => {
+                  onChange={(event) => {
                     setSelectedTable(String(event.target.value));
                   }}
                 />

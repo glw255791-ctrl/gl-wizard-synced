@@ -3,14 +3,16 @@ self.onmessage = function (e) {
     sortedDataDisplayHeader,
     overviewTableData,
     mappingValue,
+    groupingValue,
     valueKey,
+    selectedFilter,
     colors,
   } = e.data;
 
   // Build column keys: first sideHeader, then mappingValues of header
   const columns = [
     "sideHeader",
-    ...sortedDataDisplayHeader.map(headerObj => headerObj[mappingValue]),
+    ...sortedDataDisplayHeader.map(headerObj => headerObj[groupingValue]),
   ];
 
   // Generate Header Rows
@@ -20,7 +22,6 @@ self.onmessage = function (e) {
         .filter(col => col !== "sideHeader")
         .map((colKey, colIdx) => [colKey, sortedDataDisplayHeader[colIdx][headerKey]])
     );
-
     return {
       sideHeader: headerKey === "active" ? "Include" : headerKey,
       ...headerCells,
@@ -37,17 +38,20 @@ self.onmessage = function (e) {
       columns
         .filter(col => col !== "sideHeader" && col !== "total")
         .map(colKey => {
+          if(colKey==='TP - domestic'&&rowKey==='Cash and cash equivalents/Trade and other payables')
+          console.log(overviewTableData[rowKey]
+            .filter(entry => entry.coaData[groupingValue] === colKey).reduce((acc, entry) => acc + (entry[valueKey] || 0), 0))
           const sum = overviewTableData[rowKey]
-            .filter(entry => entry.coaData[mappingValue] === colKey)
+            .filter(entry => entry.coaData[groupingValue] === colKey)
             .reduce((acc, entry) => acc + (entry[valueKey] || 0), 0);
           return [colKey, sum.toFixed(2)];
         })
     );
 
     // Sum only active columns for total
-    const total = sortedDataDisplayHeader
+    const total = [...new Set(sortedDataDisplayHeader
       .filter(header => header.active)
-      .map(header => header[mappingValue])
+      .map(header => header[groupingValue]))]
       .reduce((acc, colKey) => acc + Number(valueCells[colKey] || 0), 0);
 
     return {
@@ -78,9 +82,9 @@ self.onmessage = function (e) {
     header: true,
   };
 
-  // Combined all rows
+
   const rows = [
-    ...headerRows,
+    ...headerRows.filter(row =>selectedFilter.header==='all'|| row.sideHeader === "Include"||row.sideHeader===groupingValue),
     ...dataRows,
     totalRow,
   ];
