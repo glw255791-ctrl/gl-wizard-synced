@@ -178,16 +178,22 @@ export function useReversalAnalysis() {
 
     setLoadingStatus(true);
     const buffer = await file.arrayBuffer();
-    const workerUrl = new URL("./gl-worker.js", import.meta.url);
-    const worker = new Worker(workerUrl, { type: "module" });
+    const worker = new Worker(new URL("./gl-worker.js", import.meta.url), { type: "module" });
 
     worker.onerror = (workerError) => {
-      const errorMessage = (workerError as ErrorEvent).message 
-        || (workerError as ErrorEvent).filename 
+      console.error("[Reversal Analysis] Worker error event:", workerError);
+      console.error("[Reversal Analysis] Error details:", {
+        message: (workerError as ErrorEvent).message,
+        filename: (workerError as ErrorEvent).filename,
+        lineno: (workerError as ErrorEvent).lineno,
+        colno: (workerError as ErrorEvent).colno,
+        error: (workerError as ErrorEvent).error,
+        type: workerError.type,
+      });
+      const errorMsg = (workerError as ErrorEvent).message || (workerError as ErrorEvent).filename 
         ? `Failed to load worker: ${(workerError as ErrorEvent).filename || 'unknown'}`
         : "Failed to process file. Please try again.";
-      setError(errorMessage);
-      console.error("Worker error:", workerError);
+      setError(errorMsg);
       setLoadingStatus(false);
       worker.terminate();
     };
@@ -196,7 +202,6 @@ export function useReversalAnalysis() {
 
     worker.onmessage = (e) => {
       const { glData, glHeaders, error } = e.data;
-
       if (error) {
         setError(error);
         setLoadingStatus(false);
