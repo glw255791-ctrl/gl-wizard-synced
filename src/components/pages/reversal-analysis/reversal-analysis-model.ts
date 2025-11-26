@@ -198,6 +198,13 @@ export function useReversalAnalysis() {
       setLoadingStatus(false);
       worker.terminate();
     };
+
+    worker.onerror = (error) => {
+      setError(error.message);
+      console.error("Worker error:", error);
+      setLoadingStatus(false);
+      worker.terminate();
+    };
   };
 
   const onChartOfAccountsDrop = async (acceptedFiles: File[]) => {
