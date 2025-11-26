@@ -5,7 +5,6 @@ import { format as formatDate } from "date-fns";
 import { saveAs } from "file-saver";
 import { TableHeader } from "../../composed/basic-table/basic-table";
 import { exportTableToExcel } from "../../composed/basic-table/functions";
-import GlWorkerUrl from "./gl-worker.js?url";
 
 export interface RawData {
   glData: Record<string, any>[];
@@ -178,109 +177,34 @@ export function useReversalAnalysis() {
     }
 
     setLoadingStatus(true);
-    console.log("[GL Upload] Starting file processing...");
-    
     const buffer = await file.arrayBuffer();
-    console.log("[GL Upload] File buffer created", { size: buffer.byteLength });
-    
-    let worker: Worker | null = null;
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    
-    try {
-      console.log("[GL Upload] Worker URL from Vite:", GlWorkerUrl);
-      
-      console.log("[GL Upload] Creating worker...");
-      worker = new Worker(GlWorkerUrl, { type: "module" });
-      console.log("[GL Upload] Worker created successfully");
+    const workerUrl = new URL("./gl-worker.js", import.meta.url);
+    const worker = new Worker(workerUrl, { type: "module" });
 
-      // Set up timeout to detect if worker never responds
-      timeoutId = setTimeout(() => {
-        console.error("[GL Upload] Worker timeout - no response after 30 seconds");
-        setError("Worker timed out. Please try again.");
+    worker.postMessage({ buffer });
+
+    worker.onmessage = (e) => {
+      const { glData, glHeaders, error } = e.data;
+
+      if (error) {
+        setError(error);
         setLoadingStatus(false);
-        if (worker) {
-          worker.terminate();
-        }
-      }, 30000);
-
-      // Set up error handler BEFORE posting message
-      worker.onerror = (workerError) => {
-        console.error("[GL Upload] Worker error event:", workerError);
-        console.error("[GL Upload] Error details:", {
-          message: (workerError as ErrorEvent).message,
-          filename: (workerError as ErrorEvent).filename,
-          lineno: (workerError as ErrorEvent).lineno,
-          colno: (workerError as ErrorEvent).colno,
-          error: (workerError as ErrorEvent).error,
-          type: workerError.type,
-          target: workerError.target,
-        });
-        
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = null;
-        }
-        
-        const errorMessage = (workerError as ErrorEvent).message 
-          || (workerError as ErrorEvent).filename 
-          ? `Failed to load worker: ${(workerError as ErrorEvent).filename || 'unknown'}`
-          : "Failed to load worker script. Please refresh and try again.";
-        setError(errorMessage);
-        setLoadingStatus(false);
-        if (worker) {
-          worker.terminate();
-        }
-      };
-
-      worker.onmessage = (e) => {
-        console.log("[GL Upload] Message received from worker", { hasData: !!e.data });
-        
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = null;
-        }
-        
-        const { glData, glHeaders, error } = e.data;
-
-        if (error) {
-          console.error("[GL Upload] Worker returned error:", error);
-          setError(error);
-          setLoadingStatus(false);
-          if (worker) {
-            worker.terminate();
-          }
-          return;
-        }
-
-        console.log("[GL Upload] Processing successful", {
-          rows: glData?.length,
-          headers: glHeaders?.length,
-        });
-
-        setRawData(prev => ({ ...prev, glData, glHeaders }));
-        setCurrentStep(prev => [...prev, AnalysisStep.UPLOADED_GL]);
-        setLoadingStatus(false);
-        if (worker) {
-          worker.terminate();
-        }
-        console.log("[GL Upload] Worker terminated, processing complete");
-      };
-
-      console.log("[GL Upload] Posting message to worker...");
-      worker.postMessage({ buffer });
-      console.log("[GL Upload] Message posted to worker");
-    } catch (err) {
-      console.error("[GL Upload] Error creating worker:", err);
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-      const errorMessage = err instanceof Error ? err.message : "Failed to initialize worker";
-      setError(errorMessage);
-      setLoadingStatus(false);
-      if (worker) {
         worker.terminate();
+        return;
       }
-    }
+
+      worker.onerror = workerError => {
+        setError(workerError.message);
+        console.error("Worker error:", workerError);
+        setLoadingStatus(false);
+        worker.terminate();
+      };
+
+      setRawData(prev => ({ ...prev, glData, glHeaders }));
+      setCurrentStep(prev => [...prev, AnalysisStep.UPLOADED_GL]);
+      setLoadingStatus(false);
+      worker.terminate();
+    };
   };
 
   const onChartOfAccountsDrop = async (acceptedFiles: File[]) => {
