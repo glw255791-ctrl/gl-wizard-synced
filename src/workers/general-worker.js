@@ -98,7 +98,8 @@ self.onmessage = (event) => {
   // Condensed data (originally setOverviewTableData)
   const condensedDataByResult = new Map();
   for (const item of output) {
-    const resultKey = item.result?.join("/") || "unmatched";
+    const resultKey = item.result?.sort((a, b) => a.localeCompare(b)).join("/") || "unmatched";
+
     if (!condensedDataByResult.has(resultKey)) {
       condensedDataByResult.set(resultKey, []);
     }

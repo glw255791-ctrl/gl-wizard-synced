@@ -128,6 +128,7 @@ export function useGeneralAnalysis() {
         title: selectedHeaders.glHeaders[item as keyof GlHeaders],
       })),
       { key: "result", title: "result" },
+      {key:'reversal',title:'reversal'}
     ],
     [selectedHeaders.glHeaders]
   );

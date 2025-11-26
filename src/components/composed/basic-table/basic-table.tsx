@@ -49,13 +49,14 @@ export const BasicTable = ({
     key: string,
     value: string | Date | number | string[]
   ) => {
+
     if (!value) return "-";
     switch (key) {
       case DATE:
         return formatDate(value as Date, "dd-MM-yyyy");
       case RESULT:
         return reversalReclassification
-          ? String(value || "-")
+          ? String(value)
           : (value as string[])?.join("/");
       default:
         return String(value);
@@ -63,7 +64,7 @@ export const BasicTable = ({
   };
 
   const onExportTable = useCallback(
-    () => exportTableToExcel(header, data),
+    () => {exportTableToExcel(header, data); },
     [header, data]
   );
 
@@ -131,6 +132,7 @@ export const BasicTable = ({
                             MAX_CHARS
                           )
                         )}
+                        
                       </Stack>
                     </Tooltip>
                   )}
@@ -140,7 +142,7 @@ export const BasicTable = ({
                       {getElipsis(label as string, 25)}
                     </Stack>
                   )}
-                  cellDataGetter={({ rowData }) => rowData[col.title]}
+                  cellDataGetter={({ rowData }) => rowData[col.title==='Result'?'result':col.title]}
                 />
               ))}
             </Table>

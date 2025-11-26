@@ -95,11 +95,12 @@ export function ReversaReclassificationAnalysis() {
                     }
                   />
                   <Dropdown
+                  multiple
                     label="Filter by value"
                     items={coaFilterOptions}
                     value={selectedFilters.value}
                     onChange={(event) =>
-                      onChangeCoaFilter("value", event.target.value as string)
+                      onChangeCoaFilter("value", event.target.value as string[])
                     }
                   />
                 </Stack>

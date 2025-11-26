@@ -106,6 +106,11 @@ export const styles: Record<string, CommonProps["style"]> = {
   },
 };
 
+export const ButtonsWrapper = styled(Stack)({
+  flexDirection: "row",
+  gap: 10,
+});
+
 /**
  * Returns cell style object based on the column and row context.
  */

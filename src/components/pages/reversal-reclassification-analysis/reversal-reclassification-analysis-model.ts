@@ -26,7 +26,7 @@ export interface SelectedHeaders {
 
 export interface CoaFilters {
   header: string;
-  value: string;
+  value: string[];
 }
 
 // ---- Main Hook ----
@@ -44,7 +44,7 @@ export function useReversalReclassificationAnalysis() {
   const [error, setError] = useState<string | undefined>(undefined);
   const [tableData, setTableData] = useState<Record<string, any>[]>([]);
 
-  const [selectedFilters, setSelectedFilters] = useState<CoaFilters>({ header: "", value: "" });
+  const [selectedFilters, setSelectedFilters] = useState<CoaFilters>({ header: "", value: [] });
   const [selectedHeaders, setSelectedHeaders] = useState<SelectedHeaders>({
     glHeaders: { account: "", jen: "", date: "", value: "" },
     coaHeaders: { mappingValue: "", displayValue: "", groupingValue: "" },
@@ -213,7 +213,7 @@ export function useReversalReclassificationAnalysis() {
   };
 
   // Filter changes for CoA
-  const onChangeCoaFilter = (key: keyof CoaFilters, value: string) => {
+  const onChangeCoaFilter = (key: keyof CoaFilters, value: string|string[]) => {
     setSelectedFilters(prev => ({ ...prev, [key]: value }));
   };
 
@@ -240,7 +240,7 @@ export function useReversalReclassificationAnalysis() {
       coaHeaders: { mappingValue: "", displayValue: "", groupingValue: "" },
       glHeaders: { account: "", date: "", jen: "", value: "" },
     });
-    setSelectedFilters({ header: "", value: "" });
+    setSelectedFilters({ header: "", value: [] });
   };
 
   // Analyze data (runs web worker)

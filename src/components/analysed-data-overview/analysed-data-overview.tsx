@@ -3,6 +3,7 @@ import React, {
   useMemo,
   useState,
   useTransition,
+  useCallback,
 } from "react";
 import {
   Accordion,
@@ -65,12 +66,10 @@ export function DataOverview({
 
   // Always keep mappingValue included in header rows
   useEffect(() => {
-    const row = [mappingValue]
-    if (selectedFilter.header !== 'all') {
-      row.push(selectedFilter.header)
+    if (sortedDataDisplayHeader.length > 0) {
+      setSelectedHeaderRows(Object.keys(sortedDataDisplayHeader[0]));
     }
-    setSelectedHeaderRows(row);
-  }, [selectedFilter, mappingValue]);
+  }, [sortedDataDisplayHeader]);
 
 
 
@@ -93,12 +92,12 @@ export function DataOverview({
           { active: item.active },
         )
       ),
-    [selectedHeaderRows, sortedDataDisplayHeader]
+    [sortedDataDisplayHeader,selectedHeaderRows]
   );
 
-  // Generate table(s) each time selection changes
-  useEffect(() => {
-    const commonTableProps = {
+  // Memoize common table props to prevent unnecessary re-renders
+  const commonTableProps = useMemo(
+    () => ({
       transitionFunc,
       mappingValue,
       selectedFilter,
@@ -106,12 +105,26 @@ export function DataOverview({
       basicTableHeader,
       setDataDisplayHeader,
       valueKey,
-      dictionaryData
-    };
+      dictionaryData,
+      selectedHeaderRows,
+    }),
+    [
+      transitionFunc,
+      mappingValue,
+      selectedFilter,
+      basicTableData,
+      basicTableHeader,
+      setDataDisplayHeader,
+      valueKey,
+      dictionaryData,
+      selectedHeaderRows,
+    ]
+  );
 
+  // Memoize the table generation logic
+  const generateTables = useCallback(() => {
     if (selectedFilter.header === "all") {
-      setLoading(true);
-      setLazyTables([
+      return [
         <DataTable
           key="all"
           title="All items"
@@ -119,25 +132,15 @@ export function DataOverview({
           sortedDataDisplayHeader={filteredSortedDataDisplayHeader}
           {...commonTableProps}
         />,
-      ]);
-      setLoading(false);
-      return;
+      ];
     }
-
-    setLoading(true);
 
     // Remove 'total' from options shown as individual tables
     const filteredValues = filterValueOptions.filter(v => v !== "total");
-    let idx = 0;
     const accumulatedTables: React.ReactNode[] = [];
 
-    const renderNextTable = () => {
-      if (idx >= filteredValues.length) {
-        setLoading(false);
-        return;
-      }
-
-      const value = filteredValues[idx];
+    // Process all tables in a single batch instead of recursively
+    for (const value of filteredValues) {
       // Filter overviewData for rows with at least one subItem matching the filter value
       const filteredOverviewData: Record<string, AnyType> = {};
       for (const mainKey of Object.keys(overviewTableData)) {
@@ -160,10 +163,11 @@ export function DataOverview({
           item[mappingValue] === "total"
       );
 
+      const hasItemInTable = [
+        ...new Set(Object.keys(filteredOverviewData).join("/").split("/")),
+      ].includes(selectedTable);
 
-      const hasItemInTable = [...new Set(Object.keys(filteredOverviewData).join('/').split('/'))].includes(selectedTable)
-
-      if ((selectedTable === "all" || hasItemInTable)) {
+      if (selectedTable === "all" ||selectedTable===value|| hasItemInTable) {
         accumulatedTables.push(
           <DataTable
             key={value}
@@ -176,37 +180,44 @@ export function DataOverview({
           />
         );
       }
+    }
 
-      setLazyTables([
-        ...accumulatedTables
-      ].sort((a, b) => {
-        // Handle possible null/undefined and ensure a & b are ReactElements with a 'key'
-        const aKey = (a as React.ReactElement)?.key;
-        const bKey = (b as React.ReactElement)?.key;
-
-        // Sort: if a's key === selectedTable, move 'a' to the front
-        if (aKey === selectedTable) return -1;
-        if (bKey === selectedTable) return 1;
-        return 0;
-      }));
-
-      idx += 1;
-      setTimeout(renderNextTable, 0);
-    };
-
-    renderNextTable();
+    // Sort once at the end instead of on every iteration
+    return accumulatedTables.sort((a, b) => {
+      const aKey = (a as React.ReactElement)?.key;
+      const bKey = (b as React.ReactElement)?.key;
+      if (aKey === selectedTable) return -1;
+      if (bKey === selectedTable) return 1;
+      return 0;
+    });
   }, [
-    selectedTable,
-    selectedFilter,
-    filterValueOptions,
+    selectedFilter.header,
     overviewTableData,
     filteredSortedDataDisplayHeader,
+    commonTableProps,
+    filterValueOptions,
+    selectedFilter,
     mappingValue,
-    valueKey,
-    setDataDisplayHeader,
-    basicTableData,
-    basicTableHeader,
+    selectedTable,
   ]);
+
+  // Generate table(s) each time selection changes - using requestAnimationFrame for better performance
+  useEffect(() => {
+    setLoading(true);
+    
+    // Use requestAnimationFrame to batch the work and prevent blocking
+    const rafId = requestAnimationFrame(() => {
+      const tables = generateTables();
+      setLazyTables(tables);
+      setTimeout(() => {
+        setLoading(false);
+      }, tables.length*100);
+    });
+
+    return () => {
+      cancelAnimationFrame(rafId);
+    };
+  }, [generateTables]);
 
   return (
     <Accordion
@@ -259,9 +270,7 @@ export function DataOverview({
                 value={selectedHeaderRows}
                 onChange={e => {
                   const val = e.target.value as string[];
-                  setSelectedHeaderRows(
-                    !val.includes(mappingValue) ? [...val, mappingValue] : val
-                  );
+                  setSelectedHeaderRows(val);
                 }}
                 label="Header rows"
               />

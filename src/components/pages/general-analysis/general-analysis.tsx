@@ -28,7 +28,6 @@ export function GeneralAnalysis() {
     loadingStatus,
     isWarningModalShown,
     reversalTableData,
-    reversalTableHeader,
     isDictionaryUploaded,
     dictionaryData,
     onDictionaryDrop,
@@ -49,6 +48,7 @@ export function GeneralAnalysis() {
   const isAnalyzeStep = currentStep.includes(AnalysisStep.TO_ANALYZE);
   const isAnalyzedStep = currentStep.includes(AnalysisStep.ANALYZED);
 
+  console.log(reversalTableData)
   return (
     <>
       <Loader loadingStatus={loadingStatus} />
@@ -131,15 +131,10 @@ export function GeneralAnalysis() {
           <BasicDataOverview
             title="GL Data With Transaction Types"
             disabled={!isAnalyzedStep || !!error}
-            tableData={tableData}
+            tableData={reversalTableData}
             tableHeader={tableHeader}
           />
-          <BasicDataOverview
-            title="GL Data With Reversal Identified"
-            disabled={!isAnalyzedStep || !!error}
-            tableData={reversalTableData}
-            tableHeader={reversalTableHeader}
-          />
+     
 
           <DataOverview
             mappingValue={selectedHeaders.coaHeaders.mappingValue}

@@ -135,3 +135,84 @@ export const exportBasicTableToExcel = async (
   });
   saveAs(blob, `${title}.xlsx`);
 };
+
+export const exportMultipleTablesToExcel = async (
+  header: TableHeader[],
+  dataArray: Record<string, string>[][],
+  titles: string[],
+  fileName: string = "multiple_tables.xlsx"
+) => {
+
+  const workbook = new Workbook();
+
+  const formattedTitles = titles.map(title =>
+    title.replace(/[*?:\\/\[\]]/g, "-")
+  )
+
+  // Ensure dataArray and titles have the same length
+  const minLength = Math.min(dataArray.length, titles.length);
+
+  for (let i = 0; i < minLength; i++) {
+    const data = dataArray[i];
+    const title = formattedTitles[i];
+
+    // Skip if data is empty
+    if (!data || data.length === 0) continue;
+
+    // Create a new worksheet with the title (Excel sheet names have a 31 character limit)
+    const sheetName = title.length > 31 ? title.substring(0, 31) : title;
+    const worksheet = workbook.addWorksheet(sheetName);
+
+    // Prepare fullHeader by excluding 'coaData'
+    const fullHeader = Object.keys(data[0]).filter(key => key !== "coaData");
+    worksheet.addRow([...fullHeader]);
+
+    data.forEach(row => {
+      const rowData = fullHeader.map(item => {
+        const val = row[item];
+
+        // If it's the 'result' key and object, join by '/'
+        if (item === "result" && typeof val === "object") {
+          return (val as string[]).join("/");
+        }
+
+        // If matching key is column with key 'date', format date
+        const dateHeader = header.find(h => h.key === "date");
+        if (dateHeader && item === dateHeader.title) {
+          return formatDate(val, "dd-MM-yyyy");
+        }
+
+        // Ensure primitive, not object
+        return typeof val === "object" ? "" : val;
+      });
+
+      worksheet.addRow(rowData);
+    });
+
+    // Set column widths
+    worksheet.columns.forEach(column => {
+      column.width = 24;
+    });
+
+    // Apply formatting to the worksheet
+    worksheet.eachRow((row, rowNumber) => {
+      const isHeader = rowNumber === 1;
+      row.eachCell(cell => {
+        if (isHeader) {
+          cell.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "CCCCCC" }
+          };
+          cell.font = { bold: true };
+        }
+      });
+    });
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+  saveAs(blob, fileName);
+};

@@ -19,8 +19,8 @@ self.onmessage = (event) => {
   });
 
   const filtered = output.filter((item) =>
-    selectedFilters.header && selectedFilters.value
-      ? item.coaData[selectedFilters.header] === selectedFilters.value
+    selectedFilters.header && selectedFilters.value.length > 0
+      ? selectedFilters.value.includes(item.coaData[selectedFilters.header])
       : true
   );
 
@@ -34,20 +34,27 @@ self.onmessage = (event) => {
   }, {});
 
   for (const [, rows] of Object.entries(groupedByAccountAndDate)) {
+    // Initialize result property for all rows
+    rows.forEach((row) => {
+      if (!row.result) {
+        row.result = "-";
+      }
+    });
+
     let i = 0;
     while (i < rows.length) {
-      const chunk = [];
       let sum = 0;
 
       for (let j = i; j < rows.length; j++) {
-        chunk.push(rows[j]);
         sum =
           Number(sum.toFixed(2)) +
           Number(Number(rows[j][selectedHeaders.glHeaders.value]).toFixed(2));
         // Check if the sum of the chunk is zero
         if (sum === 0) {
-          // Assign the result property to each row in the chunk
-          chunk.forEach((row) => (row.result = "reversal/reclassification"));
+          // Assign the result property to each row in the chunk (modify original rows)
+          for (let k = i; k <= j; k++) {
+            rows[k].result = "reversal/reclassification";
+          }
 
           // Move to the next unprocessed rows
           i = j + 1;

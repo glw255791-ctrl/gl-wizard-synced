@@ -47,7 +47,7 @@ export function Dropdown(props: Props) {
         }}
         value={value}
         onChange={onChange}
-        {...(multiple ? { renderValue: () => `${value.length} row(s)` } : {})}
+        {...(multiple ? { renderValue: () => `${value.length} item(s)` } : {})}
       >
         {items.map(({ title, value: itemValue }, index) => (
           <StyledMenuItem

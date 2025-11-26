@@ -17,6 +17,7 @@ import { AutoSizer, MultiGrid } from "react-virtualized";
 import {
   AnyType,
   exportBasicTableToExcel,
+  exportMultipleTablesToExcel,
   exportTableToExcel,
   getElipsis,
 } from "./functions";
@@ -33,6 +34,7 @@ import {
   TableHeaderStyled,
   TableTitle,
   ExcelDownloadButton,
+  ButtonsWrapper,
   styles,
 } from "./style";
 import { colors } from "../../../assets/colors";
@@ -65,6 +67,7 @@ interface Props {
   basicTableHeader: TableHeader[];
   basicTableData: Record<string, string>[];
   dictionaryData: Record<string, any>[];
+  selectedHeaderRows: string[];
 }
 
 interface Filters {
@@ -81,6 +84,8 @@ export const DataTable: React.FC<Props> = ({
   valueKey,
   basicTableData,
   basicTableHeader,
+  //TODO
+  selectedHeaderRows,
   dictionaryData,
   transitionFunc,
   id,
@@ -177,6 +182,14 @@ export const DataTable: React.FC<Props> = ({
     exportBasicTableToExcel(basicTableHeader, filteredValues, value);
   };
 
+  const downloadGroupedByRow = () => {
+const rows = tableRows.filter(row=> !row.header).map(item=>String(item.sideHeader))
+
+const tableDataByRows = rows.map(row=> basicTableData.filter(item=> (item.result as unknown as string[]).join("/") === row))
+
+exportMultipleTablesToExcel(basicTableHeader, tableDataByRows, rows)
+  };
+
   const renderDictionaryCell = (val: string | undefined) => {
     const values = val?.split("/")
 
@@ -227,6 +240,7 @@ export const DataTable: React.FC<Props> = ({
     <TableScrollableWrapper id={id}>
       <TableHeaderStyled>
         <TableTitle>{title}</TableTitle>
+        <ButtonsWrapper>
         <ExcelDownloadButton
           onClick={onExportClick}
           variant="contained"
@@ -234,6 +248,14 @@ export const DataTable: React.FC<Props> = ({
         >
           Download
         </ExcelDownloadButton>
+      {title!=='All items' && <ExcelDownloadButton
+          onClick={downloadGroupedByRow}
+          variant="contained"
+          endIcon={<DownloadIcon />}
+        >
+          Grouped By Row
+        </ExcelDownloadButton>}
+        </ButtonsWrapper>
       </TableHeaderStyled>
       <AutoSizer
         style={{
