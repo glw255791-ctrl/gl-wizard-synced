@@ -170,46 +170,37 @@ export function useReversalAnalysis() {
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "application/vnd.ms-excel",
     ];
+
     if (!validMimeTypes.includes(file.type) && !file.name.endsWith(".xlsx")) {
       setError("Invalid file type. Please upload an Excel file.");
       setTimeout(() => setError(undefined), 4000);
       return;
     }
 
+
     setLoadingStatus(true);
     const buffer = await file.arrayBuffer();
     const worker = new Worker(new URL("./gl-worker.js", import.meta.url), { type: "module" });
 
-    worker.onerror = (workerError) => {
-      console.error("[Reversal Analysis] Worker error event:", workerError);
-      console.error("[Reversal Analysis] Error details:", {
-        message: (workerError as ErrorEvent).message,
-        filename: (workerError as ErrorEvent).filename,
-        lineno: (workerError as ErrorEvent).lineno,
-        colno: (workerError as ErrorEvent).colno,
-        error: (workerError as ErrorEvent).error,
-        type: workerError.type,
-      });
-      const errorMsg = (workerError as ErrorEvent).message || (workerError as ErrorEvent).filename 
-        ? `Failed to load worker: ${(workerError as ErrorEvent).filename || 'unknown'}`
-        : "Failed to process file. Please try again.";
-      setError(errorMsg);
-      setLoadingStatus(false);
-      worker.terminate();
-    };
-
     worker.postMessage({ buffer });
 
-    worker.onmessage = (e) => {
+    worker.onmessage = e => {
       const { glData, glHeaders, error } = e.data;
       if (error) {
         setError(error);
         setLoadingStatus(false);
-        worker.terminate();
         return;
       }
 
       setRawData(prev => ({ ...prev, glData, glHeaders }));
+
+      worker.onerror = workerError => {
+        setError(workerError.message);
+        console.error("Worker error:", workerError);
+        setLoadingStatus(false);
+        worker.terminate();
+      };
+
       setCurrentStep(prev => [...prev, AnalysisStep.UPLOADED_GL]);
       setLoadingStatus(false);
       worker.terminate();
