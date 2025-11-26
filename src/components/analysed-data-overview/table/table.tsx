@@ -85,7 +85,7 @@ export const DataTable: React.FC<Props> = ({
   basicTableData,
   basicTableHeader,
   //TODO
-  selectedHeaderRows,
+  // selectedHeaderRows,
   dictionaryData,
   transitionFunc,
   id,
