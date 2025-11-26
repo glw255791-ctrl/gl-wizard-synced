@@ -113,7 +113,7 @@ export function useReversalReclassificationAnalysis() {
     return [
       ...headers,
       { key: selectedFilters.header, title: selectedFilters.header },
-      { key: "result", title: "Rezultat" },
+      { key: "result", title: "Result" },
     ];
   }, [selectedHeaders.glHeaders, tableData, selectedFilters]);
 
