@@ -178,45 +178,26 @@ export function useReversalAnalysis() {
 
     setLoadingStatus(true);
     const buffer = await file.arrayBuffer();
-    
-    try {
-      const workerUrl = new URL("./gl-worker.js", import.meta.url);
-      const worker = new Worker(workerUrl, { type: "module" });
+    const workerUrl = new URL("./gl-worker.js", import.meta.url);
+    const worker = new Worker(workerUrl, { type: "module" });
 
-      worker.postMessage({ buffer });
+    worker.postMessage({ buffer });
 
-      worker.onmessage = (e) => {
-        const { glData, glHeaders, error } = e.data;
+    worker.onmessage = (e) => {
+      const { glData, glHeaders, error } = e.data;
 
-        if (error) {
-          setError(error);
-          setLoadingStatus(false);
-          worker.terminate();
-          return;
-        }
-
-        setRawData(prev => ({ ...prev, glData, glHeaders }));
-        setCurrentStep(prev => [...prev, AnalysisStep.UPLOADED_GL]);
+      if (error) {
+        setError(error);
         setLoadingStatus(false);
         worker.terminate();
-      };
+        return;
+      }
 
-      worker.onerror = (errorEvent) => {
-        const errorMessage = (errorEvent as ErrorEvent).message 
-          || (errorEvent as ErrorEvent).filename 
-          ? `Failed to load worker: ${(errorEvent as ErrorEvent).filename || 'unknown file'}`
-          : "Failed to process file. Please try again.";
-        setError(errorMessage);
-        console.error("Worker error:", errorEvent);
-        setLoadingStatus(false);
-        worker.terminate();
-      };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to initialize worker";
-      setError(errorMessage);
-      console.error("Worker initialization error:", err);
+      setRawData(prev => ({ ...prev, glData, glHeaders }));
+      setCurrentStep(prev => [...prev, AnalysisStep.UPLOADED_GL]);
       setLoadingStatus(false);
-    }
+      worker.terminate();
+    };
   };
 
   const onChartOfAccountsDrop = async (acceptedFiles: File[]) => {
