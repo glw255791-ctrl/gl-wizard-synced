@@ -193,6 +193,14 @@ export function useReversalAnalysis() {
         return;
       }
 
+      
+      worker.onerror = workerError => {
+        setError(workerError.message);
+        console.error("Worker error:", workerError);
+        setLoadingStatus(false);
+        worker.terminate();
+      };
+
       setRawData(prev => ({ ...prev, glData, glHeaders }));
       setCurrentStep(prev => [...prev, AnalysisStep.UPLOADED_GL]);
       setLoadingStatus(false);
