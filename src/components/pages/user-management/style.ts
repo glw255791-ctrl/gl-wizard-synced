@@ -5,6 +5,7 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Paper from "@mui/material/Paper";
 import { colors } from "../../../assets/colors";
+import { PickersTextField } from "@mui/x-date-pickers";
 
 // Root wrapper for the page
 export const RootStack = styled(Stack)({
@@ -18,7 +19,7 @@ export const RootStack = styled(Stack)({
 export const ValidDateStack = styled(Stack)({
   flexDirection: "row",
   alignItems: "center",
-  justifyContent: "center",
+  justifyContent: "space-between",
   gap: 5,
 });
 
@@ -109,6 +110,10 @@ export const ModalStyledInput = styled(TextField)({
   borderRadius: 16,
 });
 
+export const ModalStyledTextField = styled(PickersTextField)({
+  height: 32,
+  borderRadius: 16,
+});
 // Modal input field wrapper (width)
 export const ModalInputWrapper = styled("div")({
   width: "80%",

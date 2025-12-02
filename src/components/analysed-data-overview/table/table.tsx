@@ -8,8 +8,7 @@ import React, {
 import { Stack, Checkbox, Tooltip } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import "react-virtualized/styles.css";
-import { AutoSizer, MultiGrid } from "react-virtualized";
-
+import { AutoSizer, Index, MultiGrid } from "react-virtualized";
 import {
   AnyType,
   exportBasicTableToExcel,
@@ -32,16 +31,18 @@ import {
   ExcelDownloadButton,
   ButtonsWrapper,
   styles,
+  QueryStatsIconStyled,
 } from "./style";
 import { colors } from "../../../assets/colors";
 import { TotalText } from "./style";
 import { TableHeader } from "../../composed/basic-table/basic-table";
+import { ProcessValue } from "../analysed-data-overview";
 
 const COLUMN_WIDTH = 250;
 const ROW_HEIGHT = 24;
 const WIDTH_ADJUST = 2;
 const HEIGHT_ADJUST = 73;
-const MAX_CHARS = 35;
+const MAX_CHARS = 40;
 
 const TOTAL = "total";
 const INCLUDE = "Include";
@@ -54,7 +55,7 @@ interface Props {
   groupingValue: string;
   overviewTableData: Record<string, AnyType>;
   valueKey: string;
-  selectedRow?: string;
+  selectedRows?: string[];
   id?: string;
   transitionFunc: React.TransitionStartFunction;
   selectedFilter: Filters;
@@ -63,7 +64,11 @@ interface Props {
   >;
   basicTableHeader: TableHeader[];
   basicTableData: Record<string, string>[];
-  dictionaryData: Record<string, any>[];
+  setIsProcessModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  selectedTable: string;
+  setOverallProcessObject: React.Dispatch<
+    React.SetStateAction<ProcessValue | undefined>
+  >;
 }
 
 interface Filters {
@@ -76,16 +81,18 @@ export const DataTable: React.FC<Props> = ({
   sortedDataDisplayHeader,
   mappingValue,
   groupingValue,
-  selectedRow,
+  selectedRows,
+  selectedTable,
   overviewTableData,
   valueKey,
   basicTableData,
   basicTableHeader,
   selectedFilter,
-  dictionaryData,
   transitionFunc,
   id,
   setDataDisplayHeader,
+  setIsProcessModalOpen,
+  setOverallProcessObject,
 }) => {
   const [tableRows, setTableRows] = useState<Record<string, AnyType>[]>([]);
   const [tableColumns, setTableColumns] = useState<string[]>([]);
@@ -99,6 +106,7 @@ export const DataTable: React.FC<Props> = ({
     worker.onmessage = (e) => {
       const { columns, rows } = e.data;
       setTableColumns([...new Set(columns as string[])]);
+
       setTableRows(rows);
     };
     worker.postMessage({
@@ -117,12 +125,6 @@ export const DataTable: React.FC<Props> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortedDataDisplayHeader, overviewTableData]);
 
-  // Export table data to Excel
-  const onExportClick = useCallback(
-    () => exportTableToExcel(tableRows, sortedDataDisplayHeader, mappingValue),
-    [tableRows, sortedDataDisplayHeader, mappingValue]
-  );
-
   // Calculate number of fixed header rows
   const fixedRowCount = useMemo(
     () =>
@@ -132,13 +134,46 @@ export const DataTable: React.FC<Props> = ({
     [sortedDataDisplayHeader]
   );
 
+  const viewableRows = useMemo(() => {
+    if (tableRows.length === 0 || tableRows[fixedRowCount] === undefined)
+      return [];
+
+    const valueKeys = Object.keys(tableRows[fixedRowCount]).filter(
+      (key) =>
+        key !== "header" &&
+        key !== "sideHeader" &&
+        key !== "total" &&
+        key !== "bg"
+    );
+
+    return [
+      ...tableRows.slice(0, fixedRowCount),
+      ...tableRows.slice(fixedRowCount, tableRows.length).filter((row) => {
+        return (
+          valueKeys.some(
+            (key) => row[key] !== "0,00" && tableRows[fixedRowCount - 1][key]
+          ) ||
+          row.sideHeader === "Total" ||
+          row.sideHeader === "Include"
+        );
+      }),
+    ];
+  }, [tableRows, fixedRowCount]);
+
+  // Export table data to Excel
+  const onExportClick = useCallback(
+    () =>
+      exportTableToExcel(viewableRows, sortedDataDisplayHeader, mappingValue),
+    [viewableRows, sortedDataDisplayHeader, mappingValue]
+  );
+
   // Force update of grid when data changes
   useEffect(() => {
     if (multiGridRef.current) {
       multiGridRef.current.recomputeGridSize();
       multiGridRef.current.forceUpdateGrids();
     }
-  }, [sortedDataDisplayHeader, tableRows]);
+  }, [sortedDataDisplayHeader, viewableRows]);
 
   // Renders the "Include" row with either custom text, total or checkbox
   const renderIncludeRow = (row: Record<string, AnyType>, column: string) => {
@@ -153,6 +188,9 @@ export const DataTable: React.FC<Props> = ({
     column: string
   ) => (
     <Checkbox
+      style={{
+        padding: 0,
+      }}
       disableRipple
       checkedIcon={<CheckedIcon />}
       icon={<UncheckedIcon />}
@@ -163,13 +201,19 @@ export const DataTable: React.FC<Props> = ({
           setDataDisplayHeader((prev) =>
             prev.map((header) => ({
               ...header,
-              active: header[mappingValue] === column ? checked : header.active,
+              active:
+                header[groupingValue] === column ? checked : header.active,
             }))
           )
         )
       }
     />
   );
+
+  const handleProcessAnalysis = (row: Record<string, AnyType>) => {
+    setIsProcessModalOpen(true);
+    setOverallProcessObject({ title, rows: [row], children: [], level: 0 });
+  };
 
   // Handles Excel export for a specific row
   const handleDownloadByRow = (value: string) => {
@@ -180,7 +224,7 @@ export const DataTable: React.FC<Props> = ({
   };
 
   const downloadGroupedByRow = () => {
-    const rows = tableRows
+    const rows = viewableRows
       .filter((row) => !row.header)
       .map((item) => String(item.sideHeader));
 
@@ -193,37 +237,24 @@ export const DataTable: React.FC<Props> = ({
     exportMultipleTablesToExcel(basicTableHeader, tableDataByRows, rows);
   };
 
-  const renderDictionaryCell = (val: string | undefined) => {
-    const values = val?.split("/");
-
-    // Find a dictionary item where item.inputs has all the same elements as values (regardless of order)
-    const dictionaryItem = dictionaryData.find((item) => {
-      if (!Array.isArray(item.inputs) || !Array.isArray(values)) return false;
-      if (item.inputs.length !== values.length) return false;
-      // Check if every value is in item.inputs, and vice versa (set equality)
-      const inputsSorted = [...item.inputs].sort();
-      const valuesSorted = [...values].sort();
-      return inputsSorted.find((v, i) => v === valuesSorted[i]);
-    });
-
-    return dictionaryItem?.result ?? val;
-  };
-
   // Renders the content of a cell, including pin & download icons when appropriate
   const renderCellText = (row: Record<string, AnyType>, column: string) => {
     const isHeader = row.header;
-    const val = row[column]
-      ? getElipsis(row[column] as string, MAX_CHARS - 5)
-      : "";
+    const val = row[column] ? String(row[column]) : "";
 
     if (isHeader || column !== SIDE_HEADER) {
-      return <Stack>{val}</Stack>;
+      return <Stack>{getElipsis(val ?? "", MAX_CHARS)}</Stack>;
     }
 
     return (
       <RowLabelWrapper>
-        {renderDictionaryCell(val)}
+        {getElipsis(val, MAX_CHARS * 1.25)}
         <RowLabelCell>
+          {selectedTable !== "all" && (
+            <IconButtonStyled onClick={() => handleProcessAnalysis(row)}>
+              <QueryStatsIconStyled />
+            </IconButtonStyled>
+          )}
           <IconButtonStyled
             onClick={() => handleDownloadByRow(String(row[column]))}
           >
@@ -260,24 +291,25 @@ export const DataTable: React.FC<Props> = ({
       <AutoSizer
         style={{
           ...styles.autosizerWrapper,
-          height: tableRows.length * 24 + 17,
+          height: viewableRows.length * 24 + 17,
         }}
       >
         {({ width, height }) => (
           <MultiGrid
-            key={String(selectedRow)}
             ref={multiGridRef}
             fixedColumnCount={1}
             fixedRowCount={fixedRowCount}
-            columnWidth={COLUMN_WIDTH}
+            columnWidth={(params: Index) =>
+              params.index === 0 ? COLUMN_WIDTH * 1.5 : COLUMN_WIDTH
+            }
             columnCount={tableColumns.length}
             rowHeight={ROW_HEIGHT}
-            rowCount={tableRows.length}
+            rowCount={viewableRows.length}
             width={width - WIDTH_ADJUST}
             height={height - HEIGHT_ADJUST}
             cellRenderer={({ columnIndex, rowIndex, key, style }) => {
               const column = tableColumns[columnIndex];
-              const row = tableRows[rowIndex];
+              const row = viewableRows[rowIndex];
 
               if (!row) return null;
 
@@ -298,7 +330,7 @@ export const DataTable: React.FC<Props> = ({
                             column,
                             row,
                             mappingValue,
-                            selectedRow
+                            selectedRows
                           ),
                           ...getStylesBasedOnHeader(rowIndex, fixedRowCount),
                         } as React.CSSProperties

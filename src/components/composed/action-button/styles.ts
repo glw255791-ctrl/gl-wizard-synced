@@ -6,7 +6,7 @@ export const ButtonsWrapper = styled(Stack)({
   display: "flex",
   flexDirection: "row",
   alignItems: "center",
-  justifyContent: "flex-end",
+  justifyContent: "center",
   gap: "1rem",
 });
 

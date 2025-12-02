@@ -1,5 +1,5 @@
 self.onmessage = (event) => {
-  const { rawData, selectedHeaders } = event.data;
+  const { rawData, selectedHeaders, dictionaryData } = event.data;
 
   const output = rawData.glData.map((item) => {
     const foundCoaItems = rawData.coaData
@@ -29,8 +29,9 @@ self.onmessage = (event) => {
   });
 
   const groupedByJenAndDate = output.reduce((acc, curr) => {
-    const key = `${curr[selectedHeaders.glHeaders.date]}_${curr[selectedHeaders.glHeaders.jen]
-      }`;
+    const key = `${curr[selectedHeaders.glHeaders.date]}_${
+      curr[selectedHeaders.glHeaders.jen]
+    }`;
     if (!acc[key]) acc[key] = [];
     acc[key].push(curr);
     return acc;
@@ -53,10 +54,20 @@ self.onmessage = (event) => {
           const coaValues = chunk.map(
             (row) => row.coaData?.[selectedHeaders.coaHeaders.displayValue]
           );
-          chunk.forEach(
-            (row) =>
-              (row.result = [...new Set(coaValues)].sort((a, b) => a - b))
-          );
+          chunk.forEach((row) => {
+            const dictionaryItem = dictionaryData?.find((item) => {
+              if (!Array.isArray(item.inputs) || !Array.isArray(coaValues))
+                return false;
+              if (item.inputs.length !== coaValues.length) return false;
+              // Check if every value is in item.inputs, and vice versa (set equality)
+              const inputsSorted = [...item.inputs].sort();
+              const valuesSorted = [...coaValues].sort();
+              return inputsSorted?.find((v, i) => v === valuesSorted[i]);
+            });
+            row.result = dictionaryItem?.result
+              ? [dictionaryItem.result]
+              : [...new Set(coaValues)].sort((a, b) => a - b);
+          });
 
           // Move to the next unprocessed rows
           i = j + 1;
@@ -74,8 +85,9 @@ self.onmessage = (event) => {
   const unwrapped = [...Object.values(groupedByJenAndDate).flat()];
 
   const groupedByAccountAndResult = unwrapped.reduce((acc, curr) => {
-    const key = `${curr[selectedHeaders.glHeaders.date]}_${curr[selectedHeaders.glHeaders.account]
-      }_${curr.result.join("/")}`;
+    const key = `${curr[selectedHeaders.glHeaders.date]}_${
+      curr[selectedHeaders.glHeaders.account]
+    }_${curr.result.join("/")}`;
     if (!acc[key]) acc[key] = [];
     acc[key].push(curr);
     return acc;

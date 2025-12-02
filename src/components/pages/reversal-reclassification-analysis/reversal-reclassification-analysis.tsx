@@ -46,7 +46,6 @@ export function ReversaReclassificationAnalysis() {
       <Loader loadingStatus={loadingStatus} />
       <PageWrapper>
         <RootStack spacing={2}>
-
           <Header
             title="Reversal/Reclassification analysis"
             onPressResetBtn={onPressResetBtn}
@@ -83,7 +82,10 @@ export function ReversaReclassificationAnalysis() {
                     items={coaHeaderOptions}
                     value={selectedHeaders.coaHeaders.mappingValue}
                     onChange={(event) =>
-                      onChangeCoaHeader("mappingValue", event.target.value as string)
+                      onChangeCoaHeader(
+                        "mappingValue",
+                        event.target.value as string
+                      )
                     }
                   />
                   <Dropdown
@@ -95,7 +97,7 @@ export function ReversaReclassificationAnalysis() {
                     }
                   />
                   <Dropdown
-                  multiple
+                    multiple
                     label="Filter by value"
                     items={coaFilterOptions}
                     value={selectedFilters.value}
@@ -110,14 +112,14 @@ export function ReversaReclassificationAnalysis() {
 
           {/* Data Validity & Analysis Actions */}
           <Grid2 container spacing={2}>
-            <Grid2 size={6}>
+            <Grid2 size={9}>
               <DataValidityInfo
                 reviewData={reviewData}
                 error={error}
                 disabled={!isCoaUploadStep}
               />
             </Grid2>
-            <Grid2 size={6}>
+            <Grid2 size={3}>
               <ActionButton
                 disabled={!isAnalyzeStep}
                 onPressAnalyzeData={onPressAnalyzeData}
@@ -133,7 +135,6 @@ export function ReversaReclassificationAnalysis() {
             tableData={tableData}
             tableHeader={tableHeader}
           />
-
         </RootStack>
       </PageWrapper>
     </>

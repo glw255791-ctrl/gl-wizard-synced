@@ -17,6 +17,14 @@ import { Dropdown, DropdownItem } from "../ui-kit/dropdown/dropdown";
 import { DataTable } from "./table/table";
 import { Loader } from "../ui-kit/loader-overlay/loader-overlay";
 import { TableHeader } from "../composed/basic-table/basic-table";
+import { ProcessModal } from "./process-modal/process-modal";
+
+export type ProcessValue = {
+  title: string;
+  rows: Record<string, AnyType>[];
+  level: number;
+  children?: ProcessValue[];
+};
 
 type AnyType = string | number | boolean | object;
 
@@ -33,7 +41,6 @@ interface Props {
   >;
   basicTableHeader: TableHeader[];
   basicTableData: Record<string, string>[];
-  dictionaryData: Record<string, any>[];
 }
 
 interface Filters {
@@ -50,7 +57,6 @@ export function DataOverview({
   disabled,
   coaHeaderOptions,
   basicTableData,
-  dictionaryData,
   basicTableHeader,
   setDataDisplayHeader,
 }: Props) {
@@ -64,11 +70,17 @@ export function DataOverview({
   const [loading, setLoading] = useState(false);
   const [transition, transitionFunc] = useTransition();
 
+  const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
+  const [overallProcessObject, setOverallProcessObject] = useState<
+    ProcessValue | undefined
+  >(undefined);
+
   // Always keep mappingValue included in header rows
   useEffect(() => {
     setGroupingValue(
       selectedFilter.header !== "all" ? selectedFilter.value : mappingValue
     );
+    setSelectedTable("all");
   }, [selectedFilter, mappingValue, selectedFilter.header]);
 
   // Compute filter value options for dropdown
@@ -90,9 +102,11 @@ export function DataOverview({
       selectedFilter,
       basicTableData,
       basicTableHeader,
+      selectedTable,
       setDataDisplayHeader,
+      setIsProcessModalOpen,
       valueKey,
-      dictionaryData,
+      setOverallProcessObject,
     }),
     [
       transitionFunc,
@@ -100,10 +114,12 @@ export function DataOverview({
       mappingValue,
       selectedFilter,
       basicTableData,
+      selectedTable,
       basicTableHeader,
       setDataDisplayHeader,
+      setIsProcessModalOpen,
       valueKey,
-      dictionaryData,
+      setOverallProcessObject,
     ]
   );
 
@@ -152,15 +168,7 @@ export function DataOverview({
           item[mappingValue] === "total"
       );
 
-      const hasItemInTable = [
-        ...new Set(Object.keys(filteredOverviewData).join("/").split("/")),
-      ].includes(selectedTable);
-
-      if (
-        selectedTable === "all" ||
-        selectedTable === value ||
-        hasItemInTable
-      ) {
+      if (selectedTable === "all" || selectedTable === value) {
         accumulatedTables.push(
           <DataTable
             key={value}
@@ -168,7 +176,7 @@ export function DataOverview({
             title={value}
             overviewTableData={filteredOverviewData}
             sortedDataDisplayHeader={filteredHeader}
-            selectedRow={value === selectedTable ? undefined : selectedTable}
+            selectedRows={[]}
             {...commonTableProps}
           />
         );
@@ -213,85 +221,98 @@ export function DataOverview({
   }, [generateTables]);
 
   return (
-    <Accordion
-      style={{
-        ...styles.accordionRoot,
-        ...(disabled ? styles.disabled : {}),
-      }}
-    >
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <SummaryWrapper>
-          <Title>{title}</Title>
-        </SummaryWrapper>
-      </AccordionSummary>
+    <>
+      <Accordion
+        style={{
+          ...styles.accordionRoot,
+          ...(disabled ? styles.disabled : {}),
+        }}
+      >
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <SummaryWrapper>
+            <Title>{title}</Title>
+          </SummaryWrapper>
+        </AccordionSummary>
 
-      <AccordionDetails>
-        <Loader loadingStatus={loading || transition} />
-        <AccordionContent>
-          <Stack style={styles.accordionHeader}>
-            {/* Filter header dropdown */}
-            <Stack style={styles.dropdownWrapper}>
-              <Dropdown
-                label="Filter header"
-                items={[
-                  { value: "all", title: "All" },
-                  ...(coaHeaderOptions || []),
-                ]}
-                value={selectedFilter.header}
-                onChange={(event) => {
-                  setDataDisplayHeader((prev) =>
-                    prev.map((item) => ({ ...item, active: true }))
-                  );
-                  setSelectedFilters((prev) => ({
-                    ...prev,
-                    header: String(event.target.value),
-                    value: String(event.target.value),
-                  }));
-                }}
-              />
-            </Stack>
-            {/* Header rows dropdown */}
-            <Stack style={styles.dropdownWrapper}>
-              {selectedFilter.header !== "all" && (
+        <AccordionDetails>
+          <Loader loadingStatus={loading || transition} />
+          <AccordionContent>
+            <Stack style={styles.accordionHeader}>
+              {/* Filter header dropdown */}
+              <Stack style={styles.dropdownWrapper}>
                 <Dropdown
-                  items={Object.keys(sortedDataDisplayHeader[0])
-                    .filter((key) => key !== "active")
-                    .map((key) => ({
-                      value: key,
-                      title: key,
-                    }))}
-                  value={groupingValue}
-                  onChange={(e) => {
-                    const val = e.target.value as string;
-                    setGroupingValue(val);
-                  }}
-                  label="Grouping value"
-                />
-              )}
-            </Stack>
-            {/* Display Table(s) dropdown (only when filtering by a header) */}
-            <Stack style={styles.dropdownWrapper}>
-              {selectedFilter.header !== "all" && (
-                <Dropdown
-                  label="Display Table(s)"
+                  label="Filter header"
                   items={[
                     { value: "all", title: "All" },
-                    ...filterValueOptions.map((item) => ({
-                      value: item,
-                      title: item,
-                    })),
+                    ...(coaHeaderOptions || []),
                   ]}
-                  value={selectedTable}
+                  value={selectedFilter.header}
                   onChange={(event) => {
-                    setSelectedTable(String(event.target.value));
+                    setDataDisplayHeader((prev) =>
+                      prev.map((item) => ({ ...item, active: true }))
+                    );
+                    setSelectedFilters((prev) => ({
+                      ...prev,
+                      header: String(event.target.value),
+                      value: String(event.target.value),
+                    }));
                   }}
                 />
-              )}
+              </Stack>
+              {/* Header rows dropdown */}
+              <Stack style={styles.dropdownWrapper}>
+                {selectedFilter.header !== "all" && (
+                  <Dropdown
+                    items={Object.keys(sortedDataDisplayHeader[0])
+                      .filter((key) => key !== "active")
+                      .map((key) => ({
+                        value: key,
+                        title: key,
+                      }))}
+                    value={groupingValue}
+                    onChange={(e) => {
+                      const val = e.target.value as string;
+                      setGroupingValue(val);
+                    }}
+                    label="Grouping value"
+                  />
+                )}
+              </Stack>
+              {/* Display Table(s) dropdown (only when filtering by a header) */}
+              <Stack style={styles.dropdownWrapper}>
+                {selectedFilter.header !== "all" && (
+                  <Dropdown
+                    label="Display Table(s)"
+                    items={[
+                      { value: "all", title: "All" },
+                      ...filterValueOptions.map((item) => ({
+                        value: item,
+                        title: item,
+                      })),
+                    ]}
+                    value={selectedTable}
+                    onChange={(event) => {
+                      setSelectedTable(String(event.target.value));
+                    }}
+                  />
+                )}
+              </Stack>
             </Stack>
-          </Stack>
-        </AccordionContent>
-        <Stack style={styles.tablesStack}>{lazyTables}</Stack>
-      </AccordionDetails>
-    </Accordion>
+          </AccordionContent>
+          <Stack style={styles.tablesStack}>{lazyTables}</Stack>
+        </AccordionDetails>
+      </Accordion>
+      <ProcessModal
+        isOpen={isProcessModalOpen}
+        overallProcessObject={overallProcessObject}
+        setOverallProcessObject={setOverallProcessObject}
+        overviewTableData={overviewTableData}
+        sortedDataDisplayHeader={sortedDataDisplayHeader}
+        selectedFilter={selectedFilter}
+        commonTableProps={commonTableProps}
+        filterValueOptions={filterValueOptions}
+        onClose={() => setIsProcessModalOpen(false)}
+      />
+    </>
   );
 }

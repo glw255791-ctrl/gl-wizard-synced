@@ -14,26 +14,18 @@ export const Wrapper = styled(Card)({
 export const ReviewsWrapper = styled(Stack)({
   height: "100%",
   alignItems: "center",
-  justifyContent: "space-evenly",
+  justifyContent: "flex-start",
   flexDirection: "row",
   gap: "1rem",
 });
 
 // Label with row alignment
 export const ReviewLabel = styled(Stack)({
-  flex: 2,
   flexDirection: "row",
   justifyContent: "flex-start",
   gap: "0.25rem",
 });
 
-// Label that is wider than ReviewLabel
-export const WiderLabel = styled(Stack)({
-  flex: 3,
-  flexDirection: "row",
-  justifyContent: "flex-start",
-  gap: "0.25rem",
-});
 
 // Error message row layout
 export const ErrorWrapper = styled(Stack)({

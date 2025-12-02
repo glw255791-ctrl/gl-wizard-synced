@@ -5,7 +5,6 @@ import {
   ErrorWrapper,
   ReviewLabel,
   ReviewsWrapper,
-  WiderLabel,
   Wrapper,
 } from "./style";
 import { ReviewData } from "../../pages/general-analysis/general-analysis-model";
@@ -43,19 +42,19 @@ export const DataValidityInfo = ({ reviewData, error, disabled }: Props) => {
   return (
     <Wrapper>
       <ReviewsWrapper>
-        <WiderLabel>
+        <ReviewLabel>
           <Typography variant="body2">Start date:</Typography>
           <Typography variant="body2" fontWeight="bold">
             {startDate}
           </Typography>
-        </WiderLabel>
+        </ReviewLabel>
         <Divider />
-        <WiderLabel>
+        <ReviewLabel>
           <Typography variant="body2">End date:</Typography>
           <Typography variant="body2" fontWeight="bold">
             {endDate}
           </Typography>
-        </WiderLabel>
+        </ReviewLabel>
         <Divider />
         <ReviewLabel>
           <Typography variant="body2">Rows:</Typography>

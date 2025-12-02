@@ -389,9 +389,11 @@ export function useGeneralAnalysis() {
       setLoadingStatus(false);
       worker.terminate();
     };
-    worker.postMessage({ rawData, selectedHeaders });
+    worker.postMessage({ rawData, selectedHeaders, dictionaryData });
 
-    setLoadingStatus(false);
+    setTimeout(() => {
+      setLoadingStatus(false);
+    }, 4000);
   };
 
   // --- Data Display ---

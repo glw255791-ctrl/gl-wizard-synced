@@ -5,7 +5,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelRounded from "@mui/icons-material/CancelRounded";
 import PushPinIcon from "@mui/icons-material/PushPin";
 import DownloadIcon from "@mui/icons-material/Download";
-
+import QueryStatsIcon from "@mui/icons-material/QueryStats";
 import { colors } from "../../../assets/colors";
 import { AnyType } from "./functions";
 
@@ -39,6 +39,10 @@ export const DownloadIconStyled = styled(DownloadIcon)({
   fontSize: 16,
 });
 
+export const QueryStatsIconStyled = styled(QueryStatsIcon)({
+  fontSize: 16,
+});
+
 // Button/Stack styles
 export const IconButtonStyled = styled(IconButton)({
   padding: 0,
@@ -57,7 +61,6 @@ export const RowLabelCell = styled(Stack)({
 });
 
 export const TableScrollableWrapper = styled(Stack)({
-  minWidth: 1200,
   borderRadius: 8,
   borderWidth: 1,
   borderStyle: "solid",
@@ -65,7 +68,7 @@ export const TableScrollableWrapper = styled(Stack)({
 });
 
 export const TableHeaderStyled = styled(Stack)({
-  width: "calc(100vw - 28rem)",
+  width: "auto",
   padding: "1rem",
   backgroundColor: colors.medium,
   flexDirection: "row",
@@ -118,11 +121,11 @@ export const getStylesBasedOnColumn = (
   column: string,
   row: Record<string, AnyType>,
   mappingValue: string,
-  selectedRow?: string
+  selectedRows?: string[]
 ) => {
   const isSideHeader = column === "sideHeader";
   const isTotalColumn = column === "total";
-  const isSelectedRow = selectedRow && String(row.sideHeader).split('/').includes(selectedRow)
+  const isSelectedRow = selectedRows?.includes(String(row.sideHeader));
   const isBoldRow =
     isTotalColumn ||
     isSideHeader ||
@@ -146,7 +149,8 @@ export const getStylesBasedOnColumn = (
     fontWeight: isBoldRow ? "bold" : "initial",
     borderBottomStyle: "solid",
     borderBottomColor: colors.medium,
-    textAlign: isSideHeader ? "left" : "center",
+    textAlign: isSideHeader ? "left" : "right",
+    alignItems: isSideHeader ? "left" : "flex-end",
   };
 };
 

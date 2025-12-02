@@ -28,7 +28,6 @@ export function ReversalAnalysis() {
     loadingStatus,
     isWarningModalShown,
     isDictionaryUploaded,
-    dictionaryData,
     onDictionaryDrop,
     onPressExportUnmappedRows,
     setIsWarningModalShown,
@@ -52,11 +51,7 @@ export function ReversalAnalysis() {
       <Loader loadingStatus={loadingStatus} />
       <PageWrapper>
         <RootStack spacing={2}>
-
-          <Header
-            title="Reversal analysis"
-            onPressResetBtn={onPressResetBtn}
-          />
+          <Header title="Reversal analysis" onPressResetBtn={onPressResetBtn} />
 
           {/* GL and CoA Upload Section */}
           <Grid2 container spacing={2}>
@@ -91,16 +86,22 @@ export function ReversalAnalysis() {
                     label="Matching column GL & CoA"
                     items={coaHeaderOptions}
                     value={selectedHeaders.coaHeaders.mappingValue}
-                    onChange={e =>
-                      onChangeCoaHeader("mappingValue", e.target.value as string)
+                    onChange={(e) =>
+                      onChangeCoaHeader(
+                        "mappingValue",
+                        e.target.value as string
+                      )
                     }
                   />
                   <Dropdown
                     label="Display CoA category"
                     items={coaHeaderOptions}
                     value={selectedHeaders.coaHeaders.displayValue}
-                    onChange={e =>
-                      onChangeCoaHeader("displayValue", e.target.value as string)
+                    onChange={(e) =>
+                      onChangeCoaHeader(
+                        "displayValue",
+                        e.target.value as string
+                      )
                     }
                   />
                 </Stack>
@@ -110,14 +111,14 @@ export function ReversalAnalysis() {
 
           {/* Data Validity & Analysis Actions */}
           <Grid2 container spacing={2}>
-            <Grid2 size={6}>
+            <Grid2 size={9}>
               <DataValidityInfo
                 reviewData={reviewData}
                 error={error}
                 disabled={!isCoaUploadStep}
               />
             </Grid2>
-            <Grid2 size={6}>
+            <Grid2 size={3}>
               <ActionButton
                 disabled={!isAnalyzeStep}
                 onPressAnalyzeData={onPressAnalyzeData}
@@ -141,7 +142,6 @@ export function ReversalAnalysis() {
             sortedDataDisplayHeader={sortedDataDisplayHeader}
             coaHeaderOptions={coaHeaderOptions}
             title="Movement Tables"
-            dictionaryData={dictionaryData}
             valueKey={selectedHeaders.glHeaders.value}
             basicTableData={tableData}
             basicTableHeader={tableHeader}
@@ -154,7 +154,6 @@ export function ReversalAnalysis() {
             onPressExportUnmappedRows={onPressExportUnmappedRows}
             onClose={() => setIsWarningModalShown(false)}
           />
-
         </RootStack>
       </PageWrapper>
     </>

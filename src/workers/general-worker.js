@@ -1,5 +1,5 @@
 self.onmessage = (event) => {
-  const { rawData, selectedHeaders } = event.data;
+  const { rawData, selectedHeaders, dictionaryData } = event.data;
   const { glData, coaData } = rawData;
   const { glHeaders, coaHeaders } = selectedHeaders;
 
@@ -45,7 +45,6 @@ self.onmessage = (event) => {
     }
 
     processedRows = chunkEnd;
-
   }
 
   // ===== 3. Group by JEN and Date =====
@@ -75,7 +74,20 @@ self.onmessage = (event) => {
             if (val) coaValues.add(val);
           }
           const sortedValues = [...coaValues].sort((a, b) => a - b);
-          for (const row of chunk) row.result = sortedValues;
+
+          const dictionaryItem = (dictionaryData || [])?.find((item) => {
+            if (!Array.isArray(item.inputs) || !Array.isArray(sortedValues))
+              return false;
+            if (item.inputs.length !== sortedValues.length) return false;
+            // Check if every value is in item.inputs, and vice versa (set equality)
+            const inputsSorted = [...item.inputs].sort();
+            const valuesSorted = [...sortedValues].sort();
+            return inputsSorted?.find((v, i) => v === valuesSorted[i]);
+          });
+          for (const row of chunk)
+            row.result = dictionaryItem?.result
+              ? [dictionaryItem.result]
+              : sortedValues;
           i = j + 1;
           break;
         }
@@ -98,7 +110,8 @@ self.onmessage = (event) => {
   // Condensed data (originally setOverviewTableData)
   const condensedDataByResult = new Map();
   for (const item of output) {
-    const resultKey = item.result?.sort((a, b) => a.localeCompare(b)).join("/") || "unmatched";
+    const resultKey =
+      item.result?.sort((a, b) => a.localeCompare(b)).join("/") || "unmatched";
 
     if (!condensedDataByResult.has(resultKey)) {
       condensedDataByResult.set(resultKey, []);

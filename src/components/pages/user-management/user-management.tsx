@@ -1,5 +1,4 @@
 import {
-  Stack,
   Typography,
   Paper,
   Table,
@@ -10,10 +9,9 @@ import {
   IconButton,
   TableRow,
   Modal,
-  Button,
-  TextField,
   Alert,
   Snackbar,
+  Stack,
 } from "@mui/material";
 import {
   RootStack,
@@ -25,6 +23,14 @@ import {
   ModalInnerContent,
   ModalHeader,
   BlackText,
+  InviteButton,
+  SearchInput,
+  SearchBlock,
+  SearchField,
+  ModalStyledInput,
+  ModalActionButton,
+  ModalContentWrapper,
+  ModalBtnRow,
 } from "./style";
 import { UserData, useUserManagementModel } from "./user-management-model";
 import EventRepeatIcon from "@mui/icons-material/EventRepeat";
@@ -56,13 +62,16 @@ export function UserManagementPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const emailRegex =
-    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
   const renderCellContent = (key: string, item: UserData) => {
     if (key === "licencevaliduntil") {
-      const isExpired = dayjs(item[key as keyof UserData]).isBefore(dayjs().startOf("day"));
-      const dateStr = new Date(item[key as keyof UserData]).toLocaleDateString("de-DE");
+      const isExpired = dayjs(item[key as keyof UserData]).isBefore(
+        dayjs().startOf("day")
+      );
+      const dateStr = new Date(item[key as keyof UserData]).toLocaleDateString(
+        "de-DE"
+      );
 
       return (
         <ValidDateStack>
@@ -71,31 +80,33 @@ export function UserManagementPage() {
           ) : (
             <GreenText>{dateStr}</GreenText>
           )}
-          <IconButton
-            onClick={() =>
-              setModalProps({
-                modalAction: "EXTEND",
-                id: item.id,
-                date: new Date(),
-                email: "",
-              })
-            }
-          >
-            <EventRepeatIcon />
-          </IconButton>
-          <IconButton
-            disabled={item.role === "admin"}
-            onClick={() =>
-              setModalProps({
-                modalAction: "DEACTIVATE",
-                id: item.id,
-                date: dayjs().subtract(1, "day").toDate(),
-                email: "",
-              })
-            }
-          >
-            <EventBusyIcon />
-          </IconButton>
+          <Stack direction="row" gap={1}>
+            <IconButton
+              onClick={() =>
+                setModalProps({
+                  modalAction: "EXTEND",
+                  id: item.id,
+                  date: new Date(),
+                  email: "",
+                })
+              }
+            >
+              <EventRepeatIcon />
+            </IconButton>
+            <IconButton
+              disabled={item.role === "admin"}
+              onClick={() =>
+                setModalProps({
+                  modalAction: "DEACTIVATE",
+                  id: item.id,
+                  date: dayjs().subtract(1, "day").toDate(),
+                  email: "",
+                })
+              }
+            >
+              <EventBusyIcon />
+            </IconButton>
+          </Stack>
         </ValidDateStack>
       );
     }
@@ -118,71 +129,70 @@ export function UserManagementPage() {
 
   // --- Modal action shortcut buttons for EXTEND ---
   const renderExtendShortcuts = () => (
-    <Stack sx={{ flexDirection: "row", gap: 1, mb: 2 }}>
-      <Button
+    <ModalBtnRow>
+      <ModalActionButton
         variant="contained"
         onClick={() =>
-          setModalProps(prev =>
+          setModalProps((prev) =>
             prev
               ? {
-                ...prev,
-                date: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-              }
+                  ...prev,
+                  date: new Date(
+                    new Date().setMonth(new Date().getMonth() + 1)
+                  ),
+                }
               : prev
           )
         }
       >
         1 month
-      </Button>
-      <Button
+      </ModalActionButton>
+      <ModalActionButton
         variant="contained"
         onClick={() =>
-          setModalProps(prev =>
+          setModalProps((prev) =>
             prev
               ? {
-                ...prev,
-                date: new Date(new Date().setMonth(new Date().getMonth() + 6)),
-              }
+                  ...prev,
+                  date: new Date(
+                    new Date().setMonth(new Date().getMonth() + 6)
+                  ),
+                }
               : prev
           )
         }
       >
         6 months
-      </Button>
-      <Button
+      </ModalActionButton>
+      <ModalActionButton
         variant="contained"
         onClick={() =>
-          setModalProps(prev =>
+          setModalProps((prev) =>
             prev
               ? {
-                ...prev,
-                date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-              }
+                  ...prev,
+                  date: new Date(
+                    new Date().setFullYear(new Date().getFullYear() + 1)
+                  ),
+                }
               : prev
           )
         }
       >
         1 year
-      </Button>
-    </Stack>
+      </ModalActionButton>
+    </ModalBtnRow>
   );
 
   // --- DatePicker input for EXTEND ---
   const renderDatePicker = () =>
     modalProps?.modalAction === "EXTEND" && (
       <DatePicker
-        slotProps={{
-          textField: {
-            InputProps: {
-              sx: { width: "100%", mb: 2 },
-            },
-          },
-        }}
         value={dayjs(modalProps.date)}
         format="DD.MM.YYYY"
         minDate={dayjs(new Date())}
-        onChange={value =>
-          setModalProps(prev => {
+        onChange={(value) =>
+          setModalProps((prev) => {
             if (!prev || !value) return prev;
             return {
               ...prev,
@@ -190,19 +200,19 @@ export function UserManagementPage() {
             };
           })
         }
-        sx={{ width: "100%", height: 32, mb: 2 }}
       />
     );
 
   // --- Email input for INVITE ---
   const renderInviteEmailInput = () =>
     modalProps?.modalAction === "INVITE" && (
-      <TextField
+      <ModalStyledInput
         placeholder="Enter email"
-        sx={{ width: "100%", mb: 2 }}
-        slotProps={{ input: {} }}
-        onChange={e =>
-          setModalProps(prev => (prev ? { ...prev, email: e.target.value } : prev))
+        slotProps={{ input: { style: { height: 32, borderRadius: 16 } } }}
+        onChange={(e) =>
+          setModalProps((prev) =>
+            prev ? { ...prev, email: e.target.value } : prev
+          )
         }
       />
     );
@@ -220,7 +230,7 @@ export function UserManagementPage() {
     ) : (
       filteredUserData.map((row, index) => (
         <TableRow key={index}>
-          {columns.map(column => (
+          {columns.map((column) => (
             <TableCell
               key={column.key}
               align={column.align}
@@ -239,26 +249,20 @@ export function UserManagementPage() {
       <PageWrapper>
         <RootStack>
           <Header title="User management" />
-          <Stack
-            sx={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 2,
-              width: "100%",
-            }}
-          >
-            <Stack sx={{ flex: 1 }}>
-              <TextField
+          <SearchBlock>
+            <SearchField>
+              <SearchInput
                 value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 slotProps={{
                   input: {
+                    style: {
+                      borderRadius: 16,
+                      height: 32,
+                    },
                     endAdornment:
                       searchTerm !== "" ? (
-                        <IconButton
-                          style={{ padding: 0 }}
-                          onClick={() => setSearchTerm("")}
-                        >
+                        <IconButton onClick={() => setSearchTerm("")}>
                           <CloseIcon />
                         </IconButton>
                       ) : (
@@ -266,10 +270,9 @@ export function UserManagementPage() {
                       ),
                   },
                 }}
-                sx={{ width: "100%" }}
               />
-            </Stack>
-            <Button
+            </SearchField>
+            <InviteButton
               variant="contained"
               onClick={() =>
                 setModalProps({
@@ -279,16 +282,15 @@ export function UserManagementPage() {
                   modalAction: "INVITE",
                 })
               }
-              sx={{ ml: 2 }}
             >
               Invite user
-            </Button>
-          </Stack>
+            </InviteButton>
+          </SearchBlock>
           <TableContainer component={Paper}>
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  {columns.map(column => (
+                  {columns.map((column) => (
                     <TableCell
                       key={column.key}
                       align={column.align}
@@ -316,22 +318,22 @@ export function UserManagementPage() {
               </IconButton>
             </ModalHeader>
 
-            <Stack sx={{ flex: 1, px: 3, py: 2 }}>
+            <ModalContentWrapper>
               {modalProps?.modalAction === "EXTEND" && renderExtendShortcuts()}
               {renderDatePicker()}
               {renderInviteEmailInput()}
-              <Button
+              <ModalActionButton
                 variant="contained"
                 disabled={
                   modalProps?.modalAction === "INVITE" &&
-                  (modalProps.email === "" || !emailRegex.test(modalProps.email))
+                  (modalProps.email === "" ||
+                    !emailRegex.test(modalProps.email))
                 }
-                sx={{ mt: 1, width: "100%" }}
                 onClick={onConfirm}
               >
                 {getModalButtonText()}
-              </Button>
-            </Stack>
+              </ModalActionButton>
+            </ModalContentWrapper>
           </ModalInnerContent>
         </ModalContentStack>
       </Modal>

@@ -323,7 +323,7 @@ export function useReversalAnalysis() {
       worker.terminate();
     };
 
-    worker.postMessage({ rawData, selectedHeaders });
+    worker.postMessage({ rawData, selectedHeaders,dictionaryData });
   };
 
   const generateOverviewData = (data: any[]) => {

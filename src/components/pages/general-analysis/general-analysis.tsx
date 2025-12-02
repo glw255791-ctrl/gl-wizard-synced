@@ -29,7 +29,6 @@ export function GeneralAnalysis() {
     isWarningModalShown,
     reversalTableData,
     isDictionaryUploaded,
-    dictionaryData,
     onDictionaryDrop,
     onPressExportUnmappedRows,
     setIsWarningModalShown,
@@ -117,14 +116,14 @@ export function GeneralAnalysis() {
 
           {/* Data Validity and Analysis Action */}
           <Grid2 container spacing={2}>
-            <Grid2 size={6}>
+            <Grid2 size={9}>
               <DataValidityInfo
                 reviewData={reviewData}
                 error={error}
                 disabled={!isCoaUploadStep}
               />
             </Grid2>
-            <Grid2 size={6}>
+            <Grid2 size={3}>
               <ActionButton
                 disabled={!isAnalyzeStep}
                 onPressAnalyzeData={onPressAnalyzeData}
@@ -147,7 +146,6 @@ export function GeneralAnalysis() {
             sortedDataDisplayHeader={sortedDataDisplayHeader}
             coaHeaderOptions={coaHeaderOptions}
             title="Movement Tables"
-            dictionaryData={dictionaryData}
             valueKey={selectedHeaders.glHeaders.value}
             disabled={!isAnalyzedStep || !!error}
             basicTableData={tableData}
