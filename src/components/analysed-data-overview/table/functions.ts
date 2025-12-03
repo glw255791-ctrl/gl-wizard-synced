@@ -5,7 +5,10 @@ import { TableHeader } from "../../composed/basic-table/basic-table";
 
 export type AnyType = string | number | boolean | object;
 
-export const getElipsis = (text: string, maxLength: number = 53): string | undefined => {
+export const getElipsis = (
+  text: string,
+  maxLength: number = 53
+): string | undefined => {
   if (typeof text !== "string" || text.length < maxLength) {
     return text;
   }
@@ -21,27 +24,31 @@ export const exportTableToExcel = async (
   const workbook = new Workbook();
   const worksheet = workbook.addWorksheet("Sheet1");
 
-  const headers: string[] = sortedDataDisplayHeader
-    .filter(item => item.active)
-    .map(item => item[mappingValue] as string);
+  const headers: string[] = [
+    ...new Set(
+      sortedDataDisplayHeader
+        .filter((item) => item.active)
+        .map((item) => item[mappingValue] as string)
+    ),
+  ].filter((header) => header !== "total");
 
   // Add first row (header row)
   worksheet.addRow([
     tableRows[0].sideHeader,
-    ...headers.map(item => tableRows[0][item] as string),
-    "total"
+    ...headers.map((item) => tableRows[0][item] as string),
+    "total",
   ]);
 
   // Add data rows (skip index 0)
-  tableRows.slice(1).forEach(row => {
+  tableRows.slice(1).forEach((row) => {
     if (row.sideHeader !== "Include") {
-      const data = headers.map(item => row[item]);
+      const data = headers.map((item) => row[item]);
       worksheet.addRow([row.sideHeader, ...data, row.total]);
     }
   });
 
   // Set all column widths
-  worksheet.columns.forEach(column => {
+  worksheet.columns.forEach((column) => {
     column.width = 40;
   });
 
@@ -49,21 +56,22 @@ export const exportTableToExcel = async (
   worksheet.eachRow((row, rowNumber) => {
     row.eachCell((cell, colNumber) => {
       const isHeaderRow = rowNumber === 1;
-      const isSideOrTotalCol = colNumber === 1 || colNumber === headers.length + 2;
+      const isSideOrTotalCol =
+        colNumber === 1 || colNumber === headers.length + 2;
 
       if (isHeaderRow) {
         cell.font = { bold: true };
         cell.fill = {
           type: "pattern",
           pattern: "solid",
-          fgColor: { argb: "CCCCCC" }
+          fgColor: { argb: "CCCCCC" },
         };
       }
       if (isSideOrTotalCol) {
         cell.fill = {
           type: "pattern",
           pattern: "solid",
-          fgColor: { argb: "CCCCCC" }
+          fgColor: { argb: "CCCCCC" },
         };
       }
     });
@@ -86,11 +94,12 @@ export const exportBasicTableToExcel = async (
   const worksheet = workbook.addWorksheet("Sheet1");
 
   // Prepare fullHeader by excluding 'coaData'
-  const fullHeader = Object.keys(data[0]).filter(key => key !== "coaData");
-  worksheet.addRow([...fullHeader]);
+  const fullHeader = Object.keys(data[0]).filter((key) => key !== "coaData");
+  const coaHeader = Object.keys(data[0].coaData);
+  worksheet.addRow([...fullHeader, ...coaHeader, "reversal"]);
 
-  data.forEach(row => {
-    const rowData = fullHeader.map(item => {
+  data.forEach((row) => {
+    const rowData = fullHeader.map((item) => {
       const val = row[item];
 
       // If it's the 'result' key and object, join by '/'
@@ -99,7 +108,7 @@ export const exportBasicTableToExcel = async (
       }
 
       // If matching key is column with key 'date', format date
-      const dateHeader = header.find(h => h.key === "date");
+      const dateHeader = header.find((h) => h.key === "date");
       if (dateHeader && item === dateHeader.title) {
         return formatDate(val, "dd-MM-yyyy");
       }
@@ -108,21 +117,27 @@ export const exportBasicTableToExcel = async (
       return typeof val === "object" ? "" : val;
     });
 
-    worksheet.addRow(rowData);
+    // Fix typing issue: Use keyof typeof row.coaData to avoid implicit 'any'
+    const coaData = coaHeader.map(
+      (item) => row.coaData?.[item as keyof typeof row.coaData]
+    );
+    const reversal = (row as any).reversal;
+
+    worksheet.addRow([...rowData, ...coaData, reversal]);
   });
 
-  worksheet.columns.forEach(column => {
+  worksheet.columns.forEach((column) => {
     column.width = 24;
   });
 
   worksheet.eachRow((row, rowNumber) => {
     const isHeader = rowNumber === 1;
-    row.eachCell(cell => {
+    row.eachCell((cell) => {
       if (isHeader) {
         cell.fill = {
           type: "pattern",
           pattern: "solid",
-          fgColor: { argb: "CCCCCC" }
+          fgColor: { argb: "CCCCCC" },
         };
         cell.font = { bold: true };
       }
@@ -142,12 +157,11 @@ export const exportMultipleTablesToExcel = async (
   titles: string[],
   fileName: string = "multiple_tables.xlsx"
 ) => {
-
   const workbook = new Workbook();
 
-  const formattedTitles = titles.map(title =>
+  const formattedTitles = titles.map((title) =>
     title.replace(/[*?:\\/\[\]]/g, "-")
-  )
+  );
 
   // Ensure dataArray and titles have the same length
   const minLength = Math.min(dataArray.length, titles.length);
@@ -164,11 +178,11 @@ export const exportMultipleTablesToExcel = async (
     const worksheet = workbook.addWorksheet(sheetName);
 
     // Prepare fullHeader by excluding 'coaData'
-    const fullHeader = Object.keys(data[0]).filter(key => key !== "coaData");
+    const fullHeader = Object.keys(data[0]).filter((key) => key !== "coaData");
     worksheet.addRow([...fullHeader]);
 
-    data.forEach(row => {
-      const rowData = fullHeader.map(item => {
+    data.forEach((row) => {
+      const rowData = fullHeader.map((item) => {
         const val = row[item];
 
         // If it's the 'result' key and object, join by '/'
@@ -177,7 +191,7 @@ export const exportMultipleTablesToExcel = async (
         }
 
         // If matching key is column with key 'date', format date
-        const dateHeader = header.find(h => h.key === "date");
+        const dateHeader = header.find((h) => h.key === "date");
         if (dateHeader && item === dateHeader.title) {
           return formatDate(val, "dd-MM-yyyy");
         }
@@ -190,19 +204,19 @@ export const exportMultipleTablesToExcel = async (
     });
 
     // Set column widths
-    worksheet.columns.forEach(column => {
+    worksheet.columns.forEach((column) => {
       column.width = 24;
     });
 
     // Apply formatting to the worksheet
     worksheet.eachRow((row, rowNumber) => {
       const isHeader = rowNumber === 1;
-      row.eachCell(cell => {
+      row.eachCell((cell) => {
         if (isHeader) {
           cell.fill = {
             type: "pattern",
             pattern: "solid",
-            fgColor: { argb: "CCCCCC" }
+            fgColor: { argb: "CCCCCC" },
           };
           cell.font = { bold: true };
         }

@@ -26,7 +26,6 @@ export const ReviewLabel = styled(Stack)({
   gap: "0.25rem",
 });
 
-
 // Error message row layout
 export const ErrorWrapper = styled(Stack)({
   flex: 2,

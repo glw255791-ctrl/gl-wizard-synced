@@ -43,7 +43,8 @@ export enum AnalysisStep {
   TO_UPLOAD_GL,
   UPLOADED_GL,
   TO_UPLOAD_COA,
-  TO_ANALYZE,
+  TO_UPLOAD_DICTIONARY,
+  UPLOADED_DICTIONARY,
   ANALYZED,
 }
 
@@ -53,20 +54,30 @@ export function useGeneralAnalysis() {
   const [error, setError] = useState<string | undefined>(undefined);
   const [isWarningModalShown, setIsWarningModalShown] = useState(false);
 
-  const [currentStep, setCurrentStep] = useState<AnalysisStep[]>([AnalysisStep.TO_UPLOAD_GL]);
+  const [currentStep, setCurrentStep] = useState<AnalysisStep>(
+    AnalysisStep.TO_UPLOAD_GL
+  );
   const [rawData, setRawData] = useState<RawData>({
     glData: [],
     glHeaders: [],
     coaData: [],
     coaHeaders: [],
   });
-  const [dataDisplayHeader, setDataDisplayHeader] = useState<Record<string, any>[]>([]);
-  const [overviewTableData, setOverviewTableData] = useState<Record<string, any>>({});
+  const [dataDisplayHeader, setDataDisplayHeader] = useState<
+    Record<string, any>[]
+  >([]);
+  const [overviewTableData, setOverviewTableData] = useState<
+    Record<string, any>
+  >({});
   const [unmappedRows, setUnmappedRows] = useState<Record<string, any>[]>([]);
   const [isDictionaryUploaded, setIsDictionaryUploaded] = useState(false);
-  const [dictionaryData, setDictionaryData] = useState<Record<string, any>[]>([]);
+  const [dictionaryData, setDictionaryData] = useState<Record<string, any>[]>(
+    []
+  );
   const [tableData, setTableData] = useState<Record<string, any>[]>([]);
-  const [reversalTableData, setReversalTableData] = useState<Record<string, any>[]>([]);
+  // const [reversalTableData, setReversalTableData] = useState<
+  //   Record<string, any>[]
+  // >([]);
   const [selectedHeaders, setSelectedHeaders] = useState<SelectedHeaders>({
     glHeaders: { account: "", jen: "", date: "", value: "" },
     coaHeaders: { displayValue: "", mappingValue: "", groupingValue: "" },
@@ -75,22 +86,83 @@ export function useGeneralAnalysis() {
 
   // --- Memoized Values ---
 
+  const onPressBackBtn = () => {
+    setCurrentStep((prev) => {
+      switch (prev) {
+        case AnalysisStep.TO_UPLOAD_GL:
+          return AnalysisStep.TO_UPLOAD_GL;
+
+        case AnalysisStep.UPLOADED_GL:
+          setRawData({
+            glData: [],
+            glHeaders: [],
+            coaData: [],
+            coaHeaders: [],
+          });
+          setSelectedHeaders({
+            glHeaders: { account: "", jen: "", date: "", value: "" },
+            coaHeaders: {
+              displayValue: "",
+              mappingValue: "",
+              groupingValue: "",
+            },
+          });
+          return AnalysisStep.TO_UPLOAD_GL;
+
+        case AnalysisStep.TO_UPLOAD_COA:
+          setSelectedHeaders({
+            glHeaders: { account: "", jen: "", date: "", value: "" },
+            coaHeaders: {
+              displayValue: "",
+              mappingValue: "",
+              groupingValue: "",
+            },
+          });
+          return AnalysisStep.UPLOADED_GL;
+
+        case AnalysisStep.TO_UPLOAD_DICTIONARY:
+          setRawData((prev) => ({
+            ...prev,
+            coaData: [],
+            coaHeaders: [],
+          }));
+          setSelectedHeaders((prev) => ({
+            ...prev,
+            coaHeaders: {
+              displayValue: "",
+              mappingValue: "",
+              groupingValue: "",
+            },
+          }));
+          return AnalysisStep.TO_UPLOAD_COA;
+
+        case AnalysisStep.UPLOADED_DICTIONARY:
+          setDictionaryData([]);
+          setIsDictionaryUploaded(false);
+          return AnalysisStep.TO_UPLOAD_DICTIONARY;
+
+        default:
+          return prev;
+      }
+    });
+  };
+
   const reviewData: ReviewData = useMemo(() => {
     const countRows = rawData.glData.length;
 
     const total = selectedHeaders.glHeaders.value
       ? rawData.glData.reduce((sum, row) => {
-        const val = Number(row[selectedHeaders.glHeaders.value]);
-        return sum + (Number.isNaN(val) ? 0 : val);
-      }, 0)
+          const val = Number(row[selectedHeaders.glHeaders.value]);
+          return sum + (Number.isNaN(val) ? 0 : val);
+        }, 0)
       : 0;
 
     const getDate = (fn: (...dates: number[]) => number) => {
       if (!selectedHeaders.glHeaders.date) return "";
       const times = rawData.glData
-        .map(item => new Date(item[selectedHeaders.glHeaders.date]))
-        .filter(date => !isNaN(date.getTime()))
-        .map(date => date.getTime());
+        .map((item) => new Date(item[selectedHeaders.glHeaders.date]))
+        .filter((date) => !isNaN(date.getTime()))
+        .map((date) => date.getTime());
       if (!times.length) return "";
       return formatDate(new Date(fn(...times)), "dd-MM-yyyy");
     };
@@ -105,7 +177,7 @@ export function useGeneralAnalysis() {
 
   const glHeaderOptions = useMemo(
     () =>
-      rawData.glHeaders.map(item => ({
+      rawData.glHeaders.map((item) => ({
         value: item,
         title: item,
       })),
@@ -114,7 +186,7 @@ export function useGeneralAnalysis() {
 
   const coaHeaderOptions = useMemo(
     () =>
-      rawData.coaHeaders.map(item => ({
+      rawData.coaHeaders.map((item) => ({
         value: item,
         title: item,
       })),
@@ -123,19 +195,19 @@ export function useGeneralAnalysis() {
 
   const tableHeader: TableHeader[] = useMemo(
     () => [
-      ...Object.keys(selectedHeaders.glHeaders).map(item => ({
+      ...Object.keys(selectedHeaders.glHeaders).map((item) => ({
         key: item,
         title: selectedHeaders.glHeaders[item as keyof GlHeaders],
       })),
       { key: "result", title: "result" },
-      {key:'reversal',title:'reversal'}
+      { key: "reversal", title: "reversal" },
     ],
     [selectedHeaders.glHeaders]
   );
 
   const reversalTableHeader: TableHeader[] = useMemo(
     () => [
-      ...Object.keys(selectedHeaders.glHeaders).map(item => ({
+      ...Object.keys(selectedHeaders.glHeaders).map((item) => ({
         key: item,
         title: selectedHeaders.glHeaders[item as keyof GlHeaders],
       })),
@@ -170,7 +242,7 @@ export function useGeneralAnalysis() {
 
     worker.postMessage({ buffer });
 
-    worker.onmessage = e => {
+    worker.onmessage = (e) => {
       const { data, error } = e.data;
       if (error) {
         setError(error);
@@ -179,7 +251,7 @@ export function useGeneralAnalysis() {
       }
       setDictionaryData(data);
 
-      worker.onerror = workerError => {
+      worker.onerror = (workerError) => {
         setError(workerError.message);
         console.error("Worker error:", workerError);
         setLoadingStatus(false);
@@ -190,6 +262,8 @@ export function useGeneralAnalysis() {
       setIsDictionaryUploaded(true);
       worker.terminate();
     };
+
+    setCurrentStep(AnalysisStep.UPLOADED_DICTIONARY);
   };
 
   const onGeneralLedgerDrop = async (acceptedFiles: File[]) => {
@@ -209,11 +283,13 @@ export function useGeneralAnalysis() {
 
     setLoadingStatus(true);
     const buffer = await file.arrayBuffer();
-    const worker = new Worker(new URL("./gl-worker.js", import.meta.url), { type: "module" });
+    const worker = new Worker(new URL("./gl-worker.js", import.meta.url), {
+      type: "module",
+    });
 
     worker.postMessage({ buffer });
 
-    worker.onmessage = e => {
+    worker.onmessage = (e) => {
       const { glData, glHeaders, error } = e.data;
       if (error) {
         setError(error);
@@ -221,16 +297,16 @@ export function useGeneralAnalysis() {
         return;
       }
 
-      setRawData(prev => ({ ...prev, glData, glHeaders }));
+      setRawData((prev) => ({ ...prev, glData, glHeaders }));
 
-      worker.onerror = workerError => {
+      worker.onerror = (workerError) => {
         setError(workerError.message);
         console.error("Worker error:", workerError);
         setLoadingStatus(false);
         worker.terminate();
       };
 
-      setCurrentStep(prev => [...prev, AnalysisStep.UPLOADED_GL]);
+      setCurrentStep(AnalysisStep.UPLOADED_GL);
       setLoadingStatus(false);
       worker.terminate();
     };
@@ -258,13 +334,13 @@ export function useGeneralAnalysis() {
         }, {} as Record<string, any>)
       );
 
-    setRawData(prev => ({
+    setRawData((prev) => ({
       ...prev,
       coaData: rows,
       coaHeaders: columnNames.filter(Boolean),
     }));
 
-    setSelectedHeaders(prev => ({
+    setSelectedHeaders((prev) => ({
       ...prev,
       coaHeaders: {
         displayValue: columnNames.filter(Boolean)[0],
@@ -273,22 +349,22 @@ export function useGeneralAnalysis() {
       },
     }));
 
-    setCurrentStep(prev => [...prev, AnalysisStep.TO_ANALYZE]);
+    setCurrentStep(AnalysisStep.TO_UPLOAD_DICTIONARY);
   };
 
   // --- Header Selection ---
 
   const onChangeGlHeader = (key: keyof GlHeaders, value: string) => {
     const newGlHeaders = { ...selectedHeaders.glHeaders, [key]: value };
-    setSelectedHeaders(prev => ({ ...prev, glHeaders: newGlHeaders }));
+    setSelectedHeaders((prev) => ({ ...prev, glHeaders: newGlHeaders }));
 
-    if (!Object.values(newGlHeaders).some(item => item === "")) {
-      setCurrentStep(prev => [...prev, AnalysisStep.TO_UPLOAD_COA]);
+    if (!Object.values(newGlHeaders).some((item) => item === "")) {
+      setCurrentStep(AnalysisStep.TO_UPLOAD_COA);
     }
   };
 
   const onChangeCoaHeader = (key: keyof CoaHeaders, value: string) => {
-    setSelectedHeaders(prev => ({
+    setSelectedHeaders((prev) => ({
       ...prev,
       coaHeaders: { ...prev.coaHeaders, [key]: value },
     }));
@@ -297,14 +373,14 @@ export function useGeneralAnalysis() {
   // --- Reset Button ---
 
   const onPressResetBtn = () => {
-    setCurrentStep([AnalysisStep.TO_UPLOAD_GL]);
+    setCurrentStep(AnalysisStep.TO_UPLOAD_GL);
     setTableData([]);
     setError(undefined);
     setDictionaryData([]);
     setIsDictionaryUploaded(false);
     setUnmappedRows([]);
     setIsWarningModalShown(false);
-    setReversalTableData([]);
+    // setReversalTableData([]);
     setDataDisplayHeader([]);
     setOverviewTableData({});
     setRawData({
@@ -324,36 +400,36 @@ export function useGeneralAnalysis() {
   const onPressAnalyzeData = () => {
     setLoadingStatus(true);
 
-    // Reversal worker
-    const reversalWorker = new Worker(
-      new URL("../../../workers/reversal-worker.js", import.meta.url),
-      { type: "module" }
-    );
+    // // Reversal worker
+    // const reversalWorker = new Worker(
+    //   new URL("../../../workers/reversal-worker.js", import.meta.url),
+    //   { type: "module" }
+    // );
 
-    reversalWorker.onmessage = event => {
-      const notMappedRows = event.data.outputVal.filter((item: any) =>
-        JSON.stringify(item).includes("not mapped")
-      );
-      if (notMappedRows.length > 0) {
-        setUnmappedRows(notMappedRows);
-        setIsWarningModalShown(true);
-      }
+    // reversalWorker.onmessage = (event) => {
+    //   const notMappedRows = event.data.outputVal.filter((item: any) =>
+    //     JSON.stringify(item).includes("not mapped")
+    //   );
+    //   if (notMappedRows.length > 0) {
+    //     setUnmappedRows(notMappedRows);
+    //     setIsWarningModalShown(true);
+    //   }
 
-      setReversalTableData(
-        Object.values(event.data.outputVal as Record<string, any>[]).flat()
-      );
+    //   setReversalTableData(
+    //     Object.values(event.data.outputVal as Record<string, any>[]).flat()
+    //   );
 
-      reversalWorker.terminate();
-    };
+    //   reversalWorker.terminate();
+    // };
 
-    reversalWorker.onerror = error => {
-      setError(error.message);
-      console.error("Worker error:", error);
-      setLoadingStatus(false);
-      reversalWorker.terminate();
-    };
+    // reversalWorker.onerror = (error) => {
+    //   setError(error.message);
+    //   console.error("Worker error:", error);
+    //   setLoadingStatus(false);
+    //   reversalWorker.terminate();
+    // };
 
-    reversalWorker.postMessage({ rawData, selectedHeaders });
+    // reversalWorker.postMessage({ rawData, selectedHeaders });
 
     // Main general worker
     const worker = new Worker(
@@ -361,7 +437,7 @@ export function useGeneralAnalysis() {
       { type: "module" }
     );
 
-    worker.onmessage = event => {
+    worker.onmessage = (event) => {
       const notMappedRows = event.data.tableData.filter((item: any) =>
         JSON.stringify(item).includes("not mapped")
       );
@@ -373,7 +449,7 @@ export function useGeneralAnalysis() {
       setTableData(event.data.tableData);
       setOverviewTableData(event.data.overviewTableData);
       setDataDisplayHeader(event.data.displayHeaders);
-      setCurrentStep(prev => [...prev, AnalysisStep.ANALYZED]);
+      setCurrentStep(AnalysisStep.ANALYZED);
 
       worker.terminate();
 
@@ -383,7 +459,7 @@ export function useGeneralAnalysis() {
       }
     };
 
-    worker.onerror = error => {
+    worker.onerror = (error) => {
       setError(error.message);
       console.error("Worker error:", error);
       setLoadingStatus(false);
@@ -401,10 +477,10 @@ export function useGeneralAnalysis() {
   const sortedDataDisplayHeader = useMemo(() => {
     const mappingKey = selectedHeaders.coaHeaders.mappingValue;
     const active = dataDisplayHeader
-      .filter(item => item.active)
+      .filter((item) => item.active)
       .sort((a, b) => a[mappingKey] - b[mappingKey]);
     const inactive = dataDisplayHeader
-      .filter(item => !item.active)
+      .filter((item) => !item.active)
       .sort((a, b) => a[mappingKey] - b[mappingKey]);
     return [
       ...active,
@@ -436,9 +512,10 @@ export function useGeneralAnalysis() {
     setIsWarningModalShown,
     onPressExportUnmappedRows,
     onDictionaryDrop,
+    onPressBackBtn,
     dictionaryData,
     isDictionaryUploaded,
-    reversalTableData,
+    // reversalTableData,
     loadingStatus,
     error,
     overviewTableData,

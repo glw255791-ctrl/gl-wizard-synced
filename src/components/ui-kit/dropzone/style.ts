@@ -34,17 +34,21 @@ export const StyledDropzoneRoot = styled(Stack)({
 });
 
 // Styled dropzone root (Stack)
-export const StyledAdditionalDropzoneRoot = styled(Stack)({
+export const StyledAdditionalDropzoneRoot = styled(Stack, {
+  shouldForwardProp: (prop) => prop !== "isDisabled",
+})(({ isDisabled }: { isDisabled?: boolean }) => ({
   border: `2px dashed ${colors.medium}`,
   borderRadius: "8px",
-  height: '44.5%',
+  height: "44.5%",
   marginTop: 16,
   justifyContent: "center",
   alignContent: "center",
   alignItems: "center",
   color: colors.darker,
   backgroundColor: colors.white,
-});
+  opacity: isDisabled ? DISABLED_OPACITY : 1,
+  pointerEvents: isDisabled ? "none" : "auto",
+}));
 
 // Styled download done icon
 export const StyledDownloadDoneIcon = styled(DownloadDoneIcon)({

@@ -33,7 +33,9 @@ export interface CoaFilters {
 
 export function useReversalReclassificationAnalysis() {
   // --- State ---
-  const [currentStep, setCurrentStep] = useState<AnalysisStep[]>([AnalysisStep.TO_UPLOAD_GL]);
+  const [currentStep, setCurrentStep] = useState<AnalysisStep>(
+    AnalysisStep.TO_UPLOAD_GL
+  );
   const [rawData, setRawData] = useState<RawData>({
     glData: [],
     glHeaders: [],
@@ -44,7 +46,10 @@ export function useReversalReclassificationAnalysis() {
   const [error, setError] = useState<string | undefined>(undefined);
   const [tableData, setTableData] = useState<Record<string, any>[]>([]);
 
-  const [selectedFilters, setSelectedFilters] = useState<CoaFilters>({ header: "", value: [] });
+  const [selectedFilters, setSelectedFilters] = useState<CoaFilters>({
+    header: "",
+    value: [],
+  });
   const [selectedHeaders, setSelectedHeaders] = useState<SelectedHeaders>({
     glHeaders: { account: "", jen: "", date: "", value: "" },
     coaHeaders: { mappingValue: "", displayValue: "", groupingValue: "" },
@@ -64,7 +69,7 @@ export function useReversalReclassificationAnalysis() {
     let endDate = "";
     if (dateKey && glData.length) {
       const timestamps = glData
-        .map(item => new Date(item[dateKey]).getTime())
+        .map((item) => new Date(item[dateKey]).getTime())
         .filter(Boolean); // Avoid NaN
 
       if (timestamps.length) {
@@ -82,14 +87,12 @@ export function useReversalReclassificationAnalysis() {
   }, [rawData, selectedHeaders]);
 
   const glHeaderOptions = useMemo(
-    () =>
-      rawData.glHeaders.map(value => ({ value, title: value })),
+    () => rawData.glHeaders.map((value) => ({ value, title: value })),
     [rawData.glHeaders]
   );
 
   const coaHeaderOptions = useMemo(
-    () =>
-      rawData.coaHeaders.map(value => ({ value, title: value })),
+    () => rawData.coaHeaders.map((value) => ({ value, title: value })),
     [rawData.coaHeaders]
   );
 
@@ -97,15 +100,15 @@ export function useReversalReclassificationAnalysis() {
     const uniqueVals = [
       ...new Set(
         rawData.coaData
-          .map(item => item[selectedFilters.header])
+          .map((item) => item[selectedFilters.header])
           .filter(Boolean)
       ),
     ];
-    return uniqueVals.map(value => ({ value, title: value }));
+    return uniqueVals.map((value) => ({ value, title: value }));
   }, [rawData.coaData, selectedFilters]);
 
   const tableHeader: TableHeader[] = useMemo(() => {
-    const headers = Object.keys(selectedHeaders.glHeaders).map(key => ({
+    const headers = Object.keys(selectedHeaders.glHeaders).map((key) => ({
       key,
       title: selectedHeaders.glHeaders[key as keyof GlHeaders],
     }));
@@ -137,10 +140,12 @@ export function useReversalReclassificationAnalysis() {
 
     setLoadingStatus(true);
     const buffer = await file.arrayBuffer();
-    const worker = new Worker(new URL("./gl-worker.js", import.meta.url), { type: "module" });
+    const worker = new Worker(new URL("./gl-worker.js", import.meta.url), {
+      type: "module",
+    });
     worker.postMessage({ buffer });
 
-    worker.onmessage = e => {
+    worker.onmessage = (e) => {
       const { glData, glHeaders, error: workerError } = e.data;
       if (workerError) {
         setError(workerError);
@@ -148,8 +153,8 @@ export function useReversalReclassificationAnalysis() {
         worker.terminate();
         return;
       }
-      setRawData(prev => ({ ...prev, glData, glHeaders }));
-      setCurrentStep(prev => [...prev, AnalysisStep.UPLOADED_GL]);
+      setRawData((prev) => ({ ...prev, glData, glHeaders }));
+      setCurrentStep(AnalysisStep.UPLOADED_GL);
       setLoadingStatus(false);
       worker.terminate();
     };
@@ -181,12 +186,12 @@ export function useReversalReclassificationAnalysis() {
       );
 
     const primaryCol = columnNames.filter(Boolean)[0];
-    setRawData(prev => ({
+    setRawData((prev) => ({
       ...prev,
       coaData: rows,
       coaHeaders: columnNames.filter(Boolean),
     }));
-    setSelectedHeaders(prev => ({
+    setSelectedHeaders((prev) => ({
       ...prev,
       coaHeaders: {
         mappingValue: primaryCol,
@@ -195,31 +200,34 @@ export function useReversalReclassificationAnalysis() {
         filters: { header: "", value: "" },
       },
     }));
-    setSelectedFilters(prev => ({
+    setSelectedFilters((prev) => ({
       ...prev,
       header: primaryCol,
     }));
-    setCurrentStep(prev => [...prev, AnalysisStep.TO_ANALYZE]);
+    setCurrentStep(AnalysisStep.TO_UPLOAD_DICTIONARY);
   };
 
   // Header changes for GL
   const onChangeGlHeader = (key: keyof GlHeaders, value: string) => {
     const newGlHeaders = { ...selectedHeaders.glHeaders, [key]: value };
-    setSelectedHeaders(prev => ({ ...prev, glHeaders: newGlHeaders }));
+    setSelectedHeaders((prev) => ({ ...prev, glHeaders: newGlHeaders }));
 
-    if (!Object.values(newGlHeaders).some(item => item === "")) {
-      setCurrentStep(prev => [...prev, AnalysisStep.TO_UPLOAD_COA]);
+    if (!Object.values(newGlHeaders).some((item) => item === "")) {
+      setCurrentStep(AnalysisStep.TO_UPLOAD_COA);
     }
   };
 
   // Filter changes for CoA
-  const onChangeCoaFilter = (key: keyof CoaFilters, value: string|string[]) => {
-    setSelectedFilters(prev => ({ ...prev, [key]: value }));
+  const onChangeCoaFilter = (
+    key: keyof CoaFilters,
+    value: string | string[]
+  ) => {
+    setSelectedFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   // Header changes for CoA
   const onChangeCoaHeader = (key: keyof CoaHeaders, value: string) => {
-    setSelectedHeaders(prev => ({
+    setSelectedHeaders((prev) => ({
       ...prev,
       coaHeaders: { ...prev.coaHeaders, [key]: value },
     }));
@@ -227,7 +235,7 @@ export function useReversalReclassificationAnalysis() {
 
   // Reset button
   const onPressResetBtn = () => {
-    setCurrentStep([AnalysisStep.TO_UPLOAD_GL]);
+    setCurrentStep(AnalysisStep.TO_UPLOAD_GL);
     setTableData([]);
     setError(undefined);
     setRawData({
@@ -243,24 +251,86 @@ export function useReversalReclassificationAnalysis() {
     setSelectedFilters({ header: "", value: [] });
   };
 
+  const onPressBackBtn = () => {
+    setCurrentStep((prev) => {
+      switch (prev) {
+        case AnalysisStep.TO_UPLOAD_GL:
+          return AnalysisStep.TO_UPLOAD_GL;
+
+        case AnalysisStep.UPLOADED_GL:
+          setRawData({
+            glData: [],
+            glHeaders: [],
+            coaData: [],
+            coaHeaders: [],
+          });
+          setSelectedHeaders({
+            glHeaders: { account: "", jen: "", date: "", value: "" },
+            coaHeaders: {
+              displayValue: "",
+              mappingValue: "",
+              groupingValue: "",
+            },
+          });
+          return AnalysisStep.TO_UPLOAD_GL;
+
+        case AnalysisStep.TO_UPLOAD_COA:
+          setSelectedHeaders({
+            glHeaders: { account: "", jen: "", date: "", value: "" },
+            coaHeaders: {
+              displayValue: "",
+              mappingValue: "",
+              groupingValue: "",
+            },
+          });
+          return AnalysisStep.UPLOADED_GL;
+
+        case AnalysisStep.TO_UPLOAD_DICTIONARY:
+          setRawData((prev) => ({
+            ...prev,
+            coaData: [],
+            coaHeaders: [],
+          }));
+          setSelectedHeaders((prev) => ({
+            ...prev,
+            coaHeaders: {
+              displayValue: "",
+              mappingValue: "",
+              groupingValue: "",
+            },
+          }));
+          return AnalysisStep.TO_UPLOAD_COA;
+
+        default:
+          return prev;
+      }
+    });
+  };
+
   // Analyze data (runs web worker)
   const onPressAnalyzeData = () => {
     setLoadingStatus(true);
     const worker = new Worker(
-      new URL("../../../workers/reversal-reclassification-worker.js", import.meta.url),
+      new URL(
+        "../../../workers/reversal-reclassification-worker.js",
+        import.meta.url
+      ),
       { type: "module" }
     );
 
-    worker.onmessage = event => {
+    worker.onmessage = (event) => {
       setTableData(
-        Object.values(event.data.groupedByAccountAndDate).flat() as Record<string, any>[]
+        Object.values(event.data.groupedByAccountAndDate).flat() as Record<
+          string,
+          any
+        >[]
       );
-      setCurrentStep(prev => [...prev, AnalysisStep.ANALYZED]);
+      setCurrentStep(AnalysisStep.ANALYZED);
       setLoadingStatus(false);
       worker.terminate();
     };
 
-    worker.onerror = error => {
+    worker.onerror = (error) => {
       console.error("Worker error:", error);
       setLoadingStatus(false);
       worker.terminate();
@@ -272,12 +342,14 @@ export function useReversalReclassificationAnalysis() {
   // Download analyzed table as Excel
   const onPressDownloadData = async () => {
     // Prepare export data (no coaData, flatten result if array)
-    const dataForExport = tableData.map(item => {
+    const dataForExport = tableData.map((item) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { coaData, ...rest } = item;
       return {
         ...rest,
-        result: Array.isArray(rest.result) ? rest.result.join("/") : rest.result,
+        result: Array.isArray(rest.result)
+          ? rest.result.join("/")
+          : rest.result,
       };
     });
 
@@ -288,7 +360,7 @@ export function useReversalReclassificationAnalysis() {
     const headers = Object.keys(dataForExport[0]);
 
     // Setup worksheet columns
-    worksheet.columns = headers.map(header => ({
+    worksheet.columns = headers.map((header) => ({
       header,
       key: header,
       width: 20,
@@ -296,7 +368,7 @@ export function useReversalReclassificationAnalysis() {
 
     // Header style
     const headerRow = worksheet.getRow(0);
-    headerRow.eachCell(cell => {
+    headerRow.eachCell((cell) => {
       cell.font = { bold: true };
       cell.fill = {
         type: "pattern",
@@ -307,8 +379,8 @@ export function useReversalReclassificationAnalysis() {
     });
 
     // Add all data rows
-    dataForExport.forEach(obj => {
-      const row = headers.map(header => {
+    dataForExport.forEach((obj) => {
+      const row = headers.map((header) => {
         const value = (obj as Record<string, unknown>)[header];
         return typeof value === "number" && value > 999999 ? `${value}` : value;
       });
@@ -353,5 +425,6 @@ export function useReversalReclassificationAnalysis() {
     selectedHeaders,
     coaHeaderOptions,
     reviewData,
+    onPressBackBtn,
   };
 }

@@ -11,7 +11,10 @@ import { ActionButton } from "../../composed/action-button/action-button";
 import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { WarningModal } from "../../composed/warning-modal/warning-modal";
 import { AnalysisStep, useGeneralAnalysis } from "./general-analysis-model";
-import { RootStack } from "./style";
+import { CardStyled, RootStack } from "./style";
+import { supabase } from "../../../api/api";
+import { useState, useEffect, useMemo } from "react";
+import { UndoButton } from "../../composed/undo-button/undo-button";
 
 export function GeneralAnalysis() {
   const {
@@ -27,7 +30,6 @@ export function GeneralAnalysis() {
     error,
     loadingStatus,
     isWarningModalShown,
-    reversalTableData,
     isDictionaryUploaded,
     onDictionaryDrop,
     onPressExportUnmappedRows,
@@ -38,14 +40,34 @@ export function GeneralAnalysis() {
     onGeneralLedgerDrop,
     onPressAnalyzeData,
     onChartOfAccountsDrop,
+    onPressBackBtn,
     onPressResetBtn,
   } = useGeneralAnalysis();
 
-  // Step booleans for rendering control
-  const isUploadedGl = currentStep.includes(AnalysisStep.UPLOADED_GL);
-  const isCoaUploadStep = currentStep.includes(AnalysisStep.TO_UPLOAD_COA);
-  const isAnalyzeStep = currentStep.includes(AnalysisStep.TO_ANALYZE);
-  const isAnalyzedStep = currentStep.includes(AnalysisStep.ANALYZED);
+  const [userRole, setUserRole] = useState<"user" | "admin" | undefined>(
+    undefined
+  );
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", session.user.id)
+          .single();
+        if (error || !profile) {
+          return;
+        }
+        setUserRole(profile.role);
+      }
+    };
+    checkSession();
+  }, []);
+
+  const isAdmin = useMemo(() => userRole === "admin", [userRole]);
 
   return (
     <>
@@ -64,7 +86,8 @@ export function GeneralAnalysis() {
               <FileDropzone
                 onDrop={onGeneralLedgerDrop}
                 text="Drop GL file here"
-                uploaded={isUploadedGl}
+                uploaded={currentStep !== AnalysisStep.TO_UPLOAD_GL}
+                isDisabled={currentStep === AnalysisStep.ANALYZED}
               >
                 <GLDropdowns
                   glHeaderOptions={glHeaderOptions}
@@ -79,9 +102,21 @@ export function GeneralAnalysis() {
               <FileDropzone
                 onDrop={onChartOfAccountsDrop}
                 text="Drop CoA file here"
-                uploaded={isAnalyzeStep}
-                isDisabled={!isCoaUploadStep}
+                uploaded={
+                  currentStep === AnalysisStep.TO_UPLOAD_DICTIONARY ||
+                  currentStep === AnalysisStep.UPLOADED_DICTIONARY ||
+                  currentStep === AnalysisStep.ANALYZED
+                }
+                isDisabled={
+                  currentStep === AnalysisStep.TO_UPLOAD_GL ||
+                  currentStep === AnalysisStep.UPLOADED_GL ||
+                  currentStep === AnalysisStep.ANALYZED
+                }
                 onAdditionalDrop={onDictionaryDrop}
+                isAdditionalDisabled={
+                  currentStep !== AnalysisStep.TO_UPLOAD_DICTIONARY &&
+                  currentStep !== AnalysisStep.UPLOADED_DICTIONARY
+                }
                 additionalText="Drop Dictionary file here"
                 additionalUploaded={isDictionaryUploaded}
               >
@@ -115,29 +150,41 @@ export function GeneralAnalysis() {
           </Grid2>
 
           {/* Data Validity and Analysis Action */}
-          <Grid2 container spacing={2}>
-            <Grid2 size={9}>
-              <DataValidityInfo
-                reviewData={reviewData}
-                error={error}
-                disabled={!isCoaUploadStep}
+
+          <CardStyled>
+            {currentStep !== AnalysisStep.TO_UPLOAD_GL &&
+            currentStep !== AnalysisStep.UPLOADED_GL ? (
+              <DataValidityInfo reviewData={reviewData} error={error} />
+            ) : (
+              <Stack />
+            )}
+            <Stack direction="row" spacing={1} alignItems="center">
+              <UndoButton
+                disabled={
+                  currentStep === AnalysisStep.ANALYZED ||
+                  currentStep === AnalysisStep.TO_UPLOAD_GL
+                }
+                onPressUndo={onPressBackBtn}
               />
-            </Grid2>
-            <Grid2 size={3}>
               <ActionButton
-                disabled={!isAnalyzeStep}
+                disabled={
+                  currentStep !== AnalysisStep.TO_UPLOAD_DICTIONARY &&
+                  currentStep !== AnalysisStep.UPLOADED_DICTIONARY
+                }
                 onPressAnalyzeData={onPressAnalyzeData}
               />
-            </Grid2>
-          </Grid2>
+            </Stack>
+          </CardStyled>
 
           {/* Overviews */}
-          <BasicDataOverview
-            title="GL Data With Transaction Types"
-            disabled={!isAnalyzedStep || !!error}
-            tableData={reversalTableData}
-            tableHeader={tableHeader}
-          />
+          {isAdmin && (
+            <BasicDataOverview
+              title="GL Data With Transaction Types"
+              disabled={currentStep !== AnalysisStep.ANALYZED || !!error}
+              tableData={tableData}
+              tableHeader={tableHeader}
+            />
+          )}
 
           <DataOverview
             mappingValue={selectedHeaders.coaHeaders.mappingValue}
@@ -147,7 +194,7 @@ export function GeneralAnalysis() {
             coaHeaderOptions={coaHeaderOptions}
             title="Movement Tables"
             valueKey={selectedHeaders.glHeaders.value}
-            disabled={!isAnalyzedStep || !!error}
+            disabled={currentStep !== AnalysisStep.ANALYZED || !!error}
             basicTableData={tableData}
             basicTableHeader={tableHeader}
           />

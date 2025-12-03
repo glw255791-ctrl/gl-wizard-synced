@@ -14,14 +14,28 @@ interface Props {
   children: React.ReactNode;
   isDisabled?: boolean;
   onAdditionalDrop?: (acceptedFiles: File[]) => void;
+  isAdditionalDisabled?: boolean;
   additionalText?: string;
   additionalUploaded?: boolean;
 }
 
 export function FileDropzone(props: Props) {
-  const { text, uploaded, onDrop, children, isDisabled, onAdditionalDrop, additionalText, additionalUploaded } = props;
+  const {
+    text,
+    uploaded,
+    onDrop,
+    children,
+    isDisabled,
+    onAdditionalDrop,
+    additionalText,
+    additionalUploaded,
+    isAdditionalDisabled,
+  } = props;
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
-  const { getRootProps: getAdditionalRootProps, getInputProps: getAdditionalInputProps } = useDropzone({ onDrop: onAdditionalDrop ?? onDrop })
+  const {
+    getRootProps: getAdditionalRootProps,
+    getInputProps: getAdditionalInputProps,
+  } = useDropzone({ onDrop: onAdditionalDrop ?? onDrop });
 
   const CardComponent = isDisabled ? StyledCardDisabled : StyledCard;
 
@@ -37,14 +51,22 @@ export function FileDropzone(props: Props) {
             {uploaded ? <StyledDownloadDoneIcon /> : text}
           </StyledDropzoneRoot>
         </Grid2>
-        <Grid2 size={6}>{children}
+        <Grid2 size={6}>
+          {children}
           {onAdditionalDrop && additionalText && (
             <StyledAdditionalDropzoneRoot
+              isDisabled={isAdditionalDisabled}
               {...getAdditionalRootProps()}
               sx={additionalUploaded ? { pointerEvents: "none" } : {}}
             >
               <input {...getAdditionalInputProps()} />
-              {additionalUploaded ? <StyledDownloadDoneIcon /> : <Stack>{additionalText} <Typography>(Optional)</Typography></Stack>}
+              {additionalUploaded ? (
+                <StyledDownloadDoneIcon />
+              ) : (
+                <Stack>
+                  {additionalText} <Typography>(Optional)</Typography>
+                </Stack>
+              )}
             </StyledAdditionalDropzoneRoot>
           )}
         </Grid2>

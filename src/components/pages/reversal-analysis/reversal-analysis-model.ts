@@ -42,13 +42,16 @@ export enum AnalysisStep {
   TO_UPLOAD_GL,
   UPLOADED_GL,
   TO_UPLOAD_COA,
-  TO_ANALYZE,
+  TO_UPLOAD_DICTIONARY,
+  UPLOADED_DICTIONARY,
   ANALYZED,
 }
 
 export function useReversalAnalysis() {
   // States
-  const [currentStep, setCurrentStep] = useState<AnalysisStep[]>([AnalysisStep.TO_UPLOAD_GL]);
+  const [currentStep, setCurrentStep] = useState<AnalysisStep>(
+    AnalysisStep.TO_UPLOAD_GL
+  );
   const [rawData, setRawData] = useState<RawData>({
     glData: [],
     glHeaders: [],
@@ -61,9 +64,15 @@ export function useReversalAnalysis() {
   const [loadingStatus, setLoadingStatus] = useState(false);
 
   const [isDictionaryUploaded, setIsDictionaryUploaded] = useState(false);
-  const [dictionaryData, setDictionaryData] = useState<Record<string, any>[]>([]);
-  const [dataDisplayHeader, setDataDisplayHeader] = useState<Record<string, any>[]>([]);
-  const [overviewTableData, setOverviewTableData] = useState<Record<string, any>>({});
+  const [dictionaryData, setDictionaryData] = useState<Record<string, any>[]>(
+    []
+  );
+  const [dataDisplayHeader, setDataDisplayHeader] = useState<
+    Record<string, any>[]
+  >([]);
+  const [overviewTableData, setOverviewTableData] = useState<
+    Record<string, any>
+  >({});
   const [tableData, setTableData] = useState<Record<string, any>[]>([]);
 
   const [selectedHeaders, setSelectedHeaders] = useState<SelectedHeaders>({
@@ -83,7 +92,9 @@ export function useReversalAnalysis() {
 
     const getDateBoundary = (fn: typeof Math.min | typeof Math.max) => {
       if (!dateKey) return "";
-      const times = rawData.glData.map(item => new Date(item[dateKey]).getTime());
+      const times = rawData.glData.map((item) =>
+        new Date(item[dateKey]).getTime()
+      );
       if (!times.length) return "";
       return formatDate(new Date(fn(...times)), "dd-MM-yyyy");
     };
@@ -97,23 +108,26 @@ export function useReversalAnalysis() {
   }, [rawData, selectedHeaders]);
 
   const glHeaderOptions = useMemo(
-    () => rawData.glHeaders.map(item => ({ value: item, title: item })),
+    () => rawData.glHeaders.map((item) => ({ value: item, title: item })),
     [rawData]
   );
 
   const coaHeaderOptions = useMemo(
-    () => rawData.coaHeaders.map(item => ({ value: item, title: item })),
+    () => rawData.coaHeaders.map((item) => ({ value: item, title: item })),
     [rawData]
   );
 
-  const tableHeader: TableHeader[] = useMemo(() => [
-    ...Object.keys(selectedHeaders.glHeaders).map((key) => ({
-      key,
-      title: selectedHeaders.glHeaders[key as keyof GlHeaders],
-    })),
-    { key: "result", title: "result" },
-    { key: "reversal", title: "reversal" },
-  ], [selectedHeaders.glHeaders]);
+  const tableHeader: TableHeader[] = useMemo(
+    () => [
+      ...Object.keys(selectedHeaders.glHeaders).map((key) => ({
+        key,
+        title: selectedHeaders.glHeaders[key as keyof GlHeaders],
+      })),
+      { key: "result", title: "result" },
+      { key: "reversal", title: "reversal" },
+    ],
+    [selectedHeaders.glHeaders]
+  );
 
   // Handlers
 
@@ -134,7 +148,10 @@ export function useReversalAnalysis() {
     setLoadingStatus(true);
 
     const buffer = await file.arrayBuffer();
-    const workerUrl = new URL("../../../workers/dictionary-worker.js", import.meta.url);
+    const workerUrl = new URL(
+      "../../../workers/dictionary-worker.js",
+      import.meta.url
+    );
     const worker = new Worker(workerUrl, { type: "module" });
 
     worker.postMessage({ buffer });
@@ -160,6 +177,7 @@ export function useReversalAnalysis() {
       setLoadingStatus(false);
       worker.terminate();
     };
+    setCurrentStep(AnalysisStep.UPLOADED_DICTIONARY);
   };
 
   const onGeneralLedgerDrop = async (acceptedFiles: File[]) => {
@@ -177,14 +195,15 @@ export function useReversalAnalysis() {
       return;
     }
 
-
     setLoadingStatus(true);
     const buffer = await file.arrayBuffer();
-    const worker = new Worker(new URL("./gl-worker.js", import.meta.url), { type: "module" });
+    const worker = new Worker(new URL("./gl-worker.js", import.meta.url), {
+      type: "module",
+    });
 
     worker.postMessage({ buffer });
 
-    worker.onmessage = e => {
+    worker.onmessage = (e) => {
       const { glData, glHeaders, error } = e.data;
       if (error) {
         setError(error);
@@ -192,16 +211,16 @@ export function useReversalAnalysis() {
         return;
       }
 
-      setRawData(prev => ({ ...prev, glData, glHeaders }));
+      setRawData((prev) => ({ ...prev, glData, glHeaders }));
 
-      worker.onerror = workerError => {
+      worker.onerror = (workerError) => {
         setError(workerError.message);
         console.error("Worker error:", workerError);
         setLoadingStatus(false);
         worker.terminate();
       };
 
-      setCurrentStep(prev => [...prev, AnalysisStep.UPLOADED_GL]);
+      setCurrentStep(AnalysisStep.UPLOADED_GL);
       setLoadingStatus(false);
       worker.terminate();
     };
@@ -232,13 +251,13 @@ export function useReversalAnalysis() {
         }, {} as Record<string, any>)
       );
 
-    setRawData(prev => ({
+    setRawData((prev) => ({
       ...prev,
       coaData: rows,
       coaHeaders: columnNames.filter(Boolean),
     }));
 
-    setSelectedHeaders(prev => ({
+    setSelectedHeaders((prev) => ({
       ...prev,
       coaHeaders: {
         displayValue: columnNames.filter(Boolean)[0],
@@ -247,30 +266,91 @@ export function useReversalAnalysis() {
       },
     }));
 
-    setCurrentStep(prev => [...prev, AnalysisStep.TO_ANALYZE]);
+    setCurrentStep(AnalysisStep.TO_UPLOAD_DICTIONARY);
   };
 
   const onChangeGlHeader = (key: keyof GlHeaders, value: string) => {
     const updatedGlHeaders = { ...selectedHeaders.glHeaders, [key]: value };
-    setSelectedHeaders(prev => ({
+    setSelectedHeaders((prev) => ({
       ...prev,
       glHeaders: updatedGlHeaders,
     }));
 
-    if (Object.values(updatedGlHeaders).every(val => val !== "")) {
-      setCurrentStep(prev => [...prev, AnalysisStep.TO_UPLOAD_COA]);
+    if (Object.values(updatedGlHeaders).every((val) => val !== "")) {
+      setCurrentStep(AnalysisStep.TO_UPLOAD_COA);
     }
   };
 
   const onChangeCoaHeader = (key: keyof CoaHeaders, value: string) => {
-    setSelectedHeaders(prev => ({
+    setSelectedHeaders((prev) => ({
       ...prev,
       coaHeaders: { ...prev.coaHeaders, [key]: value },
     }));
   };
 
+  const onPressBackBtn = () => {
+    setCurrentStep((prev) => {
+      switch (prev) {
+        case AnalysisStep.TO_UPLOAD_GL:
+          return AnalysisStep.TO_UPLOAD_GL;
+
+        case AnalysisStep.UPLOADED_GL:
+          setRawData({
+            glData: [],
+            glHeaders: [],
+            coaData: [],
+            coaHeaders: [],
+          });
+          setSelectedHeaders({
+            glHeaders: { account: "", jen: "", date: "", value: "" },
+            coaHeaders: {
+              displayValue: "",
+              mappingValue: "",
+              groupingValue: "",
+            },
+          });
+          return AnalysisStep.TO_UPLOAD_GL;
+
+        case AnalysisStep.TO_UPLOAD_COA:
+          setSelectedHeaders({
+            glHeaders: { account: "", jen: "", date: "", value: "" },
+            coaHeaders: {
+              displayValue: "",
+              mappingValue: "",
+              groupingValue: "",
+            },
+          });
+          return AnalysisStep.UPLOADED_GL;
+
+        case AnalysisStep.TO_UPLOAD_DICTIONARY:
+          setRawData((prev) => ({
+            ...prev,
+            coaData: [],
+            coaHeaders: [],
+          }));
+          setSelectedHeaders((prev) => ({
+            ...prev,
+            coaHeaders: {
+              displayValue: "",
+              mappingValue: "",
+              groupingValue: "",
+            },
+          }));
+          return AnalysisStep.TO_UPLOAD_COA;
+
+        case AnalysisStep.UPLOADED_DICTIONARY:
+          setDictionaryData([]);
+          setIsDictionaryUploaded(false);
+          return AnalysisStep.TO_UPLOAD_DICTIONARY;
+
+        default:
+          return prev;
+      }
+    });
+  };
+
   const onPressResetBtn = () => {
-    setCurrentStep([AnalysisStep.TO_UPLOAD_GL]);
+    setCurrentStep(AnalysisStep.TO_UPLOAD_GL);
     setTableData([]);
     setError(undefined);
     setUnmappedRows([]);
@@ -294,11 +374,15 @@ export function useReversalAnalysis() {
   const onPressAnalyzeData = () => {
     setLoadingStatus(true);
 
-    const workerUrl = new URL("../../../workers/reversal-worker.js", import.meta.url);
+    const workerUrl = new URL(
+      "../../../workers/reversal-worker.js",
+      import.meta.url
+    );
     const worker = new Worker(workerUrl, { type: "module" });
 
     worker.onmessage = (event) => {
-      const { outputVal, groupedByJenAndDate, condensedDataByResult } = event.data;
+      const { outputVal, groupedByJenAndDate, condensedDataByResult } =
+        event.data;
       const notMappedRows = outputVal.filter((item: any) =>
         JSON.stringify(item).includes("not mapped")
       );
@@ -311,7 +395,7 @@ export function useReversalAnalysis() {
       generateOverviewData(Object.values(groupedByJenAndDate).flat());
       setTableData(Object.values(outputVal as Record<string, any>[]).flat());
       setOverviewTableData(condensedDataByResult);
-      setCurrentStep(prev => [...prev, AnalysisStep.ANALYZED]);
+      setCurrentStep(AnalysisStep.ANALYZED);
       setLoadingStatus(false);
       worker.terminate();
     };
@@ -323,21 +407,19 @@ export function useReversalAnalysis() {
       worker.terminate();
     };
 
-    worker.postMessage({ rawData, selectedHeaders,dictionaryData });
+    worker.postMessage({ rawData, selectedHeaders, dictionaryData });
   };
 
   const generateOverviewData = (data: any[]) => {
     const mappingKey = selectedHeaders.coaHeaders.mappingValue;
 
     const existingCoaKeys = [
-      ...new Set(
-        data.map(item => item.coaData?.[mappingKey])
-      ),
+      ...new Set(data.map((item) => item.coaData?.[mappingKey])),
     ];
 
     const filteredCoaData = rawData.coaData
-      .filter(item => existingCoaKeys.includes(item[mappingKey]))
-      .map(item => ({ ...item, active: true }));
+      .filter((item) => existingCoaKeys.includes(item[mappingKey]))
+      .map((item) => ({ ...item, active: true }));
 
     setDataDisplayHeader(filteredCoaData);
   };
@@ -361,14 +443,14 @@ export function useReversalAnalysis() {
     const headers = Object.keys(dataForExport[0]);
 
     // Define worksheet columns with widths
-    worksheet.columns = headers.map(header => ({
+    worksheet.columns = headers.map((header) => ({
       header,
       key: header,
       width: 20,
     }));
 
     // Style header row
-    worksheet.getRow(0).eachCell(cell => {
+    worksheet.getRow(0).eachCell((cell) => {
       cell.font = { bold: true };
       cell.fill = {
         type: "pattern",
@@ -380,7 +462,7 @@ export function useReversalAnalysis() {
 
     // Add and style data rows
     dataForExport.forEach((obj: Record<string, any>) => {
-      const row = headers.map(header => {
+      const row = headers.map((header) => {
         const value = obj[header];
         // Avoid scientific notation for big numbers
         return typeof value === "number" && value > 999_999
@@ -416,22 +498,16 @@ export function useReversalAnalysis() {
     const mappingKey = selectedHeaders.coaHeaders.mappingValue;
 
     const sorted = (arr: Record<string, any>[]) =>
-      arr.sort(
-        (a, b) => {
-          const aVal = a[mappingKey];
-          const bVal = b[mappingKey];
-          return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
-        }
-      );
+      arr.sort((a, b) => {
+        const aVal = a[mappingKey];
+        const bVal = b[mappingKey];
+        return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+      });
 
-    const active = sorted(dataDisplayHeader.filter(item => item.active));
-    const inactive = sorted(dataDisplayHeader.filter(item => !item.active));
+    const active = sorted(dataDisplayHeader.filter((item) => item.active));
+    const inactive = sorted(dataDisplayHeader.filter((item) => !item.active));
 
-    return [
-      ...active,
-      { [mappingKey]: "total" },
-      ...inactive,
-    ];
+    return [...active, { [mappingKey]: "total" }, ...inactive];
   }, [dataDisplayHeader, selectedHeaders.coaHeaders.mappingValue]);
 
   const onPressExportUnmappedRows = () => {
@@ -466,5 +542,6 @@ export function useReversalAnalysis() {
     reviewData,
     isWarningModalShown,
     setIsWarningModalShown,
+    onPressBackBtn,
   };
 }

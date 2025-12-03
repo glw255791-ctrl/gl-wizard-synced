@@ -38,8 +38,8 @@ self.onmessage = function (e) {
   // Generate Data Rows
   const dataRows = Object.keys(overviewTableData).map((rowKey) => {
     // For each column (excluding total/sideHeader), sum up the data per key
-    const valueCells = Object.fromEntries(
-      columns
+    const valueCells = Object.fromEntries([
+      ...columns
         .filter((col) => col !== "sideHeader" && col !== "total")
         .map((colKey) => {
           const sum = overviewTableData[rowKey]
@@ -54,8 +54,8 @@ self.onmessage = function (e) {
               useGrouping: true,
             }),
           ];
-        })
-    );
+        }),
+    ]);
 
     // Sum only active columns for total
     const total = [

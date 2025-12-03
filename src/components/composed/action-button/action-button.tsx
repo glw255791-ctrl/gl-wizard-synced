@@ -1,5 +1,5 @@
 import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
-import { ButtonsWrapper, StyledButton, CardStyled } from "./styles";
+import { ButtonsWrapper, StyledButton } from "./styles";
 
 interface Props {
   onPressAnalyzeData: () => void;
@@ -8,18 +8,15 @@ interface Props {
 export function ActionButton(props: Props) {
   const { onPressAnalyzeData, disabled } = props;
   return (
-    <CardStyled
-      disabled={disabled}
-    >
-      <ButtonsWrapper>
-        <StyledButton
-          onClick={onPressAnalyzeData}
-          variant="contained"
-          endIcon={<TroubleshootIcon />}
-        >
-          Generate
-        </StyledButton>
-      </ButtonsWrapper>
-    </CardStyled>
+    <ButtonsWrapper>
+      <StyledButton
+        disabled={disabled}
+        onClick={onPressAnalyzeData}
+        variant="contained"
+        endIcon={<TroubleshootIcon />}
+      >
+        Generate
+      </StyledButton>
+    </ButtonsWrapper>
   );
 }

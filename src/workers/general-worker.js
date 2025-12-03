@@ -96,6 +96,57 @@ self.onmessage = (event) => {
     }
   }
 
+  // ===== 4.5. Assign Reversal Property =====
+  const unwrapped = Array.from(groupedByJenAndDate.values()).flat();
+  const groupedByAccountAndResult = new Map();
+  for (const item of unwrapped) {
+    const resultKey = item.result
+      ? item.result.sort((a, b) => a.localeCompare(b)).join("/")
+      : "unmatched";
+    const key = `${item[glHeaders.date]}_${
+      item[glHeaders.account]
+    }_${resultKey}`;
+    if (!groupedByAccountAndResult.has(key)) {
+      groupedByAccountAndResult.set(key, []);
+    }
+    groupedByAccountAndResult.get(key).push(item);
+  }
+
+  for (const [key, set] of groupedByAccountAndResult.entries()) {
+    let i = 0;
+    while (i < set.length) {
+      const chunk = [];
+      let sum = 0;
+
+      for (let j = i; j < set.length; j++) {
+        chunk.push(set[j]);
+        sum = Number(
+          (
+            Number(sum.toFixed(2)) +
+            Number(Number(set[j][glHeaders.value]).toFixed(2))
+          ).toFixed(2)
+        );
+
+        if (sum === 0) {
+          for (const it of chunk) {
+            it.reversal = "reversal";
+          }
+          i = j + 1;
+          break;
+        }
+      }
+
+      if (sum !== 0) {
+        if (i + 1 === set.length) {
+          for (const it of chunk) {
+            it.reversal = "-";
+          }
+        }
+        i++;
+      }
+    }
+  }
+
   // ===== 5. Prepare ALL Output Data =====
   const flatGroupedData = Array.from(groupedByJenAndDate.values()).flat();
 

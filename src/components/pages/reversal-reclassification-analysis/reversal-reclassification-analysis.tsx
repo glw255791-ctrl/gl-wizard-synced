@@ -1,7 +1,7 @@
 import { Grid2, Stack } from "@mui/material";
 import { FileDropzone } from "../../ui-kit/dropzone/dropzone";
 import { Dropdown } from "../../ui-kit/dropdown/dropdown";
-import { RootStack } from "./style";
+import { CardStyled, RootStack } from "./style";
 import { useReversalReclassificationAnalysis } from "./reversal-reclassification-analysis-model";
 
 import { AnalysisStep } from "../general-analysis/general-analysis-model";
@@ -12,6 +12,7 @@ import { BasicDataOverview } from "../../basic-data-overview/basic-data-overview
 import { Loader } from "../../ui-kit/loader-overlay/loader-overlay";
 import { ActionButton } from "../../composed/action-button/action-button";
 import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
+import { UndoButton } from "../../composed/undo-button/undo-button";
 
 export function ReversaReclassificationAnalysis() {
   const {
@@ -33,13 +34,8 @@ export function ReversaReclassificationAnalysis() {
     onPressAnalyzeData,
     onChartOfAccountsDrop,
     onPressResetBtn,
+    onPressBackBtn,
   } = useReversalReclassificationAnalysis();
-
-  // Step state flags for easier conditional rendering
-  const isUploadedGl = currentStep.includes(AnalysisStep.UPLOADED_GL);
-  const isCoaUploadStep = currentStep.includes(AnalysisStep.TO_UPLOAD_COA);
-  const isAnalyzeStep = currentStep.includes(AnalysisStep.TO_ANALYZE);
-  const isAnalyzedStep = currentStep.includes(AnalysisStep.ANALYZED);
 
   return (
     <>
@@ -58,7 +54,7 @@ export function ReversaReclassificationAnalysis() {
               <FileDropzone
                 onDrop={onGeneralLedgerDrop}
                 text="Drop GL file here"
-                uploaded={isUploadedGl}
+                uploaded={currentStep !== AnalysisStep.TO_UPLOAD_GL}
               >
                 <GLDropdowns
                   glHeaderOptions={glHeaderOptions}
@@ -73,8 +69,16 @@ export function ReversaReclassificationAnalysis() {
               <FileDropzone
                 onDrop={onChartOfAccountsDrop}
                 text="Drop CoA file here"
-                uploaded={isAnalyzeStep}
-                isDisabled={!isCoaUploadStep}
+                uploaded={
+                  currentStep === AnalysisStep.TO_UPLOAD_DICTIONARY ||
+                  currentStep === AnalysisStep.UPLOADED_DICTIONARY ||
+                  currentStep === AnalysisStep.ANALYZED
+                }
+                isDisabled={
+                  currentStep === AnalysisStep.TO_UPLOAD_GL ||
+                  currentStep === AnalysisStep.UPLOADED_GL ||
+                  currentStep === AnalysisStep.ANALYZED
+                }
               >
                 <Stack spacing={1}>
                   <Dropdown
@@ -110,28 +114,35 @@ export function ReversaReclassificationAnalysis() {
             </Grid2>
           </Grid2>
 
-          {/* Data Validity & Analysis Actions */}
-          <Grid2 container spacing={2}>
-            <Grid2 size={9}>
-              <DataValidityInfo
-                reviewData={reviewData}
-                error={error}
-                disabled={!isCoaUploadStep}
+          <CardStyled>
+            {currentStep !== AnalysisStep.TO_UPLOAD_GL &&
+            currentStep !== AnalysisStep.UPLOADED_GL ? (
+              <DataValidityInfo reviewData={reviewData} error={error} />
+            ) : (
+              <Stack />
+            )}
+            <Stack direction="row" spacing={1} alignItems="center">
+              <UndoButton
+                disabled={
+                  currentStep === AnalysisStep.ANALYZED ||
+                  currentStep === AnalysisStep.TO_UPLOAD_GL
+                }
+                onPressUndo={onPressBackBtn}
               />
-            </Grid2>
-            <Grid2 size={3}>
               <ActionButton
-                disabled={!isAnalyzeStep}
+                disabled={
+                  currentStep !== AnalysisStep.TO_UPLOAD_DICTIONARY &&
+                  currentStep !== AnalysisStep.UPLOADED_DICTIONARY
+                }
                 onPressAnalyzeData={onPressAnalyzeData}
               />
-            </Grid2>
-          </Grid2>
-
+            </Stack>
+          </CardStyled>
           {/* GL Data Overview */}
           <BasicDataOverview
             title="GL Data With Transaction Types"
             reversalReclassification
-            disabled={!isAnalyzedStep}
+            disabled={currentStep !== AnalysisStep.ANALYZED}
             tableData={tableData}
             tableHeader={tableHeader}
           />

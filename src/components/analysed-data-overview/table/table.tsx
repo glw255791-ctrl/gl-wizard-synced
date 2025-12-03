@@ -106,7 +106,6 @@ export const DataTable: React.FC<Props> = ({
     worker.onmessage = (e) => {
       const { columns, rows } = e.data;
       setTableColumns([...new Set(columns as string[])]);
-
       setTableRows(rows);
     };
     worker.postMessage({
@@ -161,11 +160,9 @@ export const DataTable: React.FC<Props> = ({
   }, [tableRows, fixedRowCount]);
 
   // Export table data to Excel
-  const onExportClick = useCallback(
-    () =>
-      exportTableToExcel(viewableRows, sortedDataDisplayHeader, mappingValue),
-    [viewableRows, sortedDataDisplayHeader, mappingValue]
-  );
+  const onExportClick = useCallback(() => {
+    exportTableToExcel(viewableRows, sortedDataDisplayHeader, groupingValue);
+  }, [viewableRows, sortedDataDisplayHeader, mappingValue]);
 
   // Force update of grid when data changes
   useEffect(() => {

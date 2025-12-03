@@ -22,11 +22,12 @@ import { exportTableToExcel } from "./functions";
 const HEIGHT_ADJUST = 80;
 const HEADER_HEIGHT = 24;
 const ROW_HEIGHT = 24;
-const MAX_CHARS = 20;
+const MAX_CHARS = 30;
 
 const DATE = "date";
 const RESULT = "result";
 const REVERSAL = "reversal";
+const VALUE = "value";
 
 interface Props {
   header: TableHeader[];
@@ -49,9 +50,13 @@ export const BasicTable = ({
     key: string,
     value: string | Date | number | string[]
   ) => {
-
-    if (!value) return "-";
     switch (key) {
+      case VALUE:
+        return Number(Number(value).toFixed(2)).toLocaleString("de-DE", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+          useGrouping: true,
+        });
       case DATE:
         return formatDate(value as Date, "dd-MM-yyyy");
       case RESULT:
@@ -63,10 +68,9 @@ export const BasicTable = ({
     }
   };
 
-  const onExportTable = useCallback(
-    () => {exportTableToExcel(header, data); },
-    [header, data]
-  );
+  const onExportTable = useCallback(() => {
+    exportTableToExcel(header, data);
+  }, [header, data]);
 
   return (
     <Wrapper>
@@ -105,8 +109,8 @@ export const BasicTable = ({
                   cellRenderer={({ cellData }) => (
                     <Tooltip
                       title={
-                        String(getCellValueFormatted(col.key, cellData)).length >
-                          MAX_CHARS
+                        String(getCellValueFormatted(col.key, cellData))
+                          .length > MAX_CHARS
                           ? getCellValueFormatted(col.key, cellData)
                           : ""
                       }
@@ -132,7 +136,6 @@ export const BasicTable = ({
                             MAX_CHARS
                           )
                         )}
-                        
                       </Stack>
                     </Tooltip>
                   )}
@@ -142,7 +145,9 @@ export const BasicTable = ({
                       {getElipsis(label as string, 25)}
                     </Stack>
                   )}
-                  cellDataGetter={({ rowData }) => rowData[col.title==='Result'?'result':col.title]}
+                  cellDataGetter={({ rowData }) =>
+                    rowData[col.title === "Result" ? "result" : col.title]
+                  }
                 />
               ))}
             </Table>
