@@ -32,6 +32,7 @@ async function fetchAndDownloadFile(url: string, downloadName: string) {
     tempLink.click();
     document.body.removeChild(tempLink);
     window.URL.revokeObjectURL(blobUrl);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     alert("Could not download file. Please try again or contact support.");
   }

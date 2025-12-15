@@ -210,6 +210,7 @@ export function DataOverview({
       if (bKey === selectedTable) return 1;
       return 0;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     selectedFilter.header,
     overviewTableData,

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { formatDate } from "date-fns";
 import { Workbook } from "exceljs";
 import saveAs from "file-saver";
@@ -184,6 +185,7 @@ export const exportMultipleTablesToExcel = async (
   const workbook = new Workbook();
 
   const formattedTitles = titles.map((title) =>
+    // eslint-disable-next-line no-useless-escape
     title.replace(/[*?:\\/\[\]]/g, "-")
   );
 

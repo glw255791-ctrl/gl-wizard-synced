@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Alert, Snackbar } from "@mui/material";
 import {
   Root,
@@ -36,7 +37,9 @@ export function PageWrapper({ children }: Props) {
     severity: "",
     open: false,
   });
-  const [userRole, setUserRole] = useState<"user" | "admin" | undefined>(undefined);
+  const [userRole, setUserRole] = useState<"user" | "admin" | undefined>(
+    undefined
+  );
 
   useEffect(() => {
     async function checkSession() {
@@ -159,10 +162,14 @@ export function PageWrapper({ children }: Props) {
         open={snackbarProps.open}
         anchorOrigin={{ horizontal: "center", vertical: "top" }}
         autoHideDuration={4000}
-        onClose={() => setSnackbarProps({ message: "", open: false, severity: "" })}
+        onClose={() =>
+          setSnackbarProps({ message: "", open: false, severity: "" })
+        }
       >
         <Alert
-          severity={snackbarProps.severity as "error" | "success" | "info" | "warning"}
+          severity={
+            snackbarProps.severity as "error" | "success" | "info" | "warning"
+          }
           variant="filled"
           sx={{ width: "100%" }}
         >

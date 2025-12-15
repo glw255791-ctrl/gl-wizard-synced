@@ -106,6 +106,7 @@ export function useReversalReclassificationAnalysis() {
       { key: selectedFilters.header, title: selectedFilters.header },
       { key: "result", title: "Result" },
     ];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedHeaders.glHeaders, tableData, selectedFilters]);
 
   // --- Handlers ---
