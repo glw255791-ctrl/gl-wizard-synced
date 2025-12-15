@@ -2,7 +2,6 @@
  * Excel export utility functions
  */
 
-import { Workbook } from "exceljs";
 import { excelStyles } from "../constants/theme";
 
 /**
@@ -27,10 +26,7 @@ export const applyHeaderRowStyle = (worksheet: any): void => {
  * @param row - The Excel row instance
  * @param cellIndices - Array of cell indices (1-based) to highlight
  */
-export const applyHighlightStyle = (
-  row: any,
-  cellIndices: number[]
-): void => {
+export const applyHighlightStyle = (row: any, cellIndices: number[]): void => {
   cellIndices.forEach((index) => {
     row.getCell(index).fill = {
       type: "pattern",
@@ -45,9 +41,11 @@ export const applyHighlightStyle = (
  * @param worksheet - The Excel worksheet
  * @param width - The width to apply (default: 20)
  */
-export const setColumnWidths = (worksheet: any, width: number = excelStyles.columnWidth): void => {
+export const setColumnWidths = (
+  worksheet: any,
+  width: number = excelStyles.columnWidth
+): void => {
   worksheet.columns.forEach((column: any) => {
     column.width = width;
   });
 };
-
