@@ -5,28 +5,33 @@ import React, {
   useTransition,
   useCallback,
 } from "react";
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Stack,
-} from "@mui/material";
+import { AccordionDetails, AccordionSummary } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { AccordionContent, styles, SummaryWrapper, Title } from "./style";
-import { Dropdown, DropdownItem } from "../ui-kit/dropdown/dropdown";
+import {
+  AccordionContent,
+  AccordionHeaderStack,
+  DropdownWrapperStack,
+  StyledAccordionWrapper,
+  TablesStack,
+  SummaryWrapper,
+  Title,
+} from "./style";
+import { Dropdown } from "../ui-kit/dropdown/dropdown";
 import { DataTable } from "./table/table";
 import { Loader } from "../ui-kit/loader-overlay/loader-overlay";
 import { TableHeader } from "../composed/basic-table/basic-table";
-import { ProcessModal } from "./process-modal/process-modal";
+import { ProcessModal, SearchByObject } from "./process-modal/process-modal";
+import { AnyType, DropdownItem } from "../../types";
 
+/**
+ * Process value structure for hierarchical data processing
+ */
 export type ProcessValue = {
   title: string;
   rows: Record<string, AnyType>[];
   level: number;
-  children?: ProcessValue[];
+  parent?: SearchByObject;
 };
-
-type AnyType = string | number | boolean | object;
 
 interface Props {
   title: string;
@@ -48,6 +53,19 @@ interface Filters {
   value: string;
 }
 
+/**
+ * Data overview component for displaying and filtering analyzed data
+ * @param title - Title for the accordion section
+ * @param mappingValue - The mapping value key for data grouping
+ * @param valueKey - The value key for calculations
+ * @param coaHeaderOptions - Optional dropdown options for CoA headers
+ * @param sortedDataDisplayHeader - Array of sorted display header data
+ * @param disabled - Whether the component is disabled
+ * @param overviewTableData - Overview table data object
+ * @param setDataDisplayHeader - Function to update display header state
+ * @param basicTableHeader - Basic table header definitions
+ * @param basicTableData - Basic table row data
+ */
 export function DataOverview({
   title,
   mappingValue,
@@ -71,7 +89,8 @@ export function DataOverview({
   const [transition, transitionFunc] = useTransition();
 
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
-  const [overallProcessObject, setOverallProcessObject] = useState<
+
+  const [initialProcessObject, setInitialProcessObject] = useState<
     ProcessValue | undefined
   >(undefined);
 
@@ -106,7 +125,7 @@ export function DataOverview({
       setDataDisplayHeader,
       setIsProcessModalOpen,
       valueKey,
-      setOverallProcessObject,
+      setCurrentProcessObject: setInitialProcessObject,
     }),
     [
       transitionFunc,
@@ -119,7 +138,7 @@ export function DataOverview({
       setDataDisplayHeader,
       setIsProcessModalOpen,
       valueKey,
-      setOverallProcessObject,
+      setInitialProcessObject,
     ]
   );
 
@@ -222,12 +241,7 @@ export function DataOverview({
 
   return (
     <>
-      <Accordion
-        style={{
-          ...styles.accordionRoot,
-          ...(disabled ? styles.disabled : {}),
-        }}
-      >
+      <StyledAccordionWrapper disabled={disabled}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <SummaryWrapper>
             <Title>{title}</Title>
@@ -237,9 +251,9 @@ export function DataOverview({
         <AccordionDetails>
           <Loader loadingStatus={loading || transition} />
           <AccordionContent>
-            <Stack style={styles.accordionHeader}>
+            <AccordionHeaderStack>
               {/* Filter header dropdown */}
-              <Stack style={styles.dropdownWrapper}>
+              <DropdownWrapperStack>
                 <Dropdown
                   label="Filter header"
                   items={[
@@ -258,9 +272,9 @@ export function DataOverview({
                     }));
                   }}
                 />
-              </Stack>
+              </DropdownWrapperStack>
               {/* Header rows dropdown */}
-              <Stack style={styles.dropdownWrapper}>
+              <DropdownWrapperStack>
                 {selectedFilter.header !== "all" && (
                   <Dropdown
                     items={Object.keys(sortedDataDisplayHeader[0])
@@ -277,9 +291,9 @@ export function DataOverview({
                     label="Grouping value"
                   />
                 )}
-              </Stack>
+              </DropdownWrapperStack>
               {/* Display Table(s) dropdown (only when filtering by a header) */}
-              <Stack style={styles.dropdownWrapper}>
+              <DropdownWrapperStack>
                 {selectedFilter.header !== "all" && (
                   <Dropdown
                     label="Display Table(s)"
@@ -296,21 +310,20 @@ export function DataOverview({
                     }}
                   />
                 )}
-              </Stack>
-            </Stack>
+              </DropdownWrapperStack>
+            </AccordionHeaderStack>
           </AccordionContent>
-          <Stack style={styles.tablesStack}>{lazyTables}</Stack>
+          <TablesStack>{lazyTables}</TablesStack>
         </AccordionDetails>
-      </Accordion>
+      </StyledAccordionWrapper>
       <ProcessModal
         isOpen={isProcessModalOpen}
-        overallProcessObject={overallProcessObject}
-        setOverallProcessObject={setOverallProcessObject}
         overviewTableData={overviewTableData}
         sortedDataDisplayHeader={sortedDataDisplayHeader}
         selectedFilter={selectedFilter}
         commonTableProps={commonTableProps}
         filterValueOptions={filterValueOptions}
+        initialProcessObject={initialProcessObject}
         onClose={() => setIsProcessModalOpen(false)}
       />
     </>

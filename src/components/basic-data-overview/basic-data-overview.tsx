@@ -1,12 +1,7 @@
 import React from "react";
-import {
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Stack,
-} from "@mui/material";
+import { AccordionSummary, AccordionDetails, Stack } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { styles, Title } from "../analysed-data-overview/style";
+import { StyledAccordionWrapper, Title } from "../analysed-data-overview/style";
 import { BasicTable, TableHeader } from "../composed/basic-table/basic-table";
 
 interface Props {
@@ -24,12 +19,7 @@ export const BasicDataOverview: React.FC<Props> = ({
   tableData,
   reversalReclassification,
 }) => (
-  <Accordion
-    style={{
-      ...styles.accordionRoot,
-      ...(disabled ? styles.disabled : {}),
-    }}
-  >
+  <StyledAccordionWrapper disabled={disabled}>
     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
       <Title>{title}</Title>
     </AccordionSummary>
@@ -42,5 +32,5 @@ export const BasicDataOverview: React.FC<Props> = ({
         />
       </Stack>
     </AccordionDetails>
-  </Accordion>
+  </StyledAccordionWrapper>
 );

@@ -4,52 +4,26 @@ import { Workbook } from "exceljs";
 import { formatDate } from "date-fns";
 import { TableHeader } from "../../composed/basic-table/basic-table";
 import { exportTableToExcel } from "../../composed/basic-table/functions";
+import {
+  RawData,
+  GlHeaders,
+  CoaHeaders,
+  SelectedHeaders,
+  ReviewData,
+  AnalysisStep,
+} from "../../../types";
 
-// --- Interfaces and Enums ---
-
-export interface RawData {
-  glData: Record<string, any>[];
-  glHeaders: string[];
-  coaData: Record<string, any>[];
-  coaHeaders: string[];
-}
-
-export interface GlHeaders {
-  account: string;
-  jen: string;
-  date: string;
-  value: string;
-}
-
-export interface CoaHeaders {
-  mappingValue: string;
-  displayValue: string;
-  groupingValue: string;
-}
-
-export interface SelectedHeaders {
-  glHeaders: GlHeaders;
-  coaHeaders: CoaHeaders;
-}
-
-export interface ReviewData {
-  startDate: string;
-  endDate: string;
-  rows: number;
-  total: number;
-}
-
-export enum AnalysisStep {
-  TO_UPLOAD_GL,
-  UPLOADED_GL,
-  TO_UPLOAD_COA,
-  TO_UPLOAD_DICTIONARY,
-  UPLOADED_DICTIONARY,
-  ANALYZED,
-}
+// Re-export types for backward compatibility
+export type { RawData, GlHeaders, CoaHeaders, SelectedHeaders, ReviewData };
+export { AnalysisStep };
 
 // --- Main Hook ---
 
+/**
+ * Custom hook for managing general analysis workflow
+ * Handles file uploads, data processing, and analysis steps
+ * @returns Object containing state and handlers for general analysis
+ */
 export function useGeneralAnalysis() {
   const [error, setError] = useState<string | undefined>(undefined);
   const [isWarningModalShown, setIsWarningModalShown] = useState(false);
@@ -86,6 +60,9 @@ export function useGeneralAnalysis() {
 
   // --- Memoized Values ---
 
+  /**
+   * Handles back button press, navigating to previous step and resetting relevant state
+   */
   const onPressBackBtn = () => {
     setCurrentStep((prev) => {
       switch (prev) {
@@ -147,6 +124,9 @@ export function useGeneralAnalysis() {
     });
   };
 
+  /**
+   * Computes review data summary including row count, total value, and date range
+   */
   const reviewData: ReviewData = useMemo(() => {
     const countRows = rawData.glData.length;
 
@@ -157,6 +137,11 @@ export function useGeneralAnalysis() {
         }, 0)
       : 0;
 
+    /**
+     * Gets the minimum or maximum date from the data
+     * @param fn - Math.min or Math.max function
+     * @returns Formatted date string or empty string
+     */
     const getDate = (fn: (...dates: number[]) => number) => {
       if (!selectedHeaders.glHeaders.date) return "";
       const times = rawData.glData
@@ -218,6 +203,10 @@ export function useGeneralAnalysis() {
 
   // --- File Drop Handlers ---
 
+  /**
+   * Handles dictionary file drop and processing
+   * @param acceptedFiles - Array of accepted file objects
+   */
   const onDictionaryDrop = async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
@@ -266,6 +255,10 @@ export function useGeneralAnalysis() {
     setCurrentStep(AnalysisStep.UPLOADED_DICTIONARY);
   };
 
+  /**
+   * Handles General Ledger file drop and processing
+   * @param acceptedFiles - Array of accepted file objects
+   */
   const onGeneralLedgerDrop = async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
@@ -312,6 +305,10 @@ export function useGeneralAnalysis() {
     };
   };
 
+  /**
+   * Handles Chart of Accounts file drop and processing
+   * @param acceptedFiles - Array of accepted file objects
+   */
   const onChartOfAccountsDrop = async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
@@ -354,6 +351,11 @@ export function useGeneralAnalysis() {
 
   // --- Header Selection ---
 
+  /**
+   * Updates GL header selection and advances step if all headers are selected
+   * @param key - The GL header key to update
+   * @param value - The selected header value
+   */
   const onChangeGlHeader = (key: keyof GlHeaders, value: string) => {
     const newGlHeaders = { ...selectedHeaders.glHeaders, [key]: value };
     setSelectedHeaders((prev) => ({ ...prev, glHeaders: newGlHeaders }));
@@ -363,6 +365,11 @@ export function useGeneralAnalysis() {
     }
   };
 
+  /**
+   * Updates CoA header selection
+   * @param key - The CoA header key to update
+   * @param value - The selected header value
+   */
   const onChangeCoaHeader = (key: keyof CoaHeaders, value: string) => {
     setSelectedHeaders((prev) => ({
       ...prev,
@@ -372,6 +379,9 @@ export function useGeneralAnalysis() {
 
   // --- Reset Button ---
 
+  /**
+   * Resets all analysis state to initial values
+   */
   const onPressResetBtn = () => {
     setCurrentStep(AnalysisStep.TO_UPLOAD_GL);
     setTableData([]);
@@ -397,6 +407,10 @@ export function useGeneralAnalysis() {
 
   // --- Data Analyze ---
 
+  /**
+   * Initiates data analysis using Web Workers
+   * Processes GL data, CoA mappings, and dictionary data
+   */
   const onPressAnalyzeData = () => {
     setLoadingStatus(true);
 
@@ -495,6 +509,9 @@ export function useGeneralAnalysis() {
 
   // --- Export Handler ---
 
+  /**
+   * Exports unmapped rows to Excel
+   */
   const onPressExportUnmappedRows = () => {
     exportTableToExcel(tableHeader, unmappedRows);
   };

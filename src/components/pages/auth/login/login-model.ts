@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { supabase } from "../../../../api/api";
+import { LoginData } from "../../../../types";
 
-export interface LoginData {
-  email: string;
-  password: string;
-}
+// Re-export type for backward compatibility
+export type { LoginData };
 export function useLoginModel() {
   const navigate = useNavigate();
   const [loginData, setLoginData] = useState<LoginData>({

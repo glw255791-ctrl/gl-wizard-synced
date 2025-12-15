@@ -80,74 +80,73 @@ export function GeneralAnalysis() {
           />
 
           {/* GL and CoA Upload */}
-          <Grid2 container spacing={2}>
-            {/* GL Upload */}
-            <Grid2 size={6}>
-              <FileDropzone
-                onDrop={onGeneralLedgerDrop}
-                text="Drop GL file here"
-                uploaded={currentStep !== AnalysisStep.TO_UPLOAD_GL}
-                isDisabled={currentStep === AnalysisStep.ANALYZED}
-              >
-                <GLDropdowns
-                  glHeaderOptions={glHeaderOptions}
-                  selectedHeaders={selectedHeaders}
-                  onChangeGlHeader={onChangeGlHeader}
-                />
-              </FileDropzone>
-            </Grid2>
+          {currentStep !== AnalysisStep.ANALYZED && (
+            <Grid2 container spacing={2}>
+              {/* GL Upload */}
+              <Grid2 size={6}>
+                <FileDropzone
+                  onDrop={onGeneralLedgerDrop}
+                  text="Drop GL file here"
+                  uploaded={currentStep !== AnalysisStep.TO_UPLOAD_GL}
+                >
+                  <GLDropdowns
+                    glHeaderOptions={glHeaderOptions}
+                    selectedHeaders={selectedHeaders}
+                    onChangeGlHeader={onChangeGlHeader}
+                  />
+                </FileDropzone>
+              </Grid2>
 
-            {/* CoA + Optional Dictionary Upload */}
-            <Grid2 size={6}>
-              <FileDropzone
-                onDrop={onChartOfAccountsDrop}
-                text="Drop CoA file here"
-                uploaded={
-                  currentStep === AnalysisStep.TO_UPLOAD_DICTIONARY ||
-                  currentStep === AnalysisStep.UPLOADED_DICTIONARY ||
-                  currentStep === AnalysisStep.ANALYZED
-                }
-                isDisabled={
-                  currentStep === AnalysisStep.TO_UPLOAD_GL ||
-                  currentStep === AnalysisStep.UPLOADED_GL ||
-                  currentStep === AnalysisStep.ANALYZED
-                }
-                onAdditionalDrop={onDictionaryDrop}
-                isAdditionalDisabled={
-                  currentStep !== AnalysisStep.TO_UPLOAD_DICTIONARY &&
-                  currentStep !== AnalysisStep.UPLOADED_DICTIONARY
-                }
-                additionalText="Drop Dictionary file here"
-                additionalUploaded={isDictionaryUploaded}
-              >
-                <Stack spacing={1}>
-                  <Dropdown
-                    label="Matching column GL & CoA"
-                    items={coaHeaderOptions}
-                    value={selectedHeaders.coaHeaders.mappingValue}
-                    onChange={(e) =>
-                      onChangeCoaHeader(
-                        "mappingValue",
-                        e.target.value as string
-                      )
-                    }
-                  />
-                  <Dropdown
-                    label="Display CoA category"
-                    items={coaHeaderOptions}
-                    tooltip="Recommended: FS subgroup"
-                    value={selectedHeaders.coaHeaders.displayValue}
-                    onChange={(e) =>
-                      onChangeCoaHeader(
-                        "displayValue",
-                        e.target.value as string
-                      )
-                    }
-                  />
-                </Stack>
-              </FileDropzone>
+              {/* CoA + Optional Dictionary Upload */}
+              <Grid2 size={6}>
+                <FileDropzone
+                  onDrop={onChartOfAccountsDrop}
+                  text="Drop CoA file here"
+                  uploaded={
+                    currentStep === AnalysisStep.TO_UPLOAD_DICTIONARY ||
+                    currentStep === AnalysisStep.UPLOADED_DICTIONARY
+                  }
+                  isDisabled={
+                    currentStep === AnalysisStep.TO_UPLOAD_GL ||
+                    currentStep === AnalysisStep.UPLOADED_GL
+                  }
+                  onAdditionalDrop={onDictionaryDrop}
+                  isAdditionalDisabled={
+                    currentStep !== AnalysisStep.TO_UPLOAD_DICTIONARY &&
+                    currentStep !== AnalysisStep.UPLOADED_DICTIONARY
+                  }
+                  additionalText="Drop Dictionary file here"
+                  additionalUploaded={isDictionaryUploaded}
+                >
+                  <Stack spacing={1}>
+                    <Dropdown
+                      label="Matching column GL & CoA"
+                      items={coaHeaderOptions}
+                      value={selectedHeaders.coaHeaders.mappingValue}
+                      onChange={(e) =>
+                        onChangeCoaHeader(
+                          "mappingValue",
+                          e.target.value as string
+                        )
+                      }
+                    />
+                    <Dropdown
+                      label="Display CoA category"
+                      items={coaHeaderOptions}
+                      tooltip="Recommended: FS subgroup"
+                      value={selectedHeaders.coaHeaders.displayValue}
+                      onChange={(e) =>
+                        onChangeCoaHeader(
+                          "displayValue",
+                          e.target.value as string
+                        )
+                      }
+                    />
+                  </Stack>
+                </FileDropzone>
+              </Grid2>
             </Grid2>
-          </Grid2>
+          )}
 
           {/* Data Validity and Analysis Action */}
 
@@ -158,29 +157,28 @@ export function GeneralAnalysis() {
             ) : (
               <Stack />
             )}
-            <Stack direction="row" spacing={1} alignItems="center">
-              <UndoButton
-                disabled={
-                  currentStep === AnalysisStep.ANALYZED ||
-                  currentStep === AnalysisStep.TO_UPLOAD_GL
-                }
-                onPressUndo={onPressBackBtn}
-              />
-              <ActionButton
-                disabled={
-                  currentStep !== AnalysisStep.TO_UPLOAD_DICTIONARY &&
-                  currentStep !== AnalysisStep.UPLOADED_DICTIONARY
-                }
-                onPressAnalyzeData={onPressAnalyzeData}
-              />
-            </Stack>
+            {currentStep !== AnalysisStep.ANALYZED && (
+              <Stack direction="row" spacing={1} alignItems="center">
+                <UndoButton
+                  disabled={currentStep === AnalysisStep.TO_UPLOAD_GL}
+                  onPressUndo={onPressBackBtn}
+                />
+                <ActionButton
+                  disabled={
+                    currentStep !== AnalysisStep.TO_UPLOAD_DICTIONARY &&
+                    currentStep !== AnalysisStep.UPLOADED_DICTIONARY
+                  }
+                  onPressAnalyzeData={onPressAnalyzeData}
+                />
+              </Stack>
+            )}
           </CardStyled>
 
           {/* Overviews */}
           {isAdmin && (
             <BasicDataOverview
               title="GL Data With Transaction Types"
-              disabled={currentStep !== AnalysisStep.ANALYZED || !!error}
+              disabled={currentStep !== AnalysisStep.ANALYZED}
               tableData={tableData}
               tableHeader={tableHeader}
             />
@@ -194,7 +192,7 @@ export function GeneralAnalysis() {
             coaHeaderOptions={coaHeaderOptions}
             title="Movement Tables"
             valueKey={selectedHeaders.glHeaders.value}
-            disabled={currentStep !== AnalysisStep.ANALYZED || !!error}
+            disabled={currentStep !== AnalysisStep.ANALYZED}
             basicTableData={tableData}
             basicTableHeader={tableHeader}
           />

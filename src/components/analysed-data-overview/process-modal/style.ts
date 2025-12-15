@@ -1,25 +1,27 @@
 import { styled } from "@mui/material/styles";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { colors } from "../../../assets/colors";
 import CancelRounded from "@mui/icons-material/CancelRounded";
 import { IconButton, Button, CircularProgress } from "@mui/material";
 import { CommonProps } from "@mui/material/OverridableComponent";
-import { AnyType } from "../table/functions";
 import QueryStatsIcon from "@mui/icons-material/QueryStats";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import { AnyType } from "../../../types";
+import { theme } from "../../../constants/theme";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 // Modal content container (positioning the modal, centering, etc.)
 export const ModalContent = styled(Stack)(() => ({
   flex: 1,
-  backgroundColor: colors.white,
-  borderRadius: 8,
+  backgroundColor: theme.colors.white,
+  borderRadius: theme.borderRadius.sm,
   justifyContent: "center",
   alignItems: "center",
-  margin: 30,
+  margin: theme.padding.xl,
   height: "calc(100vh - 60px)",
-  color: colors.black,
+  color: theme.colors.black,
 }));
 
 // Inner content of the modal (vertically stacks the parts)
@@ -27,24 +29,32 @@ export const ModalInnerContent = styled(Stack)(() => ({
   flex: 1,
   width: "100%",
   height: 400,
-  padding: 0,
+  padding: theme.padding.none,
   justifyContent: "flex-start",
 }));
 
 export const QueryStatsIconStyled = styled(QueryStatsIcon)({
-  fontSize: 16,
+  fontSize: theme.fontSize.lg,
+});
+
+export const AddCircleOutlineIconStyled = styled(AddCircleOutlineIcon)({
+  fontSize: theme.fontSize.lg,
+});
+
+export const RemoveCircleOutlineIconStyled = styled(RemoveCircleOutlineIcon)({
+  fontSize: theme.fontSize.lg,
 });
 
 export const EnabledSearchIconStyled = styled(CheckCircleIcon)({
-  color: colors.green,
+  color: theme.colors.green,
 });
 
 export const DisabledSearchIconStyled = styled(RemoveCircleIcon)({
-  color: colors.gray,
+  color: theme.colors.gray,
 });
 
 export const DeleteIconStyled = styled(DeleteForeverIcon)({
-  color: colors.red,
+  color: theme.colors.red,
 });
 
 // Modal header (title row with styling)
@@ -52,8 +62,8 @@ export const ModalHeader = styled(Stack)(() => ({
   flexDirection: "row",
   justifyContent: "space-between",
   alignItems: "center",
-  padding: 10,
-  borderBottom: `1px solid ${colors.gray}`,
+  padding: theme.padding.md,
+  borderBottom: `${theme.borderWidth.sm}px solid ${theme.colors.gray}`,
 }));
 
 // Modal content wrapper (for the body, aligns content)
@@ -61,39 +71,39 @@ export const ModalContentWrapper = styled(Stack)(() => ({
   alignItems: "center",
   justifyContent: "space-between",
   flex: 1,
-  gap: 15,
-  padding: 15,
-  height: 400,
+  gap: theme.gap.lg,
+  padding: theme.padding.lg,
+  height: "100%",
 }));
 
 // Title of the modal
 export const Title = styled(Typography)(() => ({
   textAlign: "center",
-  color: colors.black,
+  color: theme.colors.black,
   flex: 1,
   fontWeight: "bold",
-  fontSize: 20,
+  fontSize: theme.fontSize.xl,
 }));
 
 // Typography styles
 export const TotalText = styled(Typography)({
-  fontSize: 14,
+  fontSize: theme.fontSize.lg,
   fontWeight: "bold",
 });
 
 export const TableTitle = styled(Typography)({
-  fontSize: 14,
+  fontSize: theme.fontSize.lg,
   fontWeight: "bold",
 });
 
 export const UncheckedIcon = styled(CancelRounded)({
-  color: colors.red,
-  fontSize: 17,
+  color: theme.colors.red,
+  fontSize: theme.fontSize.lg,
 });
 
 // Button/Stack styles
 export const IconButtonStyled = styled(IconButton)({
-  padding: 0,
+  padding: theme.padding.none,
 });
 
 export const RowLabelWrapper = styled(Stack)({
@@ -104,48 +114,50 @@ export const RowLabelWrapper = styled(Stack)({
 
 export const RowLabelCell = styled(Stack)({
   flexDirection: "row",
-  gap: 5,
+  gap: theme.gap.sm,
   alignItems: "center",
 });
 
 export const TableScrollableWrapper = styled(Stack)({
-  borderRadius: 8,
-  borderWidth: 1,
+  borderRadius: theme.borderRadius.sm,
+  borderWidth: theme.borderWidth.sm,
   borderStyle: "solid",
-  borderColor: colors.medium,
-  backgroundColor: colors.medium,
+  borderColor: theme.colors.medium,
+  backgroundColor: theme.colors.medium,
+  height: "100%",
 });
 
 export const TableHeaderStyled = styled(Stack)({
   width: "auto",
-  padding: "0.5rem",
-  backgroundColor: colors.medium,
+  padding: theme.padding.md,
+  backgroundColor: theme.colors.medium,
   flexDirection: "row",
   justifyContent: "space-between",
   alignItems: "center",
-  borderRadius: "6px 6px 0 0",
+  borderRadius: `${theme.borderRadius.sm} ${theme.borderRadius.sm} 0 0`,
   height: 16,
 });
 
 export const SelectedTableWrapper = styled(Stack)({
-  gap: 5,
+  gap: theme.gap.sm,
   flexDirection: "row",
   overflowX: "auto",
   width: "calc(100vw - 8rem)",
-  paddingBottom: 8,
+  paddingBottom: theme.padding.md,
   justifyContent: "flex-start",
   alignItems: "center",
-  borderRadius: 8,
-  backgroundColor: colors.lighter,
-  padding: 10,
+  borderRadius: theme.borderRadius.sm,
+  backgroundColor: theme.colors.lighter,
+  padding: theme.padding.md,
+  minHeight: 200,
 });
 
 export const AddButton = styled(Button)({
-  paddingLeft: 8,
-  paddingRight: 8,
-  borderRadius: 8,
+  paddingLeft: theme.padding.md,
+  paddingRight: theme.padding.md,
+  borderRadius: theme.borderRadius.sm,
   height: 30,
-  backgroundColor: colors.green,
+  backgroundColor: theme.colors.green,
   textTransform: "none",
 });
 
@@ -153,44 +165,44 @@ export const ExcelDownloadButton = styled(Button)({
   paddingLeft: 16,
   paddingRight: 16,
   borderRadius: 16,
-  height: 32,
-  backgroundColor: colors.action,
+  height: theme.height.input,
+  backgroundColor: theme.colors.action,
   textTransform: "none",
 });
 
 export const RemoveButton = styled(Button)({
-  paddingLeft: 8,
-  paddingRight: 8,
-  borderRadius: 8,
-  height: 30,
-  backgroundColor: colors.red,
+  paddingLeft: theme.padding.md,
+  paddingRight: theme.padding.md,
+  borderRadius: theme.borderRadius.sm,
+  height: theme.height.input,
+  backgroundColor: theme.colors.red,
   textTransform: "none",
 });
 // Miscellaneous, reusable style objects
 export const styles: Record<string, CommonProps["style"]> = {
   cellBaseStyle: {
-    padding: "0 5px",
+    padding: `${theme.padding.none} ${theme.padding.sm}`,
     borderRightStyle: "solid",
     wordWrap: "break-word",
     overflowWrap: "break-word",
     whiteSpace: "normal",
     justifyContent: "center",
     borderBottomStyle: "solid",
-    fontSize: 12,
+    fontSize: theme.fontSize.cell,
   },
   autosizerWrapper: {
     width: 400,
-    height: 150,
+    height: 200,
     overflow: "auto",
-    borderBottomRightRadius: 7,
-    borderBottomLeftRadius: 7,
-    backgroundColor: colors.medium,
+    borderBottomRightRadius: theme.borderRadius.sm,
+    borderBottomLeftRadius: theme.borderRadius.sm,
+    backgroundColor: theme.colors.medium,
   },
 };
 
 export const ButtonsWrapper = styled(Stack)({
   flexDirection: "row",
-  gap: 10,
+  gap: theme.gap.md,
 });
 
 /**
@@ -213,22 +225,28 @@ export const getStylesBasedOnColumn = (
 
   let backgroundColor: string;
   if (isSideHeader) {
-    backgroundColor = isSelectedRow ? colors.medium : colors.lighter;
+    backgroundColor = isSelectedRow
+      ? theme.colors.medium
+      : theme.colors.lighter;
   } else {
-    backgroundColor = isTotalColumn ? colors.lighter : (row.bg as string);
+    backgroundColor = isTotalColumn ? theme.colors.lighter : (row.bg as string);
   }
 
   return {
     backgroundColor,
-    borderRightWidth: isSideHeader ? 2 : 1,
-    borderRightColor: isSideHeader ? colors.medium : colors.lighter,
-    borderLeftWidth: isTotalColumn ? 2 : 0,
+    borderRightWidth: isSideHeader
+      ? theme.borderWidth.md
+      : theme.borderWidth.sm,
+    borderRightColor: isSideHeader ? theme.colors.medium : theme.colors.lighter,
+    borderLeftWidth: isTotalColumn
+      ? theme.borderWidth.md
+      : theme.borderWidth.none,
     borderLeftStyle: "solid",
-    borderLeftColor: colors.medium,
+    borderLeftColor: theme.colors.medium,
     fontWeight: isBoldRow ? "bold" : "initial",
     borderBottomStyle: "solid",
-    borderBottomColor: colors.medium,
-    textAlign: isSideHeader ? "left" : "center",
+    borderBottomColor: theme.colors.medium,
+    textAlign: isSideHeader ? "left" : "right",
   };
 };
 
@@ -242,39 +260,40 @@ export const getStylesBasedOnHeader = (
 ) => {
   const isLastRow = rowIndex === fixedRowCount - 1;
   return {
-    borderBottomWidth: isLastRow ? 2 : 1,
-    borderBottomColor: isLastRow ? colors.medium : colors.lighter,
-    height: isLastRow ? 22 : 23,
+    borderBottomWidth: isLastRow ? theme.borderWidth.md : theme.borderWidth.sm,
+    borderBottomColor: isLastRow ? theme.colors.medium : theme.colors.lighter,
+    height: isLastRow ? theme.height.header : theme.height.cell,
   };
 };
 
 // Styled stack container for the loader content
 export const LoaderContent = styled(Stack)({
-  backgroundColor: colors.lighter,
-  borderRadius: 45,
+  backgroundColor: theme.colors.lighter,
+  borderRadius: 36,
   flexDirection: "row",
   alignItems: "center",
-  gap: 15,
-  padding: "15px 20px",
+  gap: theme.gap.lg,
+  padding: `${theme.padding.lg} ${theme.padding.xl}`,
 });
 
 // Styled typography for the loader text
 export const LoaderText = styled(Typography)({
-  color: colors.medium,
+  color: theme.colors.medium,
 });
 
 // Styled circular progress indicator
 export const StyledCircularProgress = styled(CircularProgress)({
-  color: colors.medium,
+  color: theme.colors.medium,
 });
 
 export const TablesWrapper = styled(Stack)({
-  gap: 33,
+  gap: theme.gap.lg,
   flexDirection: "row",
   overflowX: "auto",
   width: "calc(100vw - 8rem)",
-  paddingBottom: 8,
+  paddingBottom: theme.padding.md,
   height: 200,
+  overflowY: "hidden",
 });
 
 export const LoaderContentWrapper = styled(Stack)({
@@ -286,9 +305,9 @@ export const LoaderContentWrapper = styled(Stack)({
 
 export const ChildrenWrapper = styled(Stack)({
   flexDirection: "row",
-  gap: 5,
-  marginLeft: 20,
-  paddingLeft: 20,
-  borderLeft: `2px solid ${colors.medium}`,
+  gap: theme.gap.sm,
+  marginLeft: theme.padding.lg,
+  paddingLeft: theme.padding.lg,
+  borderLeft: `${theme.borderWidth.sm}px solid ${theme.colors.medium}`,
   alignItems: "center",
 });

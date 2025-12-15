@@ -2,9 +2,14 @@ import { formatDate } from "date-fns";
 import { Workbook } from "exceljs";
 import saveAs from "file-saver";
 import { TableHeader } from "../../composed/basic-table/basic-table";
+import { AnyType } from "../../../types";
 
-export type AnyType = string | number | boolean | object;
-
+/**
+ * Truncates text to a maximum length and adds ellipsis
+ * @param text - The text to truncate
+ * @param maxLength - Maximum length before truncation (default: 53)
+ * @returns Truncated text with ellipsis or original text if within limit
+ */
 export const getElipsis = (
   text: string,
   maxLength: number = 53
@@ -16,6 +21,12 @@ export const getElipsis = (
   return `${text.slice(0, sliceLength)}...`;
 };
 
+/**
+ * Exports table data to Excel format
+ * @param tableRows - Array of table row data
+ * @param sortedDataDisplayHeader - Array of sorted display header data
+ * @param mappingValue - The mapping value key for filtering headers
+ */
 export const exportTableToExcel = async (
   tableRows: Record<string, AnyType>[],
   sortedDataDisplayHeader: Record<string, AnyType>[],
@@ -85,6 +96,12 @@ export const exportTableToExcel = async (
   saveAs(blob, "table_data.xlsx");
 };
 
+/**
+ * Exports basic table data to Excel format
+ * @param header - Array of table header definitions
+ * @param data - Array of row data objects
+ * @param title - Title for the exported file
+ */
 export const exportBasicTableToExcel = async (
   header: TableHeader[],
   data: Record<string, string>[],
@@ -151,6 +168,13 @@ export const exportBasicTableToExcel = async (
   saveAs(blob, `${title}.xlsx`);
 };
 
+/**
+ * Exports multiple tables to a single Excel file with separate sheets
+ * @param header - Array of table header definitions
+ * @param dataArray - Array of data arrays, one per table
+ * @param titles - Array of titles for each table/sheet
+ * @param fileName - Name for the exported file (default: "multiple_tables.xlsx")
+ */
 export const exportMultipleTablesToExcel = async (
   header: TableHeader[],
   dataArray: Record<string, string>[][],
@@ -179,7 +203,8 @@ export const exportMultipleTablesToExcel = async (
 
     // Prepare fullHeader by excluding 'coaData'
     const fullHeader = Object.keys(data[0]).filter((key) => key !== "coaData");
-    worksheet.addRow([...fullHeader]);
+    const coaHeader = Object.keys(data[0].coaData);
+    worksheet.addRow([...fullHeader, ...coaHeader, "reversal"]);
 
     data.forEach((row) => {
       const rowData = fullHeader.map((item) => {
@@ -200,7 +225,11 @@ export const exportMultipleTablesToExcel = async (
         return typeof val === "object" ? "" : val;
       });
 
-      worksheet.addRow(rowData);
+      const coaData = coaHeader.map(
+        (item) => row.coaData?.[item as keyof typeof row.coaData]
+      );
+      const reversal = (row as any).reversal;
+      worksheet.addRow([...rowData, ...coaData, reversal]);
     });
 
     // Set column widths

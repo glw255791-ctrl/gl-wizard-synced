@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { handleRegister, supabase } from "../../../../api/api";
+import { RegisterData } from "../../../../types";
 
-export interface RegisterData {
-  name: string;
-  password: string;
-}
+// Re-export type for backward compatibility
+export type { RegisterData };
 export function useRegisterModel() {
   const navigate = useNavigate();
   const [registerData, setRegisterData] = useState<

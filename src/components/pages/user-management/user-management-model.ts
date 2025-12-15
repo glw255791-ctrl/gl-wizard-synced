@@ -1,36 +1,15 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { supabase, supabaseAdmin } from "../../../api/api";
+import {
+  Column,
+  UserData,
+  ModalProps,
+  SnackbarProps,
+} from "../../../types";
 
-// ----- Types -----
-export interface Column {
-  key: string;
-  label: string;
-  width?: number;
-  flex?: number;
-  align?: "center" | "left" | "right" | "justify" | "inherit";
-}
-
-export interface UserData {
-  name: string;
-  licencevaliduntil: string;
-  email: string;
-  id: string;
-  role: string;
-}
-
-export interface ModalProps {
-  modalAction: "EXTEND" | "DEACTIVATE" | "INVITE";
-  date: Date;
-  id: string;
-  email: string;
-}
-
-export interface SnackbarProps {
-  message: string;
-  severity: "error" | "success" | "warning" | "";
-  open: boolean;
-}
+// Re-export types for backward compatibility
+export type { Column, UserData, ModalProps, SnackbarProps };
 
 // ----- Hook -----
 export function useUserManagementModel() {

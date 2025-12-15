@@ -6,46 +6,46 @@ import CancelRounded from "@mui/icons-material/CancelRounded";
 import PushPinIcon from "@mui/icons-material/PushPin";
 import DownloadIcon from "@mui/icons-material/Download";
 import QueryStatsIcon from "@mui/icons-material/QueryStats";
-import { colors } from "../../../assets/colors";
-import { AnyType } from "./functions";
+import { theme } from "../../../constants/theme";
+import { AnyType } from "../../../types";
 
 // Typography styles
 export const TotalText = styled(Typography)({
-  fontSize: 14,
+  fontSize: theme.fontSize.lg,
   fontWeight: "bold",
 });
 
 export const TableTitle = styled(Typography)({
-  fontSize: 20,
+  fontSize: theme.fontSize.lg,
   fontWeight: "bold",
 });
 
 // Icon styles
 export const CheckedIcon = styled(CheckCircleIcon)({
-  color: colors.green,
-  fontSize: 17,
+  color: theme.colors.green,
+  fontSize: theme.fontSize.lg,
 });
 
 export const UncheckedIcon = styled(CancelRounded)({
-  color: colors.red,
-  fontSize: 17,
+  color: theme.colors.red,
+  fontSize: theme.fontSize.lg,
 });
 
 export const PinIcon = styled(PushPinIcon)({
-  fontSize: 16,
+  fontSize: theme.fontSize.lg,
 });
 
 export const DownloadIconStyled = styled(DownloadIcon)({
-  fontSize: 16,
+  fontSize: theme.fontSize.lg,
 });
 
 export const QueryStatsIconStyled = styled(QueryStatsIcon)({
-  fontSize: 16,
+  fontSize: theme.fontSize.lg,
 });
 
 // Button/Stack styles
 export const IconButtonStyled = styled(IconButton)({
-  padding: 0,
+  padding: theme.padding.none,
 });
 
 export const RowLabelWrapper = styled(Stack)({
@@ -56,66 +56,71 @@ export const RowLabelWrapper = styled(Stack)({
 
 export const RowLabelCell = styled(Stack)({
   flexDirection: "row",
-  gap: 5,
+  gap: theme.gap.md,
   alignItems: "center",
 });
 
 export const TableScrollableWrapper = styled(Stack)({
-  borderRadius: 8,
-  borderWidth: 1,
+  borderRadius: theme.borderRadius.sm,
+  borderWidth: theme.borderWidth.sm,
   borderStyle: "solid",
-  borderColor: colors.medium,
+  borderColor: theme.colors.medium,
 });
 
 export const TableHeaderStyled = styled(Stack)({
   width: "auto",
-  padding: "1rem",
-  backgroundColor: colors.medium,
+  padding: theme.padding.lg,
+  backgroundColor: theme.colors.medium,
   flexDirection: "row",
   justifyContent: "space-between",
   alignItems: "center",
   height: 36.5,
-  borderRadius: "6px 6px 0 0",
+  borderRadius: `${theme.borderRadius.sm} ${theme.borderRadius.sm} 0 0`,
 });
 
 export const ExcelDownloadButton = styled(Button)({
-  paddingLeft: 16,
-  paddingRight: 16,
-  borderRadius: 16,
-  height: 32,
-  backgroundColor: colors.action,
+  paddingLeft: theme.padding.lg,
+  paddingRight: theme.padding.lg,
+  borderRadius: theme.borderRadius.lg,
+  height: theme.height.input,
+  backgroundColor: theme.colors.action,
   textTransform: "none",
 });
 
 // Miscellaneous, reusable style objects
 export const styles: Record<string, CommonProps["style"]> = {
   cellBaseStyle: {
-    padding: "0 5px",
+    padding: theme.padding.sm,
     borderRightStyle: "solid",
     wordWrap: "break-word",
     overflowWrap: "break-word",
     whiteSpace: "normal",
     justifyContent: "center",
     borderBottomStyle: "solid",
-    fontSize: 12,
+    fontSize: theme.fontSize.cell,
   },
   autosizerWrapper: {
     width: "100%",
     overflow: "auto",
-    maxHeight: 600,
-    borderBottomRightRadius: 7,
-    borderBottomLeftRadius: 7,
-    backgroundColor: colors.medium,
+    maxHeight: theme.height.table,
+    borderBottomRightRadius: theme.borderRadius.sm,
+    borderBottomLeftRadius: theme.borderRadius.sm,
+    backgroundColor: theme.colors.medium,
   },
 };
 
 export const ButtonsWrapper = styled(Stack)({
   flexDirection: "row",
-  gap: 10,
+  gap: theme.gap.md,
 });
 
 /**
  * Returns cell style object based on the column and row context.
+ * @param column - The column identifier
+ * @param row - The row data object
+ * @param mappingValue - The mapping value for comparison
+ * @param selectedRows - Optional array of selected row identifiers
+ * @returns CSS properties object for the cell
  */
 export const getStylesBasedOnColumn = (
   column: string,
@@ -134,21 +139,27 @@ export const getStylesBasedOnColumn = (
 
   let backgroundColor: string;
   if (isSideHeader) {
-    backgroundColor = isSelectedRow ? colors.medium : colors.lighter;
+    backgroundColor = isSelectedRow
+      ? theme.colors.medium
+      : theme.colors.lighter;
   } else {
-    backgroundColor = isTotalColumn ? colors.lighter : (row.bg as string);
+    backgroundColor = isTotalColumn ? theme.colors.lighter : (row.bg as string);
   }
 
   return {
     backgroundColor,
-    borderRightWidth: isSideHeader ? 2 : 1,
-    borderRightColor: isSideHeader ? colors.medium : colors.lighter,
-    borderLeftWidth: isTotalColumn ? 2 : 0,
+    borderRightWidth: isSideHeader
+      ? theme.borderWidth.md
+      : theme.borderWidth.sm,
+    borderRightColor: isSideHeader ? theme.colors.medium : theme.colors.lighter,
+    borderLeftWidth: isTotalColumn
+      ? theme.borderWidth.md
+      : theme.borderWidth.none,
     borderLeftStyle: "solid",
-    borderLeftColor: colors.medium,
+    borderLeftColor: theme.colors.medium,
     fontWeight: isBoldRow ? "bold" : "initial",
     borderBottomStyle: "solid",
-    borderBottomColor: colors.medium,
+    borderBottomColor: theme.colors.medium,
     textAlign: isSideHeader ? "left" : "right",
     alignItems: isSideHeader ? "left" : "flex-end",
   };
@@ -157,6 +168,9 @@ export const getStylesBasedOnColumn = (
 /**
  * Returns style object for table header cells, determining
  * the bottom border and height based on the row position.
+ * @param rowIndex - The current row index
+ * @param fixedRowCount - The number of fixed header rows
+ * @returns CSS properties object for the header cell
  */
 export const getStylesBasedOnHeader = (
   rowIndex: number,
@@ -164,8 +178,8 @@ export const getStylesBasedOnHeader = (
 ) => {
   const isLastRow = rowIndex === fixedRowCount - 1;
   return {
-    borderBottomWidth: isLastRow ? 2 : 1,
-    borderBottomColor: isLastRow ? colors.medium : colors.lighter,
-    height: isLastRow ? 22 : 23,
+    borderBottomWidth: isLastRow ? theme.borderWidth.md : theme.borderWidth.sm,
+    borderBottomColor: isLastRow ? theme.colors.medium : theme.colors.lighter,
+    height: isLastRow ? theme.height.header : theme.height.cell,
   };
 };

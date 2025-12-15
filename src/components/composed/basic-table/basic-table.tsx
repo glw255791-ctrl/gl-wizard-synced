@@ -1,4 +1,4 @@
-import { Stack, Tooltip } from "@mui/material";
+import { Stack, Tooltip, Typography } from "@mui/material";
 import { formatDate } from "date-fns";
 import {
   CheckedIcon,
@@ -18,11 +18,16 @@ import "react-virtualized/styles.css";
 import { getElipsis } from "../../analysed-data-overview/table/functions";
 import { useCallback } from "react";
 import { exportTableToExcel } from "./functions";
+import { TableHeader } from "../../../types";
+import { theme } from "../../../constants/theme";
+
+// Re-export type for backward compatibility
+export type { TableHeader };
 
 const HEIGHT_ADJUST = 80;
-const HEADER_HEIGHT = 24;
-const ROW_HEIGHT = 24;
-const MAX_CHARS = 30;
+const HEADER_HEIGHT = theme.height.headerWrapper;
+const ROW_HEIGHT = theme.height.cell;
+const MAX_CHARS = theme.textTruncation.maxChars;
 
 const DATE = "date";
 const RESULT = "result";
@@ -35,17 +40,23 @@ interface Props {
   reversalReclassification?: boolean;
 }
 
-export interface TableHeader {
-  key: string;
-  title: string;
-}
-
+/**
+ * Basic table component for displaying data with export functionality
+ * @param header - Array of table header definitions
+ * @param data - Array of row data objects
+ * @param reversalReclassification - Optional flag for reversal/reclassification mode
+ */
 export const BasicTable = ({
   header,
   data,
   reversalReclassification,
 }: Props) => {
-  // Utility to format a cell value based on its key/column type
+  /**
+   * Formats a cell value based on its key/column type
+   * @param key - The column key identifier
+   * @param value - The cell value to format
+   * @returns Formatted string representation of the value
+   */
   const getCellValueFormatted = (
     key: string,
     value: string | Date | number | string[]
@@ -115,7 +126,7 @@ export const BasicTable = ({
                           : ""
                       }
                     >
-                      <Stack
+                      <Typography
                         style={{
                           ...styles.cellBaseStyle,
                           ...getCellStyleByHeader(col.key),
@@ -136,13 +147,16 @@ export const BasicTable = ({
                             MAX_CHARS
                           )
                         )}
-                      </Stack>
+                      </Typography>
                     </Tooltip>
                   )}
                   headerStyle={styles.headerWrapper}
                   headerRenderer={({ label }) => (
                     <Stack style={styles.headerCell}>
-                      {getElipsis(label as string, 25)}
+                      {getElipsis(
+                        label as string,
+                        theme.textTruncation.maxCharsShort
+                      )}
                     </Stack>
                   )}
                   cellDataGetter={({ rowData }) =>

@@ -5,47 +5,24 @@ import { format as formatDate } from "date-fns";
 import { saveAs } from "file-saver";
 import { TableHeader } from "../../composed/basic-table/basic-table";
 import { exportTableToExcel } from "../../composed/basic-table/functions";
+import {
+  RawData,
+  GlHeaders,
+  CoaHeaders,
+  SelectedHeaders,
+  ReviewData,
+  AnalysisStep,
+} from "../../../types";
 
-export interface RawData {
-  glData: Record<string, any>[];
-  glHeaders: string[];
-  coaData: Record<string, any>[];
-  coaHeaders: string[];
-}
-
-export interface GlHeaders {
-  account: string;
-  jen: string;
-  date: string;
-  value: string;
-}
-
-export interface CoaHeaders {
-  mappingValue: string;
-  displayValue: string;
-  groupingValue: string;
-}
-
-export interface SelectedHeaders {
-  glHeaders: GlHeaders;
-  coaHeaders: CoaHeaders;
-}
-
-export interface ReviewData {
-  startDate: string;
-  endDate: string;
-  rows: number;
-  total: number;
-}
-
-export enum AnalysisStep {
-  TO_UPLOAD_GL,
-  UPLOADED_GL,
-  TO_UPLOAD_COA,
-  TO_UPLOAD_DICTIONARY,
-  UPLOADED_DICTIONARY,
-  ANALYZED,
-}
+// Re-export types for backward compatibility
+export type {
+  RawData,
+  GlHeaders,
+  CoaHeaders,
+  SelectedHeaders,
+  ReviewData,
+};
+export { AnalysisStep };
 
 export function useReversalAnalysis() {
   // States

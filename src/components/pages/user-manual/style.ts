@@ -1,69 +1,69 @@
 import { styled, Stack, IconButton, Typography } from "@mui/material";
-import { colors } from "../../../assets/colors";
+import { theme } from "../../../constants/theme";
 
 // Styled root stack for the main page wrapper
 export const RootStack = styled(Stack)({
-  gap: "1rem",
-  width: "calc(100vw - 24rem)"
+  gap: theme.gap.lg,
+  width: "calc(100vw - 24rem)",
 });
 
 // Wrapper for rows of buttons or content
 export const ContentWrapper = styled(Stack)({
   flexDirection: "row",
-  gap: 16,
+  gap: theme.gap.lg,
 });
 
 export const ButtonsWrapper = styled(Stack)({
-  gap: 16,
+  gap: theme.gap.lg,
 });
 
 // Styled button stack for each download button
 export const StyledButtonStack = styled(Stack)({
   flex: 1,
   height: 60,
-  backgroundColor: colors.lighter,
-  borderRadius: 8,
-  border: `1px dashed ${colors.darker}`,
+  backgroundColor: theme.colors.lighter,
+  borderRadius: theme.borderRadius.sm,
+  border: `1px dashed ${theme.colors.darker}`,
   alignItems: "center",
   flexDirection: "row",
-  padding: "8px 16px",
-  gap: 15,
+  padding: `${theme.padding.sm} ${theme.padding.lg}`,
+  gap: theme.gap.lg,
   justifyContent: "space-between",
-  color: colors.darker,
+  color: theme.colors.darker,
 });
 
 // Styled stack for text instruction blocks
 export const TextWrapper = styled(Stack)({
   textAlign: "justify",
   flex: 1,
-  padding: '15px 30px',
-  backgroundColor: colors.lighter,
-  borderRadius: 8,
-  color: colors.darker,
-  gap: 10,
+  padding: `${theme.padding.lg} ${theme.padding.xl}`,
+  backgroundColor: theme.colors.lighter,
+  borderRadius: theme.borderRadius.sm,
+  color: theme.colors.darker,
+  gap: theme.gap.lg,
 });
 
 // IconButton override for colored icon
 export const StyledIconButton = styled(IconButton)({
-  color: colors.darker,
+  color: theme.colors.darker,
 });
 
 // Optional: If you only want a specific icon style, create this
 export const StyledDownloadIcon = {
-  color: colors.darker,
+  color: theme.colors.darker,
 };
 
 export const StyledTitle = styled(Typography)({
-  fontWeight: 'bold',
-  fontSize: 18,
-  textAlign: 'center',
+  fontWeight: "bold",
+  fontSize: theme.fontSize.lg,
+  textAlign: "center",
 });
 
-export const StyledList = styled('ul')({
-  marginTop: 0,
-  marginBottom: 0,
-  paddingLeft: 24,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 8,
+export const StyledList = styled("ul")({
+  marginTop: theme.padding.none,
+  marginBottom: theme.padding.none,
+  paddingLeft: theme.padding.lg,
+  display: "flex",
+  flexDirection: "column",
+  gap: theme.gap.sm,
 });

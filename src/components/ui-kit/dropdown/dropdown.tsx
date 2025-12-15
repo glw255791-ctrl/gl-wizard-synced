@@ -7,10 +7,10 @@ import {
   LabelWithInfoIcon,
   StyledInfoIcon,
 } from "./style";
-export interface DropdownItem {
-  title: string;
-  value: string;
-}
+import { DropdownItem } from "../../../types/index";
+
+// Re-export type for backward compatibility
+export type { DropdownItem };
 
 export interface Props {
   items: DropdownItem[];

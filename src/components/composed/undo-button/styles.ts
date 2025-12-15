@@ -1,19 +1,19 @@
-import { colors } from "../../../assets/colors";
 import { Button, Stack, styled } from "@mui/material";
+import { theme } from "../../../constants/theme";
 
 export const ButtonsWrapper = styled(Stack)({
   display: "flex",
   flexDirection: "row",
   alignItems: "center",
   justifyContent: "center",
-  gap: "1rem",
+  gap: theme.gap.lg,
 });
 
 export const StyledButton = styled(Button)({
-  borderRadius: 16,
-  height: 32,
+  borderRadius: theme.borderRadius.lg,
+  height: theme.height.input,
   textTransform: "none",
-  paddingLeft: 32,
-  paddingRight: 32,
-  backgroundColor: colors.action,
+  paddingLeft: theme.padding.lg,
+  paddingRight: theme.padding.lg,
+  backgroundColor: theme.colors.action,
 });

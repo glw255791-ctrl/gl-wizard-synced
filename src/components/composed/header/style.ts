@@ -1,11 +1,11 @@
 import { Card, IconButton, Stack, styled, Typography } from "@mui/material";
-import { colors } from "../../../assets/colors";
+import { theme } from "../../../constants/theme";
 
 // Container for the header section
 export const Wrapper = styled(Card)({
-  backgroundColor: `${colors.darker}CC`,
-  borderRadius: 8,
-  padding: 16,
+  backgroundColor: `${theme.colors.darker}CC`,
+  borderRadius: theme.borderRadius.sm,
+  padding: theme.padding.lg,
 });
 
 // Horizontal layout for header content
@@ -24,14 +24,14 @@ export const HeaderBtnsWrapper = styled(Stack)({
 
 // Icon styles for header buttons
 export const IconButtonStyled = styled(IconButton)({
-  color: colors.lighter,
+  color: theme.colors.lighter,
 });
 
 // Header title styles
 export const Title = styled(Typography)({
   fontWeight: "bold",
-  color: colors.lighter,
-  fontSize: "1.25rem",
+  color: theme.colors.lighter,
+  fontSize: theme.fontSize.xl,
 });
 
 // Right-aligned button group
@@ -40,7 +40,7 @@ export const HeaderBtnsWrapperRight = styled(Stack)({
   alignItems: "center",
   justifyContent: "flex-end",
   flex: 1,
-  color: colors.white,
+  color: theme.colors.white,
 });
 
 // Display for the user name in the header
@@ -48,6 +48,6 @@ export const NameWrapper = styled(Stack)({
   flexDirection: "row",
   alignItems: "center",
   justifyContent: "flex-start",
-  paddingRight: 15,
-  paddingLeft: 5
+  paddingRight: theme.padding.lg,
+  paddingLeft: theme.padding.sm,
 });

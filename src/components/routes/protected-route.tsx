@@ -2,7 +2,7 @@ import { JSX, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Backdrop, CircularProgress } from "@mui/material";
 import { supabase } from "../../api/api";
-import { colors } from "../../assets/colors";
+import { theme } from "../../constants/theme";
 
 interface ProtectedRouteProps {
   children: JSX.Element;
@@ -15,7 +15,9 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   useEffect(() => {
     const checkAuth = async () => {
       // 1. Check session existence
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) {
         localStorage.clear();
         navigate("/unauthorized");
@@ -66,7 +68,10 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   if (isAuthorized === null) {
     return (
       <Backdrop
-        sx={{ color: colors.white, zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        sx={{
+          color: theme.colors.white,
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
         open
       >
         <CircularProgress color="inherit" />

@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Stack, Tooltip } from "@mui/material";
+import { Stack, Tooltip, Typography } from "@mui/material";
 import "react-virtualized/styles.css";
 import { AutoSizer, Index, MultiGrid } from "react-virtualized";
-import { AnyType, getElipsis } from "../table/functions";
+import { getElipsis } from "../table/functions";
+import { AnyType } from "../../../types";
 import {
   getStylesBasedOnColumn,
   getStylesBasedOnHeader,
@@ -14,13 +15,12 @@ import {
   IconButtonStyled,
   RowLabelCell,
   QueryStatsIconStyled,
-  DisabledSearchIconStyled,
-  EnabledSearchIconStyled,
-  DeleteIconStyled,
+  AddCircleOutlineIconStyled,
+  RemoveCircleOutlineIconStyled,
 } from "./style";
-import { colors } from "../../../assets/colors";
-import { TableHeader } from "../../composed/basic-table/basic-table";
+import { colors } from "../../../constants/theme";
 import { ProcessValue } from "../analysed-data-overview";
+import { SearchByObject } from "./process-modal";
 
 const COLUMN_WIDTH = 128;
 const ROW_HEIGHT = 24;
@@ -36,20 +36,16 @@ interface Props {
   valueKey: string;
   selectedRows?: string[];
   id?: string;
-  level?: number;
   selectedFilter: Filters;
-  basicTableHeader: TableHeader[];
-  basicTableData: Record<string, string>[];
   rows: Record<string, AnyType>[];
   onAddToProcess?: (processValue: ProcessValue) => void;
-  onDeleteFromProcess?: (processValue: ProcessValue) => void;
-  setCurrentProcessObject?: React.Dispatch<
-    React.SetStateAction<ProcessValue | undefined>
-  >;
   sortedDataDisplayHeader?: Record<string, AnyType>[];
   overviewTableData?: Record<string, AnyType>;
-  currentProcessObject: ProcessValue | undefined;
-  overallProcessObject?: ProcessValue | undefined;
+  isTopTable?: boolean;
+  level: number;
+  setSearchByObject: (searchByObject: SearchByObject) => void;
+  overallProcessObject: ProcessValue[];
+  removeFromProcess?: (processValue: ProcessValue) => void;
 }
 
 interface Filters {
@@ -65,15 +61,15 @@ export const ProcessDataTable: React.FC<Props> = ({
   valueKey,
   selectedFilter,
   rows,
-  id,
   level,
+  id,
   sortedDataDisplayHeader,
   overviewTableData,
   onAddToProcess,
-  currentProcessObject,
-  setCurrentProcessObject,
+  removeFromProcess,
   overallProcessObject,
-  onDeleteFromProcess,
+  isTopTable,
+  setSearchByObject,
 }) => {
   const [tableRows, setTableRows] = useState<Record<string, AnyType>[]>(
     rows || []
@@ -98,14 +94,26 @@ export const ProcessDataTable: React.FC<Props> = ({
           key !== "bg"
       );
 
+      // Find rows that have been added to the process from this table
+      // by looking for items whose parent matches this table's title and level
+      const omitRows = overallProcessObject
+        .filter((item) => item.title === title && item.parent?.level === level)
+        .map((item) => item.rows)
+        .flat()
+        .map((item) => JSON.stringify(item));
+
       setTableRows([
         ...rows
           .slice(2, rows.length - 1)
           .filter((row: { [x: string]: string }) => {
             return valueKeys.some(
-              (key) => row[key] !== "0.00" && rows[1 - 1][key]
+              (key) => row[key] !== "0,00" && rows[1 - 1][key]
             );
-          }),
+          })
+          .filter(
+            (row: { [x: string]: string }) =>
+              !omitRows.includes(JSON.stringify(row))
+          ),
       ]);
     };
     worker.postMessage({
@@ -122,34 +130,86 @@ export const ProcessDataTable: React.FC<Props> = ({
   useEffect(() => {
     if (sortedDataDisplayHeader && overviewTableData) {
       generateTableData();
+    } else {
+      // Find rows that have been added to the process from this table
+      // by looking for items whose parent matches this table's title and level
+      const omitRows = overallProcessObject
+        .filter((item) => item.title === title && !item.parent)
+        .map((item) => item.rows)
+        .flat()
+        .map((item) => JSON.stringify(item));
+
+      if (!isTopTable)
+        setTableRows(
+          tableRows.filter((row) => !omitRows.includes(JSON.stringify(row)))
+        );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortedDataDisplayHeader, overviewTableData]);
+  }, [sortedDataDisplayHeader, overviewTableData, overallProcessObject]);
 
   // Renders the content of a cell, including pin & download icons when appropriate
   const renderCellText = (row: Record<string, AnyType>, column: string) => {
     const isHeader = row.header;
-    const val = row[column] ? getElipsis(row[column] as string, 38) : "";
+    const val = row[column] ? getElipsis(row[column] as string, 35) : "";
 
     if (isHeader || column !== SIDE_HEADER) {
       return <Stack>{val}</Stack>;
     }
 
+    const tooltipTitle =
+      typeof row[column as keyof typeof row] === "string" &&
+      (row[column as keyof typeof row] as string).length > MAX_CHARS
+        ? (row[column as keyof typeof row] as string)
+        : "";
+
     return (
       <RowLabelWrapper>
-        {val}
+        <Tooltip title={tooltipTitle}>
+          <Typography style={{ fontSize: 12 }}>{val}</Typography>
+        </Tooltip>
         <RowLabelCell>
-          {rows.length === 0 && (
+          {isTopTable ? (
+            <>
+              <IconButtonStyled
+                onClick={() =>
+                  setSearchByObject({
+                    title,
+                    level,
+                    value: String(row.sideHeader),
+                  })
+                }
+              >
+                <QueryStatsIconStyled />
+              </IconButtonStyled>
+              {level ===
+                overallProcessObject.reduce(
+                  (max, item) => Math.max(max, item.level),
+                  0
+                ) && (
+                <IconButtonStyled
+                  onClick={() =>
+                    removeFromProcess?.({
+                      title,
+                      level,
+                      rows: [row],
+                    })
+                  }
+                >
+                  <RemoveCircleOutlineIconStyled />
+                </IconButtonStyled>
+              )}
+            </>
+          ) : (
             <IconButtonStyled
               onClick={() =>
                 onAddToProcess?.({
                   title,
                   rows: [row],
-                  level: (currentProcessObject?.level || 0) + 1,
+                  level,
                 })
               }
             >
-              <QueryStatsIconStyled />
+              <AddCircleOutlineIconStyled />
             </IconButtonStyled>
           )}
         </RowLabelCell>
@@ -158,146 +218,81 @@ export const ProcessDataTable: React.FC<Props> = ({
   };
 
   return (
-    <TableScrollableWrapper id={id}>
-      <TableHeaderStyled>
-        <TableTitle>
-          <Tooltip title={title}>
-            <Stack>{getElipsis(title, 40)}</Stack>
-          </Tooltip>
-        </TableTitle>
-        {rows?.length !== 0 && (
-          <Stack style={{ flexDirection: "row", gap: 5 }}>
-            <IconButtonStyled
-              onClick={() =>
-                setCurrentProcessObject?.({
-                  title,
-                  rows,
-                  level: level || 0,
-                })
-              }
-            >
-              {title === currentProcessObject?.title &&
-              level === currentProcessObject?.level ? (
-                <EnabledSearchIconStyled />
-              ) : (
-                <DisabledSearchIconStyled />
-              )}
-            </IconButtonStyled>
-
-            {(() => {
-              // Helper to recursively find node at same level and title in overallProcessObject
-              const findNodeAtLevel = (
-                node: any,
-                targetTitle: string,
-                targetLevel: number
-              ): any => {
-                if (!node) return undefined;
-                if (node.title === targetTitle && node.level === targetLevel) {
-                  return node;
+    <Stack>
+      <TableScrollableWrapper id={id}>
+        <TableHeaderStyled>
+          <TableTitle>
+            <Tooltip title={title}>
+              <Typography>{getElipsis(title, 40)}</Typography>
+            </Tooltip>
+          </TableTitle>
+        </TableHeaderStyled>
+        <AutoSizer
+          style={{
+            ...styles.autosizerWrapper,
+            ...(rows?.length > 0 ? { height: rows.length * ROW_HEIGHT } : {}),
+          }}
+        >
+          {({ width, height }) =>
+            tableRows.length > 0 ? (
+              <MultiGrid
+                ref={multiGridRef}
+                fixedColumnCount={1}
+                columnWidth={(params: Index) =>
+                  params.index === 0 ? COLUMN_WIDTH * 2 : COLUMN_WIDTH
                 }
-                if (node.children && Array.isArray(node.children)) {
-                  for (const child of node.children) {
-                    const result = findNodeAtLevel(
-                      child,
-                      targetTitle,
-                      targetLevel
-                    );
-                    if (result) return result;
-                  }
+                columnCount={tableColumns.length}
+                rowHeight={ROW_HEIGHT}
+                rowCount={tableRows.length}
+                width={width - WIDTH_ADJUST}
+                height={
+                  rows?.length > 0 ? rows?.length * ROW_HEIGHT : height - 50
                 }
-                return undefined;
-              };
+                cellRenderer={({ columnIndex, rowIndex, key, style }) => {
+                  const column = tableColumns[columnIndex];
+                  const row = tableRows[rowIndex];
 
-              // If overallProcessObject is not defined, do not render
-              if (!overallProcessObject) return null;
-              // Find the node in the overallProcessObject tree that matches this table's title and level
-              const node = findNodeAtLevel(
-                overallProcessObject,
-                title,
-                level || 0
-              );
-              // Only render if node exists and its children is empty array (or undefined)
-              if (
-                node &&
-                (!node.children || node.children.length === 0) &&
-                level !== 0
-              ) {
-                return (
-                  <IconButtonStyled
-                    onClick={() =>
-                      onDeleteFromProcess?.({
-                        title,
-                        level: level || 0,
-                        rows: [],
-                        children: [],
-                      })
-                    }
-                  >
-                    <DeleteIconStyled />
-                  </IconButtonStyled>
-                );
-              }
-              return null;
-            })()}
-          </Stack>
-        )}
-      </TableHeaderStyled>
-      <AutoSizer
-        style={{
-          ...styles.autosizerWrapper,
-          ...(rows?.length > 0 ? { height: rows.length * ROW_HEIGHT } : {}),
-        }}
-      >
-        {({ width, height }) => (
-          <MultiGrid
-            ref={multiGridRef}
-            fixedColumnCount={1}
-            columnWidth={(params: Index) =>
-              params.index === 0 ? COLUMN_WIDTH * 2 : COLUMN_WIDTH
-            }
-            columnCount={tableColumns.length}
-            rowHeight={ROW_HEIGHT}
-            rowCount={tableRows.length}
-            width={width - WIDTH_ADJUST}
-            height={rows?.length > 0 ? rows?.length * ROW_HEIGHT : height - 50}
-            cellRenderer={({ columnIndex, rowIndex, key, style }) => {
-              const column = tableColumns[columnIndex];
-              const row = tableRows[rowIndex];
+                  if (!row) return null;
 
-              if (!row) return null;
-
-              const tooltipTitle =
-                typeof row[column as keyof typeof row] === "string" &&
-                (row[column as keyof typeof row] as string).length > MAX_CHARS
-                  ? (row[column as keyof typeof row] as string)
-                  : "";
-
-              return (
-                <div key={key} style={style}>
-                  <Tooltip title={tooltipTitle}>
-                    <Stack
-                      style={
-                        {
-                          ...styles.cellBaseStyle,
-                          ...getStylesBasedOnColumn(
-                            column,
-                            row,
-                            mappingValue,
-                            selectedRows
-                          ),
-                          ...getStylesBasedOnHeader(rowIndex, 0),
-                        } as React.CSSProperties
-                      }
-                    >
-                      {renderCellText(row, column)}
-                    </Stack>
-                  </Tooltip>
-                </div>
-              );
-            }}
-          />
-        )}
-      </AutoSizer>
-    </TableScrollableWrapper>
+                  return (
+                    <div key={key} style={style}>
+                      <Stack
+                        style={
+                          {
+                            ...styles.cellBaseStyle,
+                            ...getStylesBasedOnColumn(
+                              column,
+                              row,
+                              mappingValue,
+                              selectedRows
+                            ),
+                            ...getStylesBasedOnHeader(rowIndex, 0),
+                          } as React.CSSProperties
+                        }
+                      >
+                        {renderCellText(row, column)}
+                      </Stack>
+                    </div>
+                  );
+                }}
+              />
+            ) : (
+              <Stack
+                style={{
+                  height: "100%",
+                  width: "100%",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Typography style={{ fontSize: 14, fontWeight: "bold" }}>
+                  No rows available
+                </Typography>
+              </Stack>
+            )
+          }
+        </AutoSizer>
+      </TableScrollableWrapper>
+    </Stack>
   );
 };

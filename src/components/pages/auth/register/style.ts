@@ -1,5 +1,5 @@
 import { styled, Stack, Typography, Button, Box } from "@mui/material";
-import { colors } from "../../../../assets/colors";
+import { theme } from "../../../../constants/theme";
 
 // Root container
 export const Root = styled(Stack)({
@@ -12,10 +12,10 @@ export const Root = styled(Stack)({
 // Login block container
 export const LoginBlock = styled(Stack)({
   width: 400,
-  backgroundColor: colors.lighter,
-  borderRadius: 16,
-  padding: "1rem",
-  gap: "1rem",
+  backgroundColor: theme.colors.lighter,
+  borderRadius: theme.borderRadius.lg,
+  padding: theme.padding.lg,
+  gap: theme.gap.lg,
   justifyContent: "center",
   alignItems: "center",
 });
@@ -29,27 +29,27 @@ export const LogoImage = styled("img")({
 
 // Label style
 export const Label = styled(Typography)({
-  color: colors.darker,
+  color: theme.colors.darker,
   fontWeight: "bold",
-  fontSize: "1.5rem",
+  fontSize: theme.fontSize.xl,
 });
 
 // Button style
 export const StyledButton = styled(Button)({
-  color: colors.white,
-  fontSize: "1rem",
+  color: theme.colors.white,
+  fontSize: theme.fontSize.lg,
   textTransform: "none",
-  borderRadius: 16,
-  height: 32,
-  paddingLeft: 32,
-  paddingRight: 32,
-  backgroundColor: colors.action,
-  marginTop: "1rem"
+  borderRadius: theme.borderRadius.lg,
+  height: theme.height.input,
+  paddingLeft: theme.padding.lg,
+  paddingRight: theme.padding.lg,
+  backgroundColor: theme.colors.action,
+  marginTop: theme.padding.lg,
 });
 
 // Image and logo stack
 export const ImageAndLogo = styled(Stack)({
-  paddingBottom: "1rem",
+  paddingBottom: theme.padding.lg,
   justifyContent: "center",
   alignItems: "center",
 });
@@ -57,14 +57,14 @@ export const ImageAndLogo = styled(Stack)({
 // Input wrapper
 export const InputWrapper = styled(Box)({
   width: "80%",
-  height: 32,
-  borderRadius: 16,
+  height: theme.height.input,
+  borderRadius: theme.borderRadius.lg,
 });
 
 // Text input style (for inputProps)
 export const StyledInput = {
-  height: 32,
-  borderRadius: 16,
+  height: theme.height.input,
+  borderRadius: theme.borderRadius.lg,
 };
 
 // Error block for all errors
@@ -74,6 +74,6 @@ export const ErrorsBlock = styled(Stack)({
 
 // Single error text
 export const ErrorText = styled(Typography)({
-  fontSize: "0.75rem",
-  color: colors.red,
+  fontSize: theme.fontSize.md,
+  color: theme.colors.red,
 });

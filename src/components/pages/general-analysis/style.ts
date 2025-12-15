@@ -1,7 +1,7 @@
 import { styled } from "@mui/material/styles";
 import Stack from "@mui/material/Stack";
 import { Card } from "@mui/material";
-import { colors } from "../../../assets/colors";
+import { theme } from "../../../constants/theme";
 
 export const RootStack = styled(Stack)(() => ({
   width: "calc(100vw - 24rem)",
@@ -10,12 +10,12 @@ export const RootStack = styled(Stack)(() => ({
 }));
 
 export const CardStyled = styled(Card)(() => ({
-  backgroundColor: colors.lighter,
-  borderRadius: 8,
-  padding: 16,
+  backgroundColor: theme.colors.lighter,
+  borderRadius: theme.borderRadius.sm,
+  padding: theme.padding.lg,
   flexDirection: "row",
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  gap: 16,
+  gap: theme.gap.lg,
 }));

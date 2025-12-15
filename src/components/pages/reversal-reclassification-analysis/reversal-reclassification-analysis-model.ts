@@ -3,31 +3,19 @@ import { useMemo, useState } from "react";
 import { Workbook } from "exceljs";
 import { formatDate } from "date-fns";
 import { saveAs } from "file-saver";
+import { TableHeader } from "../../composed/basic-table/basic-table";
 import {
   AnalysisStep,
   RawData,
   ReviewData,
   GlHeaders,
-} from "../general-analysis/general-analysis-model";
-import { TableHeader } from "../../composed/basic-table/basic-table";
+  CoaHeaders,
+  SelectedHeaders,
+  CoaFilters,
+} from "../../../types";
 
-// ---- Interfaces ----
-
-export interface CoaHeaders {
-  mappingValue: string;
-  displayValue: string;
-  groupingValue: string;
-}
-
-export interface SelectedHeaders {
-  glHeaders: GlHeaders;
-  coaHeaders: CoaHeaders;
-}
-
-export interface CoaFilters {
-  header: string;
-  value: string[];
-}
+// Re-export types for backward compatibility
+export type { CoaHeaders, SelectedHeaders, CoaFilters };
 
 // ---- Main Hook ----
 

@@ -1,5 +1,5 @@
 import { styled, Stack, Typography, Button } from "@mui/material";
-import { colors } from "../../../assets/colors";
+import { theme } from "../../../constants/theme";
 
 // Root container
 export const Root = styled(Stack)({
@@ -12,10 +12,10 @@ export const Root = styled(Stack)({
 // Login block container
 export const LoginBlock = styled(Stack)({
   width: 400,
-  backgroundColor: colors.lighter,
-  borderRadius: 16,
-  padding: "2rem",
-  gap: "1rem",
+  backgroundColor: theme.colors.lighter,
+  borderRadius: theme.borderRadius.lg,
+  padding: theme.padding.lg,
+  gap: theme.gap.lg,
   justifyContent: "center",
   alignItems: "center",
 });
@@ -29,33 +29,33 @@ export const LogoImage = styled("img")({
 
 // Label style
 export const Label = styled(Typography)({
-  color: colors.darker,
+  color: theme.colors.darker,
   fontWeight: "bold",
-  fontSize: "1.5rem",
+  fontSize: theme.fontSize.xl,
 });
 
 // Message style
 export const Message = styled(Typography)({
-  color: colors.darker,
-  fontSize: "1rem",
-  paddingBottom: "1rem",
+  color: theme.colors.darker,
+  fontSize: theme.fontSize.lg,
+  paddingBottom: theme.padding.lg,
 });
 
 // Button style
 export const StyledButton = styled(Button)({
-  backgroundColor: colors.action,
-  color: colors.white,
-  fontSize: "1rem",
-  borderRadius: 16,
-  height: 32,
-  paddingLeft: 32,
-  paddingRight: 32,
+  backgroundColor: theme.colors.action,
+  color: theme.colors.white,
+  fontSize: theme.fontSize.lg,
+  borderRadius: theme.borderRadius.lg,
+  height: theme.height.input,
+  paddingLeft: theme.padding.lg,
+  paddingRight: theme.padding.lg,
   textTransform: "none",
 });
 
 // Image and logo stack
 export const ImageAndLogo = styled(Stack)({
-  paddingBottom: "1rem",
+  paddingBottom: theme.padding.lg,
   justifyContent: "center",
   alignItems: "center",
 });

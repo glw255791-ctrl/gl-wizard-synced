@@ -1,12 +1,12 @@
-import { colors } from "../../../assets/colors";
 import { Box, Card, Stack, styled, Typography } from "@mui/material";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import { theme } from "../../../constants/theme";
 
 // Card wrapper for the info panel
 export const Wrapper = styled(Card)({
-  backgroundColor: colors.lighter,
-  borderRadius: 8,
-  padding: 16,
+  backgroundColor: theme.colors.lighter,
+  borderRadius: theme.borderRadius.sm,
+  padding: theme.padding.lg,
   height: "calc(100% - 2rem)",
 });
 
@@ -16,14 +16,14 @@ export const ReviewsWrapper = styled(Stack)({
   alignItems: "center",
   justifyContent: "flex-start",
   flexDirection: "row",
-  gap: "1rem",
+  gap: theme.gap.md,
 });
 
 // Label with row alignment
 export const ReviewLabel = styled(Stack)({
   flexDirection: "row",
   justifyContent: "flex-start",
-  gap: "0.25rem",
+  gap: theme.gap.sm,
 });
 
 // Error message row layout
@@ -31,22 +31,22 @@ export const ErrorWrapper = styled(Stack)({
   flex: 2,
   flexDirection: "row",
   justifyContent: "flex-start",
-  gap: "0.25rem",
+  gap: theme.gap.sm,
 });
 
 // Styled error icon
 export const ErrorIcon = styled(ErrorOutlineIcon)({
-  color: colors.red,
+  color: theme.colors.red,
 });
 
 // Styled error message text
 export const ErrorText = styled(Typography)({
-  color: colors.red,
+  color: theme.colors.red,
 });
 
 // Divider between rows
 export const Divider = styled(Box)({
   width: "100%",
   height: 1,
-  backgroundColor: colors.gray,
+  backgroundColor: theme.colors.gray,
 });

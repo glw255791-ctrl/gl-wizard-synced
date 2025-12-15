@@ -1,23 +1,9 @@
 import { Stack } from "@mui/material";
 import { Dropdown, DropdownItem } from "../../ui-kit/dropdown/dropdown";
+import { GlHeaders, CoaHeaders, SelectedHeaders } from "../../../types";
 
-export interface GlHeaders {
-  account: string;
-  jen: string;
-  date: string;
-  value: string;
-}
-
-export interface CoaHeaders {
-  mappingValue: string;
-  displayValue: string;
-  groupingValue: string;
-}
-
-export interface SelectedHeaders {
-  glHeaders: GlHeaders;
-  coaHeaders: CoaHeaders;
-}
+// Re-export types for backward compatibility
+export type { GlHeaders, CoaHeaders, SelectedHeaders };
 
 interface Props {
   glHeaderOptions: DropdownItem[];

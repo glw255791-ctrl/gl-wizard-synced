@@ -5,12 +5,11 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Stack, Checkbox, Tooltip } from "@mui/material";
+import { Stack, Checkbox, Tooltip, Typography } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import "react-virtualized/styles.css";
 import { AutoSizer, Index, MultiGrid } from "react-virtualized";
 import {
-  AnyType,
   exportBasicTableToExcel,
   exportMultipleTablesToExcel,
   exportTableToExcel,
@@ -33,10 +32,11 @@ import {
   styles,
   QueryStatsIconStyled,
 } from "./style";
-import { colors } from "../../../assets/colors";
 import { TotalText } from "./style";
 import { TableHeader } from "../../composed/basic-table/basic-table";
 import { ProcessValue } from "../analysed-data-overview";
+import { theme } from "../../../constants/theme";
+import { AnyType } from "../../../types";
 
 const COLUMN_WIDTH = 250;
 const ROW_HEIGHT = 24;
@@ -66,7 +66,7 @@ interface Props {
   basicTableData: Record<string, string>[];
   setIsProcessModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   selectedTable: string;
-  setOverallProcessObject: React.Dispatch<
+  setCurrentProcessObject: React.Dispatch<
     React.SetStateAction<ProcessValue | undefined>
   >;
 }
@@ -92,7 +92,7 @@ export const DataTable: React.FC<Props> = ({
   id,
   setDataDisplayHeader,
   setIsProcessModalOpen,
-  setOverallProcessObject,
+  setCurrentProcessObject,
 }) => {
   const [tableRows, setTableRows] = useState<Record<string, AnyType>[]>([]);
   const [tableColumns, setTableColumns] = useState<string[]>([]);
@@ -115,7 +115,7 @@ export const DataTable: React.FC<Props> = ({
       groupingValue,
       valueKey,
       selectedFilter,
-      colors,
+      colors: theme.colors,
     });
   };
 
@@ -130,6 +130,7 @@ export const DataTable: React.FC<Props> = ({
       title === "All items"
         ? Object.keys(sortedDataDisplayHeader[0])?.length || 1
         : 2,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [sortedDataDisplayHeader]
   );
 
@@ -162,6 +163,7 @@ export const DataTable: React.FC<Props> = ({
   // Export table data to Excel
   const onExportClick = useCallback(() => {
     exportTableToExcel(viewableRows, sortedDataDisplayHeader, groupingValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewableRows, sortedDataDisplayHeader, mappingValue]);
 
   // Force update of grid when data changes
@@ -207,11 +209,6 @@ export const DataTable: React.FC<Props> = ({
     />
   );
 
-  const handleProcessAnalysis = (row: Record<string, AnyType>) => {
-    setIsProcessModalOpen(true);
-    setOverallProcessObject({ title, rows: [row], children: [], level: 0 });
-  };
-
   // Handles Excel export for a specific row
   const handleDownloadByRow = (value: string) => {
     const filteredValues = basicTableData.filter(
@@ -247,11 +244,6 @@ export const DataTable: React.FC<Props> = ({
       <RowLabelWrapper>
         {getElipsis(val, MAX_CHARS * 1.25)}
         <RowLabelCell>
-          {selectedTable !== "all" && (
-            <IconButtonStyled onClick={() => handleProcessAnalysis(row)}>
-              <QueryStatsIconStyled />
-            </IconButtonStyled>
-          )}
           <IconButtonStyled
             onClick={() => handleDownloadByRow(String(row[column]))}
           >
@@ -267,6 +259,26 @@ export const DataTable: React.FC<Props> = ({
       <TableHeaderStyled>
         <TableTitle>{title}</TableTitle>
         <ButtonsWrapper>
+          {selectedTable !== "all" && (
+            <ExcelDownloadButton
+              variant="contained"
+              onClick={() => {
+                setIsProcessModalOpen(true);
+                setCurrentProcessObject({
+                  title,
+                  rows: viewableRows.slice(
+                    fixedRowCount,
+                    viewableRows.length - 1
+                  ),
+
+                  level: 0,
+                });
+              }}
+              endIcon={<QueryStatsIconStyled />}
+            >
+              Process Analysis
+            </ExcelDownloadButton>
+          )}
           <ExcelDownloadButton
             onClick={onExportClick}
             variant="contained"
@@ -319,7 +331,7 @@ export const DataTable: React.FC<Props> = ({
               return (
                 <div key={key} style={style}>
                   <Tooltip title={tooltipTitle}>
-                    <Stack
+                    <Typography
                       style={
                         {
                           ...styles.cellBaseStyle,
@@ -336,7 +348,7 @@ export const DataTable: React.FC<Props> = ({
                       {row.sideHeader === INCLUDE
                         ? renderIncludeRow(row, column)
                         : renderCellText(row, column)}
-                    </Stack>
+                    </Typography>
                   </Tooltip>
                 </div>
               );
