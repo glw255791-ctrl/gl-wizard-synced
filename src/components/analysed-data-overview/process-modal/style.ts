@@ -197,6 +197,7 @@ export const styles: Record<string, CommonProps["style"]> = {
     borderBottomRightRadius: theme.borderRadius.sm,
     borderBottomLeftRadius: theme.borderRadius.sm,
     backgroundColor: theme.colors.medium,
+    overflowX: "hidden",
   },
 };
 

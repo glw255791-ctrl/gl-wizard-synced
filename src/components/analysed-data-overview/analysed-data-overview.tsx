@@ -321,6 +321,8 @@ export function DataOverview({
         isOpen={isProcessModalOpen}
         overviewTableData={overviewTableData}
         sortedDataDisplayHeader={sortedDataDisplayHeader}
+        basicTableData={basicTableData}
+        basicTableHeader={basicTableHeader}
         selectedFilter={selectedFilter}
         commonTableProps={commonTableProps}
         filterValueOptions={filterValueOptions}

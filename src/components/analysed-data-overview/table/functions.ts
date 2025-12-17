@@ -200,8 +200,8 @@ export const exportMultipleTablesToExcel = async (
     if (!data || data.length === 0) continue;
 
     // Create a new worksheet with the title (Excel sheet names have a 31 character limit)
-    const sheetName = title.length > 31 ? title.substring(0, 31) : title;
-    const worksheet = workbook.addWorksheet(sheetName);
+    const sheetName = title.length > 31 ? title.substring(0, 28) : title;
+    const worksheet = workbook.addWorksheet(`${sheetName}-${i + 1}`);
 
     // Prepare fullHeader by excluding 'coaData'
     const fullHeader = Object.keys(data[0]).filter((key) => key !== "coaData");

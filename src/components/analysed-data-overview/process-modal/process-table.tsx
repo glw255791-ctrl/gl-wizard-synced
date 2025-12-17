@@ -78,6 +78,15 @@ export const ProcessDataTable: React.FC<Props> = ({
   const tableColumns = useMemo(() => ["sideHeader", "total"], []);
   const multiGridRef = useRef<MultiGrid>(null);
 
+  // Sync tableRows when rows prop changes (for isTopTable tables)
+  useEffect(() => {
+    if (isTopTable && rows) {
+      setTableRows(rows);
+      // Force MultiGrid to re-render with new data
+      multiGridRef.current?.forceUpdateGrids();
+    }
+  }, [rows, isTopTable]);
+
   // Generates table data using a Web Worker
   const generateTableData = () => {
     const worker = new Worker(
