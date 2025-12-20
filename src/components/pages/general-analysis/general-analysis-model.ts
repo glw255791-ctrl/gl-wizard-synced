@@ -118,6 +118,13 @@ export function useGeneralAnalysis() {
           setIsDictionaryUploaded(false);
           return AnalysisStep.TO_UPLOAD_DICTIONARY;
 
+        case AnalysisStep.ANALYZED:
+          setTableData([]);
+          setOverviewTableData({});
+          setDataDisplayHeader([]);
+          return dictionaryData.length > 0
+            ? AnalysisStep.UPLOADED_DICTIONARY
+            : AnalysisStep.TO_UPLOAD_DICTIONARY;
         default:
           return prev;
       }
@@ -413,37 +420,6 @@ export function useGeneralAnalysis() {
    */
   const onPressAnalyzeData = () => {
     setLoadingStatus(true);
-
-    // // Reversal worker
-    // const reversalWorker = new Worker(
-    //   new URL("../../../workers/reversal-worker.js", import.meta.url),
-    //   { type: "module" }
-    // );
-
-    // reversalWorker.onmessage = (event) => {
-    //   const notMappedRows = event.data.outputVal.filter((item: any) =>
-    //     JSON.stringify(item).includes("not mapped")
-    //   );
-    //   if (notMappedRows.length > 0) {
-    //     setUnmappedRows(notMappedRows);
-    //     setIsWarningModalShown(true);
-    //   }
-
-    //   setReversalTableData(
-    //     Object.values(event.data.outputVal as Record<string, any>[]).flat()
-    //   );
-
-    //   reversalWorker.terminate();
-    // };
-
-    // reversalWorker.onerror = (error) => {
-    //   setError(error.message);
-    //   console.error("Worker error:", error);
-    //   setLoadingStatus(false);
-    //   reversalWorker.terminate();
-    // };
-
-    // reversalWorker.postMessage({ rawData, selectedHeaders });
 
     // Main general worker
     const worker = new Worker(

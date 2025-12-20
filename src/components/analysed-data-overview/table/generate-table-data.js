@@ -110,9 +110,32 @@ self.onmessage = function (e) {
       })
   );
 
+  // Sum only active columns for total row's total
+  const totalRowTotal = [
+    ...new Set(
+      sortedDataDisplayHeader
+        .filter((header) => header.active)
+        .map((header) => header[groupingValue])
+    ),
+  ].reduce((acc, colKey) => {
+    const strVal = totalRowCells[colKey];
+    let numVal;
+    if (typeof strVal === "string") {
+      numVal = Number(strVal.replace(/\./g, "").replace(",", "."));
+    } else {
+      numVal = Number(strVal);
+    }
+    return acc + (isNaN(numVal) ? 0 : numVal);
+  }, 0);
+
   const totalRow = {
     sideHeader: "Total",
     ...totalRowCells,
+    total: Number(totalRowTotal.toFixed(2)).toLocaleString("de-DE", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+      useGrouping: true,
+    }),
     bg: colors.lighter,
     header: true,
   };

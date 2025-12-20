@@ -29,6 +29,35 @@ import { ProcessValue } from "../analysed-data-overview";
 import { buildTree, Node, exportTreeToExcel } from "./process-modal-funcs";
 import { exportMultipleTablesToExcel, getElipsis } from "../table/functions";
 
+// Predefined palette of distinct, visually appealing colors for row backgrounds
+const ROW_COLORS = [
+  "#E3F2FD", // light blue
+  "#FFF3E0", // light orange
+  "#E8F5E9", // light green
+  "#FCE4EC", // light pink
+  "#F3E5F5", // light purple
+  "#E0F7FA", // light cyan
+  "#FFF8E1", // light amber
+  "#E8EAF6", // light indigo
+  "#EFEBE9", // light brown
+  "#F1F8E9", // light lime
+  "#E0F2F1", // light teal
+  "#FBE9E7", // light deep orange
+  "#ECEFF1", // light blue grey
+  "#F9FBE7", // light yellow green
+  "#EDE7F6", // light deep purple
+];
+
+// Generate a color for a given index (cycles through palette, then generates variations)
+function getColorForIndex(index: number): string {
+  if (index < ROW_COLORS.length) {
+    return ROW_COLORS[index];
+  }
+  // Generate additional colors by adjusting hue
+  const hue = (index * 137.5) % 360; // Golden angle for good distribution
+  return `hsl(${hue}, 70%, 90%)`;
+}
+
 interface TableData {
   key: string;
   id: string;
@@ -260,6 +289,18 @@ export function ProcessModal(props: Props) {
     ProcessValue[]
   >([]);
 
+  // Maps sideHeader values to their unique background colors
+  const sideHeaderColorMapRef = useRef<Map<string, string>>(new Map());
+
+  // Get or create a color for a sideHeader value
+  const getColorForSideHeader = useCallback((sideHeader: string): string => {
+    const colorMap = sideHeaderColorMapRef.current;
+    if (!colorMap.has(sideHeader)) {
+      colorMap.set(sideHeader, getColorForIndex(colorMap.size));
+    }
+    return colorMap.get(sideHeader)!;
+  }, []);
+
   const [searchByObject, setSearchByObjectInternal] = useState<
     SearchByObject | undefined
   >(undefined);
@@ -302,16 +343,23 @@ export function ProcessModal(props: Props) {
         const restTables = prev?.filter(
           (item) => !(item.title === processValue.title && item.level === level)
         );
+
+        // Assign unique bg color based on sideHeader value
+        const rowsWithColors = processValue.rows.map((row) => ({
+          ...row,
+          bg: getColorForSideHeader(String(row.sideHeader)),
+        }));
+
         const newTable = {
           ...foundTable,
-          rows: [...foundTable.rows, ...processValue.rows],
+          rows: [...foundTable.rows, ...rowsWithColors],
           parent: searchByObject,
         };
 
         return [...restTables, newTable];
       });
     },
-    [searchByObject]
+    [searchByObject, getColorForSideHeader]
   );
 
   const handleRemoveFromProcess = useCallback((processValue: ProcessValue) => {
@@ -346,7 +394,7 @@ export function ProcessModal(props: Props) {
 
     const renderTree = (node: Node, key: string) => {
       return (
-        <Stack style={{ flexDirection: "row", gap: 15 }}>
+        <Stack style={{ flexDirection: "row", gap: 15, maxHeight: 400 }}>
           <ProcessDataTable
             key={`${node.title}-${node.level}`}
             id={`${node.title}-${node.level}`}
@@ -363,7 +411,10 @@ export function ProcessModal(props: Props) {
             }}
             {...commonTableProps}
           />
-          <Stack style={{ flexDirection: "column", gap: 10 }}>
+          <Stack
+            style={{ flexDirection: "column", gap: 10 }}
+            key={`${node.title}-${node.level}-children`}
+          >
             {node.children.map((child, index) =>
               renderTree(child, `${key}-${index}`)
             )}
@@ -414,6 +465,7 @@ export function ProcessModal(props: Props) {
       setOverallProcessObject([]);
       setSearchByObjectInternal(undefined);
       setProcessName("");
+      sideHeaderColorMapRef.current.clear();
       return;
     }
 
@@ -462,9 +514,20 @@ export function ProcessModal(props: Props) {
               (item) =>
                 !(item.title === processValue.title && item.level === level)
             );
+
+            // Assign unique bg color based on sideHeader value
+            const colorMap = sideHeaderColorMapRef.current;
+            const rowsWithColors = processValue.rows.map((row) => {
+              const sideHeader = String(row.sideHeader);
+              if (!colorMap.has(sideHeader)) {
+                colorMap.set(sideHeader, getColorForIndex(colorMap.size));
+              }
+              return { ...row, bg: colorMap.get(sideHeader)! };
+            });
+
             const newTable = {
               ...foundTable,
-              rows: [...foundTable.rows, ...processValue.rows],
+              rows: [...foundTable.rows, ...rowsWithColors],
               parent: searchByObject,
             };
             updated = [...restTables, newTable];

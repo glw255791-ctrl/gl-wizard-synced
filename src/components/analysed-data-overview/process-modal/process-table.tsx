@@ -34,7 +34,6 @@ interface Props {
   mappingValue: string;
   groupingValue: string;
   valueKey: string;
-  selectedRows?: string[];
   id?: string;
   selectedFilter: Filters;
   rows: Record<string, AnyType>[];
@@ -57,7 +56,6 @@ export const ProcessDataTable: React.FC<Props> = ({
   title,
   mappingValue,
   groupingValue,
-  selectedRows,
   valueKey,
   selectedFilter,
   rows,
@@ -147,14 +145,14 @@ export const ProcessDataTable: React.FC<Props> = ({
         .map((item) => item.rows)
         .flat()
         .map((item) => JSON.stringify(item));
-
+      // Filter from original rows prop (not tableRows state) so removed rows can return
       if (!isTopTable)
         setTableRows(
-          tableRows.filter((row) => !omitRows.includes(JSON.stringify(row)))
+          rows.filter((row) => !omitRows.includes(JSON.stringify(row)))
         );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortedDataDisplayHeader, overviewTableData, overallProcessObject]);
+  }, [sortedDataDisplayHeader, overviewTableData, overallProcessObject, rows]);
 
   // Renders the content of a cell, including pin & download icons when appropriate
   const renderCellText = (row: Record<string, AnyType>, column: string) => {
@@ -272,8 +270,7 @@ export const ProcessDataTable: React.FC<Props> = ({
                             ...getStylesBasedOnColumn(
                               column,
                               row,
-                              mappingValue,
-                              selectedRows
+                              mappingValue
                             ),
                             ...getStylesBasedOnHeader(rowIndex, 0),
                           } as React.CSSProperties

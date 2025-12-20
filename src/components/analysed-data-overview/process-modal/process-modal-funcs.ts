@@ -53,14 +53,15 @@ export function buildTree(data: ProcessValue[]): Node {
     }
 
     const computeHeight = (node: Node): number => {
-      if (node.children.length === 0) {
+      if (!node) return 1;
+      if (node?.children?.length === 0) {
         // leaf node
         node.height = node.rows.length + 1;
         return node.height;
       }
 
       let sum = 0;
-      for (const child of node.children) {
+      for (const child of node?.children || []) {
         sum += computeHeight(child);
       }
 

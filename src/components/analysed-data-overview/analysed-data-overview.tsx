@@ -112,6 +112,27 @@ export function DataOverview({
     return Array.from(new Set(values));
   }, [selectedFilter.header, sortedDataDisplayHeader]);
 
+  const canProcess = useMemo(() => {
+    const allOptions = Object.keys(sortedDataDisplayHeader[0])
+      .filter((key) => key !== "active")
+      .map((key) => ({
+        value: key,
+        title: key,
+      }));
+
+    const selectedFilterHeader = selectedFilter.header;
+
+    const filterHeaderIndex =
+      selectedFilterHeader === "all"
+        ? 0
+        : allOptions.findIndex((item) => item.value === selectedFilterHeader);
+
+    const groupingValueIndex = allOptions.findIndex(
+      (item) => item.value === groupingValue
+    );
+    return filterHeaderIndex <= groupingValueIndex;
+  }, [sortedDataDisplayHeader, selectedFilter.header, groupingValue]);
+
   // Memoize common table props to prevent unnecessary re-renders
   const commonTableProps = useMemo(
     () => ({
@@ -122,6 +143,7 @@ export function DataOverview({
       basicTableData,
       basicTableHeader,
       selectedTable,
+      canProcess,
       setDataDisplayHeader,
       setIsProcessModalOpen,
       valueKey,
@@ -139,6 +161,7 @@ export function DataOverview({
       setIsProcessModalOpen,
       valueKey,
       setInitialProcessObject,
+      canProcess,
     ]
   );
 

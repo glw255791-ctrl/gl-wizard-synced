@@ -150,6 +150,7 @@ export const SelectedTableWrapper = styled(Stack)({
   backgroundColor: theme.colors.lighter,
   padding: theme.padding.md,
   minHeight: 200,
+  height: 400,
 });
 
 export const AddButton = styled(Button)({
@@ -212,12 +213,10 @@ export const ButtonsWrapper = styled(Stack)({
 export const getStylesBasedOnColumn = (
   column: string,
   row: Record<string, AnyType>,
-  mappingValue: string,
-  selectedRows?: string[]
+  mappingValue: string
 ) => {
   const isSideHeader = column === "sideHeader";
   const isTotalColumn = column === "total";
-  const isSelectedRow = selectedRows?.includes(String(row.sideHeader));
   const isBoldRow =
     isTotalColumn ||
     isSideHeader ||
@@ -226,9 +225,8 @@ export const getStylesBasedOnColumn = (
 
   let backgroundColor: string;
   if (isSideHeader) {
-    backgroundColor = isSelectedRow
-      ? theme.colors.medium
-      : theme.colors.lighter;
+    backgroundColor =
+      row.bg !== "white" ? (row.bg as string) : theme.colors.lighter;
   } else {
     backgroundColor = isTotalColumn ? theme.colors.lighter : (row.bg as string);
   }

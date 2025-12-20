@@ -66,6 +66,7 @@ interface Props {
   basicTableData: Record<string, string>[];
   setIsProcessModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   selectedTable: string;
+  canProcess: boolean;
   setCurrentProcessObject: React.Dispatch<
     React.SetStateAction<ProcessValue | undefined>
   >;
@@ -93,6 +94,7 @@ export const DataTable: React.FC<Props> = ({
   setDataDisplayHeader,
   setIsProcessModalOpen,
   setCurrentProcessObject,
+  canProcess,
 }) => {
   const [tableRows, setTableRows] = useState<Record<string, AnyType>[]>([]);
   const [tableColumns, setTableColumns] = useState<string[]>([]);
@@ -235,7 +237,6 @@ export const DataTable: React.FC<Props> = ({
   const renderCellText = (row: Record<string, AnyType>, column: string) => {
     const isHeader = row.header;
     const val = row[column] ? String(row[column]) : "";
-
     if (isHeader || column !== SIDE_HEADER) {
       return <Stack>{getElipsis(val ?? "", MAX_CHARS)}</Stack>;
     }
@@ -259,7 +260,7 @@ export const DataTable: React.FC<Props> = ({
       <TableHeaderStyled>
         <TableTitle>{title}</TableTitle>
         <ButtonsWrapper>
-          {selectedTable !== "all" && (
+          {selectedTable !== "all" && canProcess && (
             <ExcelDownloadButton
               variant="contained"
               onClick={() => {
