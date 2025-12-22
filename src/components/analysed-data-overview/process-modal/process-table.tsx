@@ -103,12 +103,17 @@ export const ProcessDataTable: React.FC<Props> = ({
 
       // Find rows that have been added to the process from this table
       // by looking for items whose parent matches this table's title and level
+      // Exclude 'bg' from comparison since it can change
+      const stringifyWithoutBg = (row: Record<string, AnyType>) => {
+        const copy = { ...row };
+        delete copy.bg;
+        return JSON.stringify(copy);
+      };
       const omitRows = overallProcessObject
         .filter((item) => item.title === title && item.parent?.level === level)
         .map((item) => item.rows)
         .flat()
-        .map((item) => JSON.stringify(item));
-
+        .map((item) => stringifyWithoutBg(item));
       setTableRows([
         ...rows
           .slice(2, rows.length - 1)
@@ -119,7 +124,7 @@ export const ProcessDataTable: React.FC<Props> = ({
           })
           .filter(
             (row: { [x: string]: string }) =>
-              !omitRows.includes(JSON.stringify(row))
+              !omitRows.includes(stringifyWithoutBg(row))
           ),
       ]);
     };
@@ -140,15 +145,21 @@ export const ProcessDataTable: React.FC<Props> = ({
     } else {
       // Find rows that have been added to the process from this table
       // by looking for items whose parent matches this table's title and level
+      // Exclude 'bg' from comparison since it can change
+      const stringifyWithoutBg = (row: Record<string, AnyType>) => {
+        const copy = { ...row };
+        delete copy.bg;
+        return JSON.stringify(copy);
+      };
       const omitRows = overallProcessObject
         .filter((item) => item.title === title && !item.parent)
         .map((item) => item.rows)
         .flat()
-        .map((item) => JSON.stringify(item));
+        .map((item) => stringifyWithoutBg(item));
       // Filter from original rows prop (not tableRows state) so removed rows can return
       if (!isTopTable)
         setTableRows(
-          rows.filter((row) => !omitRows.includes(JSON.stringify(row)))
+          rows.filter((row) => !omitRows.includes(stringifyWithoutBg(row)))
         );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -188,6 +188,7 @@ export function GeneralAnalysis() {
 
           <DataOverview
             mappingValue={selectedHeaders.coaHeaders.mappingValue}
+            displayValue={selectedHeaders.coaHeaders.displayValue}
             overviewTableData={overviewTableData}
             setDataDisplayHeader={setDataDisplayHeader}
             sortedDataDisplayHeader={sortedDataDisplayHeader}

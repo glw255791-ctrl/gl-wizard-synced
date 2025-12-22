@@ -36,6 +36,7 @@ export type ProcessValue = {
 interface Props {
   title: string;
   mappingValue: string;
+  displayValue?: string;
   valueKey: string;
   coaHeaderOptions?: DropdownItem[];
   sortedDataDisplayHeader: Record<string, AnyType>[];
@@ -69,6 +70,7 @@ interface Filters {
 export function DataOverview({
   title,
   mappingValue,
+  displayValue,
   valueKey,
   overviewTableData,
   sortedDataDisplayHeader,
@@ -120,6 +122,10 @@ export function DataOverview({
         title: key,
       }));
 
+    const displayValueIndex = allOptions.findIndex(
+      (item) => item.value === displayValue
+    );
+
     const selectedFilterHeader = selectedFilter.header;
 
     const filterHeaderIndex =
@@ -130,8 +136,17 @@ export function DataOverview({
     const groupingValueIndex = allOptions.findIndex(
       (item) => item.value === groupingValue
     );
-    return filterHeaderIndex <= groupingValueIndex;
-  }, [sortedDataDisplayHeader, selectedFilter.header, groupingValue]);
+
+    return (
+      displayValueIndex <= groupingValueIndex &&
+      displayValueIndex <= filterHeaderIndex
+    );
+  }, [
+    sortedDataDisplayHeader,
+    selectedFilter.header,
+    groupingValue,
+    displayValue,
+  ]);
 
   // Memoize common table props to prevent unnecessary re-renders
   const commonTableProps = useMemo(

@@ -245,7 +245,8 @@ function computeTableData(
               item.title === value &&
               item.level === (searchByObject.level || 0) + 1
           )
-          ?.rows.find((item) => item.sideHeader === searchByObject?.value)
+          ?.rows.find((item) => item.sideHeader === searchByObject?.value) &&
+        !overallProcessObject.find((item) => item.title === value)
       ) {
         processUpdates.push({
           title: value,
@@ -254,7 +255,13 @@ function computeTableData(
         });
       }
 
-      if (hasItemInTable && value !== searchByObject?.title) {
+      if (
+        hasItemInTable &&
+        value !== searchByObject?.title &&
+        !overallProcessObject.find(
+          (item) => item.title === value && item.level <= searchByObject.level
+        )
+      ) {
         accumulatedTablesData.push({
           key: value,
           id: value,
@@ -500,6 +507,7 @@ export function ProcessModal(props: Props) {
         return;
       }
 
+      console.log(processUpdates);
       // Apply process updates
       if (processUpdates.length > 0) {
         setOverallProcessObject((prev) => {
@@ -530,6 +538,7 @@ export function ProcessModal(props: Props) {
               rows: [...foundTable.rows, ...rowsWithColors],
               parent: searchByObject,
             };
+
             updated = [...restTables, newTable];
           }
           return updated;
