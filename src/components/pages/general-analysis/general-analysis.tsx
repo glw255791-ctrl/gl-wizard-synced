@@ -15,6 +15,8 @@ import { CardStyled, RootStack } from "./style";
 import { supabase } from "../../../api/api";
 import { useState, useEffect, useMemo } from "react";
 import { UndoButton } from "../../composed/undo-button/undo-button";
+import { HierarchyModal } from "../../composed/hierarchy-modal/hierarchy-modal";
+import { HierarchyButton } from "../../composed/hierarchy-button/hierarchy-button";
 
 export function GeneralAnalysis() {
   const {
@@ -31,6 +33,10 @@ export function GeneralAnalysis() {
     loadingStatus,
     isWarningModalShown,
     isDictionaryUploaded,
+    isHierarchyModalVisible,
+    hierarchyData,
+    setIsHierarchyModalVisible,
+    setHierarchyData,
     onDictionaryDrop,
     onPressExportUnmappedRows,
     setIsWarningModalShown,
@@ -166,6 +172,15 @@ export function GeneralAnalysis() {
                 disabled={currentStep === AnalysisStep.TO_UPLOAD_GL}
                 onPressUndo={onPressBackBtn}
               />
+              <HierarchyButton
+                disabled={
+                  !(
+                    currentStep === AnalysisStep.TO_UPLOAD_DICTIONARY ||
+                    currentStep === AnalysisStep.UPLOADED_DICTIONARY
+                  )
+                }
+                onPress={() => setIsHierarchyModalVisible(true)}
+              />
               <ActionButton
                 disabled={
                   currentStep !== AnalysisStep.TO_UPLOAD_DICTIONARY &&
@@ -186,6 +201,15 @@ export function GeneralAnalysis() {
             />
           )}
 
+          {isHierarchyModalVisible && (
+            <HierarchyModal
+              hierarchyData={hierarchyData}
+              isOpen={isHierarchyModalVisible}
+              onClose={() => setIsHierarchyModalVisible(false)}
+              setHierarchyData={setHierarchyData}
+            />
+          )}
+
           <DataOverview
             mappingValue={selectedHeaders.coaHeaders.mappingValue}
             displayValue={selectedHeaders.coaHeaders.displayValue}
@@ -196,6 +220,7 @@ export function GeneralAnalysis() {
             title="Movement Tables"
             valueKey={selectedHeaders.glHeaders.value}
             disabled={currentStep !== AnalysisStep.ANALYZED}
+            hierarchyData={hierarchyData}
             basicTableData={tableData}
             basicTableHeader={tableHeader}
           />

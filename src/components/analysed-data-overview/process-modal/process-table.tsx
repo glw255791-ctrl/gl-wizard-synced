@@ -110,10 +110,11 @@ export const ProcessDataTable: React.FC<Props> = ({
         return JSON.stringify(copy);
       };
       const omitRows = overallProcessObject
-        .filter((item) => item.title === title && item.parent?.level === level)
+        .filter((item) => item.title === title)
         .map((item) => item.rows)
         .flat()
         .map((item) => stringifyWithoutBg(item));
+
       setTableRows([
         ...rows
           .slice(2, rows.length - 1)
@@ -194,6 +195,7 @@ export const ProcessDataTable: React.FC<Props> = ({
                     title,
                     level,
                     value: String(row.sideHeader),
+                    bg: row.bg as string,
                   })
                 }
               >

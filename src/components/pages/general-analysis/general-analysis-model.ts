@@ -49,14 +49,15 @@ export function useGeneralAnalysis() {
     []
   );
   const [tableData, setTableData] = useState<Record<string, any>[]>([]);
-  // const [reversalTableData, setReversalTableData] = useState<
-  //   Record<string, any>[]
-  // >([]);
+
   const [selectedHeaders, setSelectedHeaders] = useState<SelectedHeaders>({
     glHeaders: { account: "", jen: "", date: "", value: "" },
     coaHeaders: { displayValue: "", mappingValue: "", groupingValue: "" },
   });
   const [loadingStatus, setLoadingStatus] = useState(false);
+  const [isHierarchyModalVisible, setIsHierarchyModalVisible] = useState(false);
+
+  const [hierarchyData, setHierarchyData] = useState<Record<string, any>[]>([]);
 
   // --- Memoized Values ---
 
@@ -353,6 +354,12 @@ export function useGeneralAnalysis() {
       },
     }));
 
+    setIsHierarchyModalVisible(true);
+    setHierarchyData(
+      columnNames
+        .filter(Boolean)
+        .map((item, index) => ({ value: item, level: index + 1 }))
+    );
     setCurrentStep(AnalysisStep.TO_UPLOAD_DICTIONARY);
   };
 
@@ -508,7 +515,10 @@ export function useGeneralAnalysis() {
     onPressBackBtn,
     dictionaryData,
     isDictionaryUploaded,
-    // reversalTableData,
+    hierarchyData,
+    isHierarchyModalVisible,
+    setIsHierarchyModalVisible,
+    setHierarchyData,
     loadingStatus,
     error,
     overviewTableData,

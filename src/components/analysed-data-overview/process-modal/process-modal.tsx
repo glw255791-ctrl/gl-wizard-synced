@@ -77,6 +77,7 @@ export interface SearchByObject {
   title: string;
   level: number;
   value: string;
+  bg: string;
 }
 
 interface CommonTableProps {
@@ -114,8 +115,7 @@ function computeTableData(
   overviewTableData: Record<string, AnyType>,
   sortedDataDisplayHeader: Record<string, AnyType>[],
   selectedFilter: Filters,
-  commonTableProps: CommonTableProps,
-  overallProcessObject: ProcessValue[]
+  commonTableProps: CommonTableProps
 ): { tablesData: TableData[]; processUpdates: ProcessValue[] } {
   const filteredValues = filterValueOptions.filter((v) => v !== "total");
   const accumulatedTablesData: TableData[] = [];
@@ -238,15 +238,7 @@ function computeTableData(
       if (
         matchingRows.length > 0 &&
         hasItemInTable &&
-        value !== searchByObject?.title &&
-        !overallProcessObject
-          .find(
-            (item) =>
-              item.title === value &&
-              item.level === (searchByObject.level || 0) + 1
-          )
-          ?.rows.find((item) => item.sideHeader === searchByObject?.value) &&
-        !overallProcessObject.find((item) => item.title === value)
+        value !== searchByObject?.title
       ) {
         processUpdates.push({
           title: value,
@@ -255,13 +247,7 @@ function computeTableData(
         });
       }
 
-      if (
-        hasItemInTable &&
-        value !== searchByObject?.title &&
-        !overallProcessObject.find(
-          (item) => item.title === value && item.level <= searchByObject.level
-        )
-      ) {
+      if (hasItemInTable && value !== searchByObject?.title) {
         accumulatedTablesData.push({
           key: value,
           id: value,
@@ -343,27 +329,39 @@ export function ProcessModal(props: Props) {
   const handleAddToProcess = useCallback(
     (processValue: ProcessValue) => {
       setOverallProcessObject((prev) => {
-        const level = (searchByObject?.level || 0) + 1;
-        const foundTable = prev?.find(
-          (item) => item.title === processValue.title && item.level === level
-        ) || { title: processValue.title, rows: [], level: level };
-        const restTables = prev?.filter(
-          (item) => !(item.title === processValue.title && item.level === level)
-        );
-
         // Assign unique bg color based on sideHeader value
         const rowsWithColors = processValue.rows.map((row) => ({
           ...row,
           bg: getColorForSideHeader(String(row.sideHeader)),
         }));
 
-        const newTable = {
-          ...foundTable,
-          rows: [...foundTable.rows, ...rowsWithColors],
-          parent: searchByObject,
-        };
+        // Check if an item with this title already exists
+        const existingItem = prev?.find(
+          (item) => item.title === processValue.title
+        );
 
-        return [...restTables, newTable];
+        if (existingItem) {
+          // Title exists - add rows to existing item
+          return prev.map((item) => {
+            if (item.title === processValue.title) {
+              return {
+                ...item,
+                rows: [...item.rows, ...rowsWithColors],
+              };
+            }
+            return item;
+          });
+        } else {
+          // Title doesn't exist - create new entry
+          const level = (searchByObject?.level || 0) + 1;
+          const newTable = {
+            title: processValue.title,
+            rows: rowsWithColors,
+            level: level,
+            parent: searchByObject,
+          };
+          return [...prev, newTable];
+        }
       });
     },
     [searchByObject, getColorForSideHeader]
@@ -498,8 +496,7 @@ export function ProcessModal(props: Props) {
         overviewTableData,
         sortedDataDisplayHeader,
         selectedFilter,
-        commonTableProps,
-        overallProcessObject
+        commonTableProps
       );
 
       // Check again after computation
@@ -507,41 +504,51 @@ export function ProcessModal(props: Props) {
         return;
       }
 
-      console.log(processUpdates);
-      // Apply process updates
       if (processUpdates.length > 0) {
         setOverallProcessObject((prev) => {
-          let updated = [...prev];
-          for (const processValue of processUpdates) {
-            const level = (searchByObject?.level || 0) + 1;
-            const foundTable = updated.find(
-              (item) =>
-                item.title === processValue.title && item.level === level
-            ) || { title: processValue.title, rows: [], level: level };
-            const restTables = updated.filter(
-              (item) =>
-                !(item.title === processValue.title && item.level === level)
-            );
-
-            // Assign unique bg color based on sideHeader value
-            const colorMap = sideHeaderColorMapRef.current;
-            const rowsWithColors = processValue.rows.map((row) => {
-              const sideHeader = String(row.sideHeader);
-              if (!colorMap.has(sideHeader)) {
-                colorMap.set(sideHeader, getColorForIndex(colorMap.size));
-              }
-              return { ...row, bg: colorMap.get(sideHeader)! };
-            });
-
-            const newTable = {
-              ...foundTable,
-              rows: [...foundTable.rows, ...rowsWithColors],
+          // Items in processUpdates with titles that do NOT exist in prev
+          const newProcessItems = processUpdates
+            .filter((item) => !prev.some((obj) => obj.title === item.title))
+            .map((item) => ({
+              ...item,
+              level: (searchByObject?.level || 0) + 1,
+              rows: item.rows.map((row) => ({
+                ...row,
+                bg: searchByObject?.bg,
+              })),
               parent: searchByObject,
-            };
+            }));
 
-            updated = [...restTables, newTable];
-          }
-          return updated;
+          // Items in processUpdates with titles that ALREADY exist in prev
+          const existingProcessItems = processUpdates.filter((item) =>
+            prev.some((obj) => obj.title === item.title)
+          );
+
+          const updatedProcessItems = prev.map((item) => {
+            const matchingExisting = existingProcessItems.find(
+              (existingItem) => existingItem.title === item.title
+            );
+            if (matchingExisting) {
+              const alreadyHasRow = item.rows.find(
+                (row) => row.sideHeader === matchingExisting.rows[0]?.sideHeader
+              );
+              return {
+                ...item,
+                rows: alreadyHasRow
+                  ? item.rows
+                  : [
+                      ...item.rows,
+                      {
+                        ...matchingExisting.rows[0],
+                        bg: searchByObject?.bg,
+                      } as Record<string, AnyType>,
+                    ],
+              };
+            }
+            return item;
+          });
+
+          return [...updatedProcessItems, ...newProcessItems] as ProcessValue[];
         });
       }
 

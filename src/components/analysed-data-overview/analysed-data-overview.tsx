@@ -34,6 +34,7 @@ export type ProcessValue = {
 };
 
 interface Props {
+  hierarchyData: Record<string, AnyType>[];
   title: string;
   mappingValue: string;
   displayValue?: string;
@@ -68,6 +69,7 @@ interface Filters {
  * @param basicTableData - Basic table row data
  */
 export function DataOverview({
+  hierarchyData,
   title,
   mappingValue,
   displayValue,
@@ -115,37 +117,41 @@ export function DataOverview({
   }, [selectedFilter.header, sortedDataDisplayHeader]);
 
   const canProcess = useMemo(() => {
-    const allOptions = Object.keys(sortedDataDisplayHeader[0])
-      .filter((key) => key !== "active")
-      .map((key) => ({
-        value: key,
-        title: key,
-      }));
-
-    const displayValueIndex = allOptions.findIndex(
+    const displayValueIndex = hierarchyData.find(
       (item) => item.value === displayValue
-    );
+    )?.level as number;
 
-    const selectedFilterHeader = selectedFilter.header;
+    const selectedFilterHeaderIndex = hierarchyData.find(
+      (item) => item.value === selectedFilter.header
+    )?.level as number;
 
-    const filterHeaderIndex =
-      selectedFilterHeader === "all"
-        ? 0
-        : allOptions.findIndex((item) => item.value === selectedFilterHeader);
-
-    const groupingValueIndex = allOptions.findIndex(
+    const groupingValueIndex = hierarchyData.find(
       (item) => item.value === groupingValue
-    );
+    )?.level as number;
 
+    const shouldConsiderSecondCondition =
+      lazyTables.length === 1 &&
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (lazyTables as any[])[0].props.sortedDataDisplayHeader.some(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (it: any) => it.active === false
+      );
+
+    console.log(shouldConsiderSecondCondition);
+    console.log(displayValueIndex <= groupingValueIndex);
+    console.log(displayValue, hierarchyData);
     return (
-      displayValueIndex <= groupingValueIndex &&
-      displayValueIndex <= filterHeaderIndex
+      displayValueIndex <= selectedFilterHeaderIndex &&
+      (shouldConsiderSecondCondition
+        ? displayValueIndex <= groupingValueIndex
+        : true)
     );
   }, [
-    sortedDataDisplayHeader,
     selectedFilter.header,
     groupingValue,
     displayValue,
+    hierarchyData,
+    lazyTables,
   ]);
 
   // Memoize common table props to prevent unnecessary re-renders
