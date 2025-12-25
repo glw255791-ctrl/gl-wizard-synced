@@ -137,9 +137,6 @@ export function DataOverview({
         (it: any) => it.active === false
       );
 
-    console.log(shouldConsiderSecondCondition);
-    console.log(displayValueIndex <= groupingValueIndex);
-    console.log(displayValue, hierarchyData);
     return (
       displayValueIndex <= selectedFilterHeaderIndex &&
       (shouldConsiderSecondCondition
