@@ -127,6 +127,7 @@ export const BasicTable = ({
                       }
                     >
                       <Typography
+                        component={"div"}
                         style={{
                           ...styles.cellBaseStyle,
                           ...getCellStyleByHeader(col.key),

@@ -184,7 +184,9 @@ export const ProcessDataTable: React.FC<Props> = ({
     return (
       <RowLabelWrapper>
         <Tooltip title={tooltipTitle}>
-          <Typography style={{ fontSize: 12 }}>{val}</Typography>
+          <Typography style={{ fontSize: 12 }} component={"div"}>
+            {val}
+          </Typography>
         </Tooltip>
         <RowLabelCell>
           {isTopTable ? (
@@ -243,7 +245,7 @@ export const ProcessDataTable: React.FC<Props> = ({
         <TableHeaderStyled>
           <TableTitle>
             <Tooltip title={title}>
-              <Typography>{getElipsis(title, 40)}</Typography>
+              <Typography component={"div"}>{getElipsis(title, 40)}</Typography>
             </Tooltip>
           </TableTitle>
         </TableHeaderStyled>

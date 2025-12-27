@@ -333,6 +333,7 @@ export const DataTable: React.FC<Props> = ({
                 <div key={key} style={style}>
                   <Tooltip title={tooltipTitle}>
                     <Typography
+                      component={"div"}
                       style={
                         {
                           ...styles.cellBaseStyle,

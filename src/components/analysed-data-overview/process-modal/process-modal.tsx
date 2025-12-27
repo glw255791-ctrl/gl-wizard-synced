@@ -344,9 +344,52 @@ export function ProcessModal(props: Props) {
           // Title exists - add rows to existing item
           return prev.map((item) => {
             if (item.title === processValue.title) {
+              const rowsWithoutTotal = item.rows.filter(
+                (row) => row.sideHeader !== "Total"
+              );
+              console.log(
+                item.rows[0].total,
+                Number(
+                  (item.rows[0].total as string)
+                    .replace(/\./g, "")
+                    .replace(",", ".")
+                )
+              );
+              const total = Number(
+                (
+                  rowsWithoutTotal.reduce(
+                    (acc, row) =>
+                      acc +
+                      Number(
+                        (row.total as string)
+                          .replace(/\./g, "")
+                          .replace(",", ".")
+                      ),
+                    0
+                  ) +
+                  rowsWithColors.reduce(
+                    (acc, row) =>
+                      acc +
+                      Number(
+                        ((row as Record<string, AnyType>).total as string)
+                          .replace(/\./g, "")
+                          .replace(",", ".")
+                      ),
+                    0
+                  )
+                ).toFixed(2)
+              ).toLocaleString("de-DE", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+                useGrouping: true,
+              });
               return {
                 ...item,
-                rows: [...item.rows, ...rowsWithColors],
+                rows: [
+                  ...item.rows.filter((row) => row.sideHeader !== "Total"),
+                  ...rowsWithColors,
+                  { sideHeader: "Total", total, bg: "white", header: false },
+                ],
               };
             }
             return item;
@@ -354,9 +397,31 @@ export function ProcessModal(props: Props) {
         } else {
           // Title doesn't exist - create new entry
           const level = (searchByObject?.level || 0) + 1;
+
+          const total = Number(
+            rowsWithColors
+              .reduce(
+                (acc, row) =>
+                  acc +
+                  Number(
+                    ((row as Record<string, AnyType>).total as string)
+                      .replace(/\./g, "")
+                      .replace(",", ".")
+                  ),
+                0
+              )
+              .toFixed(2)
+          ).toLocaleString("de-DE", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+            useGrouping: true,
+          });
           const newTable = {
             title: processValue.title,
-            rows: rowsWithColors,
+            rows: [
+              ...rowsWithColors,
+              { sideHeader: "Total", total, bg: "white", header: false },
+            ],
             level: level,
             parent: searchByObject,
           };
@@ -389,7 +454,12 @@ export function ProcessModal(props: Props) {
               .includes(JSON.stringify(row))
         ),
       };
-      return [...restTables, ...(newTable.rows.length > 0 ? [newTable] : [])];
+      return [
+        ...restTables,
+        ...(newTable.rows.filter((row) => row.sideHeader !== "Total").length > 0
+          ? [newTable]
+          : []),
+      ];
     });
   }, []);
 
