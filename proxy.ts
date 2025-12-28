@@ -13,9 +13,9 @@ const protectedRoutes = [
 ];
 
 export function proxy(req: NextRequest) {
+  console.log(">>> PROXY INVOKED <<<"); // Should appear in logs
   const token = req.cookies.get("sb-access-token")?.value;
   const pathname = req.nextUrl.pathname;
-
   console.log("Proxy triggered for path:", req.nextUrl.pathname);
   console.log("Token present:", !!req.cookies.get("sb-access-token")?.value);
 
