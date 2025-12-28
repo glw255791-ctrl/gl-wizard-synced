@@ -1,14 +1,4 @@
-"use client";
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-
+// app/page.tsx — optional, can be very simple
 export default function Page() {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.replace("/login");
-  }, [router]);
-
-  return null;
+  return null; // Or a small message like "Redirecting..."
 }

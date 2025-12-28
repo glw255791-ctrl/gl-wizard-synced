@@ -13,11 +13,16 @@ const protectedRoutes = [
 ];
 
 export function middleware(req: NextRequest) {
-  const token = req.cookies.get("sb-access-token")?.value; // Supabase session cookie
+  const token = req.cookies.get("sb-access-token")?.value;
+  const pathname = req.nextUrl.pathname;
 
-  const isProtected = protectedRoutes.some((path) =>
-    req.nextUrl.pathname.startsWith(path)
-  );
+  // Redirect root "/" to /login if not authenticated
+  if (pathname === "/" && !token) {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
+
+  // Protect the defined routes
+  const isProtected = protectedRoutes.some((path) => pathname.startsWith(path));
 
   if (isProtected && !token) {
     return NextResponse.redirect(new URL("/login", req.url));
@@ -27,7 +32,9 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
+  runtime: "nodejs", // Keeps the __dirname fix
   matcher: [
+    "/",
     "/dashboard/:path*",
     "/general-analysis/:path*",
     "/reversal-analysis/:path*",
