@@ -1,12 +1,7 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router";
-import { supabase, supabaseAdmin } from "../../../api/api";
-import {
-  Column,
-  UserData,
-  ModalProps,
-  SnackbarProps,
-} from "../../../types";
+import { useRouter } from "next/navigation";
+import { Column, UserData, ModalProps, SnackbarProps } from "../../../types";
+import { supabase } from "@/lib/supabase/supabase-client";
 
 // Re-export types for backward compatibility
 export type { Column, UserData, ModalProps, SnackbarProps };
@@ -20,65 +15,31 @@ export function useUserManagementModel() {
     severity: "",
     open: false,
   });
-  const [modalProps, setModalProps] = useState<ModalProps | undefined>(undefined);
+  const [modalProps, setModalProps] = useState<ModalProps | undefined>(
+    undefined
+  );
 
-  const navigate = useNavigate();
+  const router = useRouter();
 
-  // ----- Data Loading -----
   const loadData = async () => {
-    setUserData([]);
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) return;
-
-      const { data: profiles, error } = await supabase
-        .from("profiles")
-        .select("*");
-
-      if (error || !profiles) {
-        setSnackbarProps({
-          message: `Failed to load data. ${error?.message}`,
-          severity: "error",
-          open: true,
-        });
-        throw new Error();
-      }
-
-      const filtered = profiles
-        .map(({ full_name, email, licence_valid_until, id, role }) => ({
-          name: full_name,
-          email,
-          licencevaliduntil: licence_valid_until,
-          id,
-          role,
-        }))
-        .filter((item) => item.role !== "admin");
-
-      setUserData(filtered);
-    } catch (error) {
-      console.warn(error);
-    }
+    const res = await fetch("/api/users");
+    const data = await res.json();
+    setUserData(data);
   };
 
   // ----- Licence Date Update -----
-  const updateLicenceDate = async (id: string, newDate: Date) => {
+  const updateLicenceDate = async (id: string, date: Date) => {
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ licence_valid_until: newDate.toISOString() })
-        .eq("id", id);
+      const session = await supabase.auth.getSession();
 
-      if (error) {
-        setSnackbarProps({
-          message: `Failed to update licence. ${error.message}`,
-          severity: "error",
-          open: true,
-        });
-        throw new Error();
-      }
+      await fetch("/api/users/licence", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.data.session?.access_token}`,
+        },
+        body: JSON.stringify({ id, date: date.toISOString() }),
+      });
 
       setSnackbarProps({
         message: `Licence updated.`,
@@ -87,24 +48,27 @@ export function useUserManagementModel() {
       });
     } catch (error) {
       console.warn(error);
+      setSnackbarProps({
+        message: `Failed to update licence.`,
+        severity: "error",
+        open: true,
+      });
     }
   };
 
   // ----- Invite User -----
   const signUpUser = async (email: string) => {
     try {
-      const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-        redirectTo: `${import.meta.env.VITE_BASE_URL}/register`,
-      });
+      const session = await supabase.auth.getSession();
 
-      if (error) {
-        setSnackbarProps({
-          message: `Failed to invite user. ${error.message}`,
-          severity: "error",
-          open: true,
-        });
-        throw new Error();
-      }
+      await fetch("/api/users/invite", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.data.session?.access_token}`,
+        },
+        body: JSON.stringify({ email }),
+      });
 
       setSnackbarProps({
         message: `User ${email} invited.`,
@@ -113,6 +77,11 @@ export function useUserManagementModel() {
       });
     } catch (error) {
       console.warn(error);
+      setSnackbarProps({
+        message: `Failed to invite user.`,
+        severity: "error",
+        open: true,
+      });
     }
   };
 
@@ -161,7 +130,7 @@ export function useUserManagementModel() {
     searchTerm,
     setSearchTerm,
     loadData,
-    navigate,
+    router,
     updateLicenceDate,
     setModalProps,
     modalProps,

@@ -1,7 +1,7 @@
 import React from "react";
 import { AccordionSummary, AccordionDetails, Stack } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { StyledAccordionWrapper, Title } from "../analysed-data-overview/style";
+import { StyledAccordionWrapper, Title } from "../data-overview/style";
 import { BasicTable, TableHeader } from "../composed/basic-table/basic-table";
 
 interface Props {

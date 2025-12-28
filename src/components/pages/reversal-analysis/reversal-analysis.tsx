@@ -1,3 +1,5 @@
+"use client";
+
 import { Grid2, Stack } from "@mui/material";
 import { FileDropzone } from "../../ui-kit/dropzone/dropzone";
 import { Dropdown } from "../../ui-kit/dropdown/dropdown";
@@ -13,7 +15,7 @@ import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { WarningModal } from "../../composed/warning-modal/warning-modal";
 import { UndoButton } from "../../composed/undo-button/undo-button";
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "../../../api/api";
+import { supabase } from "@/lib/supabase/supabase-client";
 
 export function ReversalAnalysis() {
   const {

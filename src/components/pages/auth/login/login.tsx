@@ -1,3 +1,4 @@
+"use client";
 import {
   Root,
   LoginBlock,
@@ -10,14 +11,13 @@ import {
   ErrorsBlock,
   ErrorText,
 } from "./style";
-import logo from "../logo.png";
 import { useLoginModel } from "./login-model";
 import { useEffect } from "react";
-import { supabase } from "../../../../api/api";
+import { supabase } from "@/lib/supabase/supabase-client";
 import { TextField } from "@mui/material";
 
 export function LoginPage() {
-  const { loginData, onChangeField, navigate, fieldErrors, onLogin } =
+  const { loginData, onChangeField, router, fieldErrors, onLogin } =
     useLoginModel();
 
   useEffect(() => {
@@ -27,17 +27,17 @@ export function LoginPage() {
       } = await supabase.auth.getSession();
 
       if (session) {
-        navigate("/dashboard");
+        router.push("/dashboard");
       }
     };
     checkSession();
-  }, [navigate]);
+  }, [router]);
 
   return (
     <Root>
       <LoginBlock>
         <ImageAndLogo>
-          <LogoImage src={logo} />
+          <LogoImage src={"/logo.png"} />
           <Label>GL Wizard</Label>
         </ImageAndLogo>
         <InputWrapper>

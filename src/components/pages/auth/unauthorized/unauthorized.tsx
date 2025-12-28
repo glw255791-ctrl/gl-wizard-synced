@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Root,
   LoginBlock,
@@ -7,23 +9,18 @@ import {
   Message,
   StyledButton,
 } from "../style";
-import logo from "../logo.png";
-import { useNavigate } from "react-router";
+import { useRouter } from "next/navigation";
 export function UnauthorizedPage() {
-  const navigate = useNavigate();
+  const router = useRouter();
   return (
     <Root>
       <LoginBlock>
         <ImageAndLogo>
-          <LogoImage src={logo} />
+          <LogoImage src={"/logo.png"} />
           <Label>GL Wizard</Label>
         </ImageAndLogo>
-        <Message>
-          You are not authorized or your session expired.
-        </Message>
-        <StyledButton onClick={() => navigate("/login")}>
-          Login
-        </StyledButton>
+        <Message>You are not authorized or your session expired.</Message>
+        <StyledButton onClick={() => router.push("/login")}>Login</StyledButton>
       </LoginBlock>
     </Root>
   );

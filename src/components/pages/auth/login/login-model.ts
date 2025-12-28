@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
-import { supabase } from "../../../../api/api";
+import { useRouter } from "next/navigation";
 import { LoginData } from "../../../../types";
+import { supabase } from "@/lib/supabase/supabase-client";
 
 // Re-export type for backward compatibility
 export type { LoginData };
 export function useLoginModel() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [loginData, setLoginData] = useState<LoginData>({
     email: "",
     password: "",
@@ -24,36 +24,51 @@ export function useLoginModel() {
   };
 
   const onLogin = async () => {
+    const { email, password } = loginData;
+
+    if (!email || !password) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        email: !email ? "Email required" : "",
+        password: !password ? "Password required" : "",
+      }));
+      return;
+    }
+
     try {
-      const { email, password } = loginData;
-      if (!email) {
-        setFieldErrors((prev) => ({ ...prev, email: "Email is required" }));
-      }
-      if (!password) {
-        setFieldErrors((prev) => ({
-          ...prev,
-          password: "Password is required",
-        }));
-      }
-      if (!password || !email) {
-        throw new Error();
-      }
-      const loginResponse = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      // call serverless endpoint
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
-      if (loginResponse.error) throw loginResponse.error;
-      navigate("/dashboard");
-    } catch (error) {
-      if (error instanceof Error) {
-        setFieldErrors((prev) => ({ ...prev, rest: error.message }));
+      const data = await res.json();
+
+      if (!res.ok) {
+        setFieldErrors((prev) => ({ ...prev, rest: data.error }));
+        return;
       }
+
+      // set the session in Supabase client (writes to localStorage)
+      if (data.session) {
+        await supabase.auth.setSession(data.session);
+      }
+
+      router.push("/dashboard");
+    } catch (err: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const error = err as any;
+      setFieldErrors((prev) => ({
+        ...prev,
+        rest: error?.message || "Unknown error",
+      }));
     }
   };
+
   return {
     onLogin,
     setLoginData,
-    navigate,
+    router,
     loginData,
     fieldErrors,
     onChangeField,
