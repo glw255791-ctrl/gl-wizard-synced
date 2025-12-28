@@ -1,4 +1,4 @@
-// proxy.ts (or src/proxy.ts)
+// proxy.ts
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -16,12 +16,15 @@ export function proxy(req: NextRequest) {
   const token = req.cookies.get("sb-access-token")?.value;
   const pathname = req.nextUrl.pathname;
 
-  // Redirect root "/" to /login if not authenticated
+  console.log("Proxy triggered for path:", req.nextUrl.pathname);
+  console.log("Token present:", !!req.cookies.get("sb-access-token")?.value);
+
+  // Redirect root "/" to /login if no token
   if (pathname === "/" && !token) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // Protect the defined routes
+  // Protect specific routes
   const isProtected = protectedRoutes.some((path) => pathname.startsWith(path));
 
   if (isProtected && !token) {
@@ -33,7 +36,7 @@ export function proxy(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/",
+    "/", // ← Critical: include root to handle redirects from home
     "/dashboard/:path*",
     "/general-analysis/:path*",
     "/reversal-analysis/:path*",
