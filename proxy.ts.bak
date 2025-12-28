@@ -36,7 +36,7 @@ export function proxy(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/", // ← Critical: include root to handle redirects from home
+    "/",
     "/dashboard/:path*",
     "/general-analysis/:path*",
     "/reversal-analysis/:path*",
