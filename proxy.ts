@@ -1,4 +1,4 @@
-// middleware.ts
+// proxy.ts (or src/proxy.ts)
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -12,7 +12,7 @@ const protectedRoutes = [
   "/about",
 ];
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const token = req.cookies.get("sb-access-token")?.value;
   const pathname = req.nextUrl.pathname;
 
@@ -32,7 +32,6 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  runtime: "nodejs", // Keeps the __dirname fix
   matcher: [
     "/",
     "/dashboard/:path*",
