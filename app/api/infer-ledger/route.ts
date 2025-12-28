@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 
-const HF_API_KEY = process.env.NEXT_PUBLIC_HF_API_KEY;
+const HF_API_KEY = process.env.HF_API_KEY;
 const MODEL = "Qwen/Qwen2.5-72B-Instruct"; // Excellent, clean, concise
 // Alternatives if rate-limited: 'Qwen/Qwen2.5-32B-Instruct' or 'Qwen/Qwen2.5-7B-Instruct'
 const ROUTER_URL = "https://router.huggingface.co/v1/chat/completions";

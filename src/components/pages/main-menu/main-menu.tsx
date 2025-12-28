@@ -1,7 +1,7 @@
 import { Grid2 } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { ButtonsWrapper, Root, StyledMenuButton } from "./style";
-import { supabase } from "@/api/supabase-client";
+import { supabase } from "@/lib/supabase/supabase-client";
 import { useEffect, useMemo, useState } from "react";
 import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { Header } from "../../composed/header/header";

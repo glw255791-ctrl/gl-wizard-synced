@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Column, UserData, ModalProps, SnackbarProps } from "../../../types";
-import { supabase } from "@/api/supabase-client";
+import { supabase } from "@/lib/supabase/supabase-client";
 
 // Re-export types for backward compatibility
 export type { Column, UserData, ModalProps, SnackbarProps };

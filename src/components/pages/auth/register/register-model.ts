@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/api/supabase-client";
+import { supabase } from "@/lib/supabase/supabase-client";
 import { RegisterData } from "@/types";
 
 // Re-export type for backward compatibility

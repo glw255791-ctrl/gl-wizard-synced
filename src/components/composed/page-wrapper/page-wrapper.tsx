@@ -21,7 +21,7 @@ import ShuffleOnIcon from "@mui/icons-material/ShuffleOn";
 import GroupIcon from "@mui/icons-material/Group";
 import HelpCenterIcon from "@mui/icons-material/HelpCenter";
 import PrivacyTipIcon from "@mui/icons-material/PrivacyTip";
-import { supabase } from "@/api/supabase-client";
+import { supabase } from "@/lib/supabase/supabase-client";
 import { SnackbarProps } from "../../pages/user-management/user-management-model";
 import { usePathname, useRouter } from "next/navigation";
 

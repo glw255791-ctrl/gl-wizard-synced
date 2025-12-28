@@ -12,7 +12,7 @@ import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { WarningModal } from "../../composed/warning-modal/warning-modal";
 import { AnalysisStep, useGeneralAnalysis } from "./general-analysis-model";
 import { CardStyled, RootStack } from "./style";
-import { supabase } from "@/api/supabase-client";
+import { supabase } from "@/lib/supabase/supabase-client";
 import { useState, useEffect, useMemo } from "react";
 import { UndoButton } from "../../composed/undo-button/undo-button";
 import { HierarchyModal } from "../../composed/hierarchy-modal/hierarchy-modal";

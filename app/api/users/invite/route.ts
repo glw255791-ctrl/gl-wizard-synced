@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/api/supabase-client"; // anon client
-import { supabaseAdmin } from "@/api/supabase-admin"; // service role
+import { supabase } from "@/lib/supabase/supabase-client"; // anon client
+import { supabaseAdmin } from "@/lib/supabase/supabase-admin"; // service role
 
 export async function POST(req: NextRequest) {
   try {

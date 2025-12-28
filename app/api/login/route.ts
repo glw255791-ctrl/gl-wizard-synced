@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/api/supabase-server"; // adjust path
+import { createSupabaseServerClient } from "@/lib/supabase/supabase-server"; // adjust path
 
 export async function POST(req: NextRequest) {
   try {

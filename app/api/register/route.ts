@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/api/supabase-admin";
+import { supabaseAdmin } from "@/lib/supabase/supabase-admin";
 
 export async function POST(req: NextRequest) {
   try {

@@ -13,7 +13,7 @@ import {
 } from "./style";
 import { useLoginModel } from "./login-model";
 import { useEffect } from "react";
-import { supabase } from "@/api/supabase-client";
+import { supabase } from "@/lib/supabase/supabase-client";
 import { TextField } from "@mui/material";
 
 export function LoginPage() {
