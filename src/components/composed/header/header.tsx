@@ -23,9 +23,11 @@ export const Header = ({ title, onPressResetBtn }: Props) => {
   const router = useRouter();
   const [user, setUser] = useState("");
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.clear();
-    router.push("/logout");
+    await supabaseBrowser.auth.signOut();
+
+    router.push("/login");
   };
 
   useEffect(() => {
