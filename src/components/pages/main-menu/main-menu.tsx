@@ -1,3 +1,5 @@
+"use client";
+
 import { Grid2 } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { ButtonsWrapper, Root, StyledMenuButton } from "./style";

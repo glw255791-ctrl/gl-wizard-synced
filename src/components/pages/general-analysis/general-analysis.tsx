@@ -1,3 +1,4 @@
+"use client";
 import { Grid2, Stack } from "@mui/material";
 import { FileDropzone } from "../../ui-kit/dropzone/dropzone";
 import { Dropdown } from "../../ui-kit/dropdown/dropdown";
