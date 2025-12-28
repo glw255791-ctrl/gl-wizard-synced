@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
 import { Alert, Snackbar } from "@mui/material";
 import {
   Root,
@@ -20,17 +21,17 @@ import ShuffleOnIcon from "@mui/icons-material/ShuffleOn";
 import GroupIcon from "@mui/icons-material/Group";
 import HelpCenterIcon from "@mui/icons-material/HelpCenter";
 import PrivacyTipIcon from "@mui/icons-material/PrivacyTip";
-import { useLocation, useNavigate } from "react-router";
-import { supabase } from "../../../api/api";
+import { supabase } from "@/api/supabase-client";
 import { SnackbarProps } from "../../pages/user-management/user-management-model";
+import { usePathname, useRouter } from "next/navigation";
 
 interface Props {
   children: JSX.Element;
 }
 
 export function PageWrapper({ children }: Props) {
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const [snackbarProps, setSnackbarProps] = useState<SnackbarProps>({
     message: "",
@@ -71,7 +72,7 @@ export function PageWrapper({ children }: Props) {
       setUserRole(profile.role);
     }
     checkSession();
-  }, [navigate]);
+  }, [router]);
 
   // Utility for a left menu button; highlights if active
   const MenuButton = ({
@@ -97,7 +98,7 @@ export function PageWrapper({ children }: Props) {
                 menuPath="/dashboard"
                 startIcon={<WidgetsIcon />}
                 variant="contained"
-                onClick={() => navigate("/dashboard")}
+                onClick={() => router.push("/dashboard")}
               >
                 Main Menu
               </MenuButton>
@@ -105,7 +106,7 @@ export function PageWrapper({ children }: Props) {
                 menuPath="/general-analysis"
                 startIcon={<TableChartIcon />}
                 variant="contained"
-                onClick={() => navigate("/general-analysis")}
+                onClick={() => router.push("/general-analysis")}
               >
                 GL Transactions Analysis
               </MenuButton>
@@ -113,7 +114,7 @@ export function PageWrapper({ children }: Props) {
                 menuPath="/reversal-analysis"
                 startIcon={<RepeatOnIcon />}
                 variant="contained"
-                onClick={() => navigate("/reversal-analysis")}
+                onClick={() => router.push("/reversal-analysis")}
               >
                 Reversal
               </MenuButton>
@@ -121,7 +122,9 @@ export function PageWrapper({ children }: Props) {
                 menuPath="/reversal-reclassification-analysis"
                 startIcon={<ShuffleOnIcon />}
                 variant="contained"
-                onClick={() => navigate("/reversal-reclassification-analysis")}
+                onClick={() =>
+                  router.push("/reversal-reclassification-analysis")
+                }
               >
                 Reversal/Reclassification
               </MenuButton>
@@ -130,7 +133,7 @@ export function PageWrapper({ children }: Props) {
                   menuPath="/user-management"
                   startIcon={<GroupIcon />}
                   variant="contained"
-                  onClick={() => navigate("/user-management")}
+                  onClick={() => router.push("/user-management")}
                 >
                   User Management
                 </MenuButton>
@@ -141,7 +144,7 @@ export function PageWrapper({ children }: Props) {
                 menuPath="/user-manual"
                 startIcon={<HelpCenterIcon />}
                 variant="contained"
-                onClick={() => navigate("/user-manual")}
+                onClick={() => router.push("/user-manual")}
               >
                 User Manual
               </MenuButton>
@@ -149,7 +152,7 @@ export function PageWrapper({ children }: Props) {
                 menuPath="/about"
                 startIcon={<PrivacyTipIcon />}
                 variant="contained"
-                onClick={() => navigate("/about")}
+                onClick={() => router.push("/about")}
               >
                 About
               </MenuButton>

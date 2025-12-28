@@ -1,23 +1,16 @@
 import { Grid2 } from "@mui/material";
-import { useNavigate } from "react-router";
-import {
-  ButtonsWrapper,
-  Root,
-  StyledMenuButton,
-} from "./style";
-import { supabase } from "../../../api/api";
+import { useRouter } from "next/navigation";
+import { ButtonsWrapper, Root, StyledMenuButton } from "./style";
+import { supabase } from "@/api/supabase-client";
 import { useEffect, useMemo, useState } from "react";
 import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { Header } from "../../composed/header/header";
-import glTransactionsImage from "../../../assets/images/gl-transactions-analysis.jpg";
-import reversalImage from "../../../assets/images/reversal.jpg";
-import reversalReclassificationImage from "../../../assets/images/reversal-reclassification.jpg";
-import userManagementImage from "../../../assets/images/user-management.jpg";
-
 export function MainMenu() {
-  const navigate = useNavigate();
+  const router = useRouter();
 
-  const [userRole, setUserRole] = useState<"user" | "admin" | undefined>(undefined);
+  const [userRole, setUserRole] = useState<"user" | "admin" | undefined>(
+    undefined
+  );
   useEffect(() => {
     const checkSession = async () => {
       const {
@@ -36,7 +29,7 @@ export function MainMenu() {
       }
     };
     checkSession();
-  }, [navigate]);
+  }, [router]);
 
   const isAdmin = useMemo(() => userRole === "admin", [userRole]);
 
@@ -48,27 +41,26 @@ export function MainMenu() {
           <ButtonsWrapper container spacing={3}>
             <Grid2 size={isAdmin ? 6 : 4}>
               <StyledMenuButton
-                bgImage={glTransactionsImage}
-                onClick={() => navigate("/general-analysis")}
-
+                bgImage={"/images/gl-transactions-analysis.jpg"}
+                onClick={() => router.push("/general-analysis")}
               >
                 GL Transactions Analysis
               </StyledMenuButton>
             </Grid2>
             <Grid2 size={isAdmin ? 6 : 4}>
               <StyledMenuButton
-                bgImage={reversalImage}
-                onClick={() => navigate("/reversal-analysis")}
-
+                bgImage={"/images/reversal.jpg"}
+                onClick={() => router.push("/reversal-analysis")}
               >
                 Reversal
               </StyledMenuButton>
             </Grid2>
             <Grid2 size={isAdmin ? 6 : 4}>
               <StyledMenuButton
-                bgImage={reversalReclassificationImage}
-                onClick={() => navigate("/reversal-reclassification-analysis")}
-
+                bgImage={"/images/reversal-reclassification.jpg"}
+                onClick={() =>
+                  router.push("/reversal-reclassification-analysis")
+                }
               >
                 Reversal/reclassification
               </StyledMenuButton>
@@ -76,9 +68,8 @@ export function MainMenu() {
             {isAdmin && (
               <Grid2 size={6}>
                 <StyledMenuButton
-                  bgImage={userManagementImage}
-                  onClick={() => navigate("/user-management")}
-
+                  bgImage={"/images/user-management.jpg"}
+                  onClick={() => router.push("/user-management")}
                 >
                   User management
                 </StyledMenuButton>

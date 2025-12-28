@@ -13,7 +13,7 @@ import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { WarningModal } from "../../composed/warning-modal/warning-modal";
 import { UndoButton } from "../../composed/undo-button/undo-button";
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "../../../api/api";
+import { supabase } from "@/api/supabase-client";
 
 export function ReversalAnalysis() {
   const {

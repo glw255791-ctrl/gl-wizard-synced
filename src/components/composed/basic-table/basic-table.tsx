@@ -15,7 +15,7 @@ import {
 import DownloadIcon from "@mui/icons-material/Download";
 import { Table, Column, AutoSizer } from "react-virtualized";
 import "react-virtualized/styles.css";
-import { getElipsis } from "../../analysed-data-overview/table/functions";
+import { getElipsis } from "../../data-overview/table/functions";
 import { useCallback } from "react";
 import { exportTableToExcel } from "./functions";
 import { TableHeader } from "../../../types";

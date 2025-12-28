@@ -1,21 +1,26 @@
-import { Root, LoginBlock, ImageAndLogo, LogoImage, Label, Message, StyledButton } from "../style";
-import logo from "../logo.png";
-import { useNavigate } from "react-router";
+import {
+  Root,
+  LoginBlock,
+  ImageAndLogo,
+  LogoImage,
+  Label,
+  Message,
+  StyledButton,
+} from "../style";
+import { useRouter } from "next/navigation";
 export function LicenceExpiredPage() {
-  const navigate = useNavigate();
+  const router = useRouter();
   return (
     <Root>
       <LoginBlock>
         <ImageAndLogo>
-          <LogoImage src={logo} />
+          <LogoImage src={"/logo.png"} />
           <Label>GL Wizard</Label>
         </ImageAndLogo>
         <Message>
           Your licence has expired. Please contact administrator to renew.
         </Message>
-        <StyledButton onClick={() => navigate("/login")}>
-          Login
-        </StyledButton>
+        <StyledButton onClick={() => router.push("/login")}>Login</StyledButton>
       </LoginBlock>
     </Root>
   );

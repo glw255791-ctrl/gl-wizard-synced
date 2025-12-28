@@ -10,7 +10,6 @@ import {
   ErrorsBlock,
   ErrorText,
 } from "./style";
-import logo from "../logo.png";
 import { useRegisterModel } from "./register-model";
 
 import { TextField } from "@mui/material";
@@ -23,7 +22,7 @@ export function RegisterPage() {
     <Root>
       <LoginBlock>
         <ImageAndLogo>
-          <LogoImage src={logo} />
+          <LogoImage src={"/logo.png"} />
           <Label>GL Wizard</Label>
         </ImageAndLogo>
         <InputWrapper>
@@ -52,9 +51,7 @@ export function RegisterPage() {
             slotProps={{ input: { style: StyledInput } }}
           />
         </InputWrapper>
-        <StyledButton onClick={onRegister}>
-          Register
-        </StyledButton>
+        <StyledButton onClick={onRegister}>Register</StyledButton>
         <ErrorsBlock>
           {Object.values(fieldErrors).map((err, idx) => (
             <ErrorText key={idx}>{err}</ErrorText>

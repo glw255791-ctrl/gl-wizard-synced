@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+import { useRouter } from "next/navigation";
 import {
   HeaderBtnsWrapper,
   HeaderBtnsWrapperRight,
@@ -6,14 +6,14 @@ import {
   IconButtonStyled,
   NameWrapper,
   Title,
-  Wrapper
+  Wrapper,
 } from "./style";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
 import { useEffect, useState } from "react";
-import { supabase } from "../../../api/api";
+import { supabase } from "@/api/supabase-client";
 
 interface Props {
   title?: string;
@@ -21,17 +21,19 @@ interface Props {
 }
 
 export const Header = ({ title, onPressResetBtn }: Props) => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [user, setUser] = useState("");
 
   const handleLogout = () => {
     localStorage.clear();
-    navigate("/logout");
+    router.push("/logout");
   };
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) return;
 
       const { data: profile, error } = await supabase
@@ -53,7 +55,7 @@ export const Header = ({ title, onPressResetBtn }: Props) => {
       <HeaderWrapper>
         <HeaderBtnsWrapper>
           {title && (
-            <IconButtonStyled onClick={() => navigate("/")}>
+            <IconButtonStyled onClick={() => router.push("/dashboard")}>
               <ArrowBackIcon />
             </IconButtonStyled>
           )}
@@ -68,9 +70,7 @@ export const Header = ({ title, onPressResetBtn }: Props) => {
 
         <HeaderBtnsWrapperRight>
           <PersonIcon />
-          <NameWrapper>
-            {user}
-          </NameWrapper>
+          <NameWrapper>{user}</NameWrapper>
           <IconButtonStyled onClick={handleLogout}>
             <LogoutIcon />
           </IconButtonStyled>
