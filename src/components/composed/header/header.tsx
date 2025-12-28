@@ -13,8 +13,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/supabase-client";
-
+import { supabaseBrowser } from "@/lib/supabase/browser-client";
 interface Props {
   title?: string;
   onPressResetBtn?: () => void;
@@ -33,10 +32,10 @@ export const Header = ({ title, onPressResetBtn }: Props) => {
     const checkAuth = async () => {
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await supabaseBrowser.auth.getSession();
       if (!session) return;
 
-      const { data: profile, error } = await supabase
+      const { data: profile, error } = await supabaseBrowser
         .from("profiles")
         .select("*")
         .eq("id", session.user.id)

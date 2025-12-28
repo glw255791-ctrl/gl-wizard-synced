@@ -3,10 +3,11 @@
 import { Grid2 } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { ButtonsWrapper, Root, StyledMenuButton } from "./style";
-import { supabase } from "@/lib/supabase/supabase-client";
+
 import { useEffect, useMemo, useState } from "react";
 import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { Header } from "../../composed/header/header";
+import { supabaseBrowser } from "@/lib/supabase/browser-client";
 export function MainMenu() {
   const router = useRouter();
 
@@ -17,9 +18,10 @@ export function MainMenu() {
     const checkSession = async () => {
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await supabaseBrowser.auth.getSession();
+      console.log("Session:", session);
       if (session) {
-        const { data: profile, error } = await supabase
+        const { data: profile, error } = await supabaseBrowser
           .from("profiles")
           .select("role")
           .eq("id", session.user.id)

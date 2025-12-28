@@ -13,20 +13,20 @@ const protectedRoutes = [
 ];
 
 export function proxy(req: NextRequest) {
-  console.log(">>> PROXY INVOKED <<<"); // Should appear in logs
-  const token = req.cookies.get("sb-access-token")?.value;
+  console.log(">>> PROXY INVOKED <<<");
   const pathname = req.nextUrl.pathname;
-  console.log("Proxy triggered for path:", req.nextUrl.pathname);
-  console.log("Token present:", !!req.cookies.get("sb-access-token")?.value);
+  console.log("Path:", pathname);
 
-  // Redirect root "/" to /login if no token
+  // Update this line with your actual project ref
+  const token = req.cookies.get("sb-vhqrolkbkaojskbspwpi-auth-token")?.value;
+  console.log("Token present:", !!token);
+
+  // Rest of your logic (root redirect + protected routes)
   if (pathname === "/" && !token) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // Protect specific routes
   const isProtected = protectedRoutes.some((path) => pathname.startsWith(path));
-
   if (isProtected && !token) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
