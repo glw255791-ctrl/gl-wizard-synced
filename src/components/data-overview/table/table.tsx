@@ -34,7 +34,7 @@ import {
 } from "./style";
 import { TotalText } from "./style";
 import { TableHeader } from "../../composed/basic-table/basic-table";
-import { ProcessValue } from "../data-overview";
+import { ProcessValue } from "@/types";
 import { theme } from "../../../constants/theme";
 import { AnyType } from "../../../types";
 
