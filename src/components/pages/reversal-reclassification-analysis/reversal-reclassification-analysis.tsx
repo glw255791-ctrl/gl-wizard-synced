@@ -67,59 +67,51 @@ export function ReversaReclassificationAnalysis() {
             </Grid2>
 
             {/* Chart of Accounts Upload (with filters) */}
-            {currentStep !== AnalysisStep.ANALYZED && (
-              <Grid2 size={6}>
-                <FileDropzone
-                  onDrop={onChartOfAccountsDrop}
-                  text="Drop CoA file here"
-                  uploaded={
-                    currentStep === AnalysisStep.TO_UPLOAD_DICTIONARY ||
-                    currentStep === AnalysisStep.UPLOADED_DICTIONARY
-                  }
-                  isDisabled={
-                    currentStep === AnalysisStep.TO_UPLOAD_GL ||
-                    currentStep === AnalysisStep.UPLOADED_GL
-                  }
-                >
-                  <Stack spacing={1}>
-                    <Dropdown
-                      label="Mapping value"
-                      items={coaHeaderOptions}
-                      value={selectedHeaders.coaHeaders.mappingValue}
-                      onChange={(event) =>
-                        onChangeCoaHeader(
-                          "mappingValue",
-                          event.target.value as string
-                        )
-                      }
-                    />
-                    <Dropdown
-                      label="Filter by"
-                      items={coaHeaderOptions}
-                      value={selectedFilters.header}
-                      onChange={(event) =>
-                        onChangeCoaFilter(
-                          "header",
-                          event.target.value as string
-                        )
-                      }
-                    />
-                    <Dropdown
-                      multiple
-                      label="Filter by value"
-                      items={coaFilterOptions}
-                      value={selectedFilters.value}
-                      onChange={(event) =>
-                        onChangeCoaFilter(
-                          "value",
-                          event.target.value as string[]
-                        )
-                      }
-                    />
-                  </Stack>
-                </FileDropzone>
-              </Grid2>
-            )}
+            <Grid2 size={6}>
+              <FileDropzone
+                onDrop={onChartOfAccountsDrop}
+                text="Drop CoA file here"
+                uploaded={
+                  currentStep === AnalysisStep.TO_UPLOAD_DICTIONARY ||
+                  currentStep === AnalysisStep.UPLOADED_DICTIONARY
+                }
+                isDisabled={
+                  currentStep === AnalysisStep.TO_UPLOAD_GL ||
+                  currentStep === AnalysisStep.UPLOADED_GL
+                }
+              >
+                <Stack spacing={1}>
+                  <Dropdown
+                    label="Mapping value"
+                    items={coaHeaderOptions}
+                    value={selectedHeaders.coaHeaders.mappingValue}
+                    onChange={(event) =>
+                      onChangeCoaHeader(
+                        "mappingValue",
+                        event.target.value as string,
+                      )
+                    }
+                  />
+                  <Dropdown
+                    label="Filter by"
+                    items={coaHeaderOptions}
+                    value={selectedFilters.header}
+                    onChange={(event) =>
+                      onChangeCoaFilter("header", event.target.value as string)
+                    }
+                  />
+                  <Dropdown
+                    multiple
+                    label="Filter by value"
+                    items={coaFilterOptions}
+                    value={selectedFilters.value}
+                    onChange={(event) =>
+                      onChangeCoaFilter("value", event.target.value as string[])
+                    }
+                  />
+                </Stack>
+              </FileDropzone>
+            </Grid2>
           </Grid2>
 
           <CardStyled>
@@ -129,21 +121,19 @@ export function ReversaReclassificationAnalysis() {
             ) : (
               <Stack />
             )}
-            {currentStep !== AnalysisStep.ANALYZED && (
-              <Stack direction="row" spacing={1} alignItems="center">
-                <UndoButton
-                  disabled={currentStep === AnalysisStep.TO_UPLOAD_GL}
-                  onPressUndo={onPressBackBtn}
-                />
-                <ActionButton
-                  disabled={
-                    currentStep !== AnalysisStep.TO_UPLOAD_DICTIONARY &&
-                    currentStep !== AnalysisStep.UPLOADED_DICTIONARY
-                  }
-                  onPressAnalyzeData={onPressAnalyzeData}
-                />
-              </Stack>
-            )}
+            <Stack direction="row" spacing={1} alignItems="center">
+              <UndoButton
+                disabled={currentStep === AnalysisStep.TO_UPLOAD_GL}
+                onPressUndo={onPressBackBtn}
+              />
+              <ActionButton
+                disabled={
+                  currentStep !== AnalysisStep.TO_UPLOAD_DICTIONARY &&
+                  currentStep !== AnalysisStep.UPLOADED_DICTIONARY
+                }
+                onPressAnalyzeData={onPressAnalyzeData}
+              />
+            </Stack>
           </CardStyled>
           {/* GL Data Overview */}
           <BasicDataOverview
