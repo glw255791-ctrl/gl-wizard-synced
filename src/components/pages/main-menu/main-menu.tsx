@@ -12,14 +12,13 @@ export function MainMenu() {
   const router = useRouter();
 
   const [userRole, setUserRole] = useState<"user" | "admin" | undefined>(
-    undefined
+    undefined,
   );
   useEffect(() => {
     const checkSession = async () => {
       const {
         data: { session },
       } = await supabaseBrowser.auth.getSession();
-      console.log("Session:", session);
       if (session) {
         const { data: profile, error } = await supabaseBrowser
           .from("profiles")
