@@ -1,7 +1,7 @@
 import { formatDate } from "date-fns";
-import { Workbook } from "exceljs";
-import { TableHeader } from "./basic-table";
+import type { TableHeader } from "../../../types";
 import saveAs from "file-saver";
+import { createWorkbook } from "../../../utils/workbook";
 
 /**
  * Exports the provided table data to an Excel (.xlsx) file.
@@ -13,7 +13,7 @@ export const exportTableToExcel = async (
   header: TableHeader[],
   data: Record<string, string>[]
 ) => {
-  const workbook = new Workbook();
+  const workbook = await createWorkbook();
   const worksheet = workbook.addWorksheet("Sheet1");
 
   // Exclude "coaData" from exported columns

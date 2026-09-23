@@ -22,7 +22,7 @@ import {
 import { Dropdown } from "../ui-kit/dropdown/dropdown";
 import { DataTable } from "./table/table";
 import { Loader } from "../ui-kit/loader-overlay/loader-overlay";
-import { TableHeader } from "../composed/basic-table/basic-table";
+import type { TableHeader } from "../../../types";
 import { AnyType, DropdownItem } from "../../types";
 import { ProcessValue } from "./process-modal/types";
 import { ProcessModal } from "./process-modal/process-modal";

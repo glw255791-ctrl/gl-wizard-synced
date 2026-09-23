@@ -2,12 +2,14 @@ import { styled, Card, Stack } from "@mui/material";
 import DownloadDoneIcon from "@mui/icons-material/DownloadDone";
 import { theme } from "../../../constants/theme";
 
-const DISABLED_OPACITY = 0.25;
+const DISABLED_OPACITY = 0.55;
 const FULL_HEIGHT_OFFSET = "calc(100% - 2rem)";
 
 // Styled card container
 export const StyledCard = styled(Card)({
   backgroundColor: theme.colors.lighter,
+  border: "1px solid #E4F0F0",
+  boxShadow: "none",
   borderRadius: theme.borderRadius.sm,
   padding: theme.padding.lg,
   height: FULL_HEIGHT_OFFSET,
@@ -28,7 +30,7 @@ export const StyledDropzoneRoot = styled(Stack)({
   alignContent: "center",
   alignItems: "center",
   color: theme.colors.darker,
-  backgroundColor: theme.colors.white,
+  backgroundColor: theme.colors.surface,
 });
 
 // Styled dropzone root (Stack)
@@ -43,7 +45,7 @@ export const StyledAdditionalDropzoneRoot = styled(Stack, {
   alignContent: "center",
   alignItems: "center",
   color: theme.colors.darker,
-  backgroundColor: theme.colors.white,
+  backgroundColor: theme.colors.surface,
   opacity: isDisabled ? DISABLED_OPACITY : 1,
   pointerEvents: isDisabled ? "none" : "auto",
 }));

@@ -1,11 +1,11 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  font-family: var(--font-source-sans), sans-serif;
+  line-height: 1.45;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: light;
+  color: #394243;
+  background-color: #e5e9e8;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -14,8 +14,6 @@
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   width: 100%;
   min-width: 320px;
   min-height: 100vh;

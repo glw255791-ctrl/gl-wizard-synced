@@ -25,12 +25,16 @@ export const Header = ({ title, onPressResetBtn }: Props) => {
 
   const handleLogout = async () => {
     localStorage.clear();
-    await supabaseBrowser.auth.signOut();
+    if (supabaseBrowser) {
+      await supabaseBrowser.auth.signOut();
+    }
 
     router.push("/login");
   };
 
   useEffect(() => {
+    if (!supabaseBrowser) return;
+
     const checkAuth = async () => {
       const {
         data: { session },

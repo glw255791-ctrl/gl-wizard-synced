@@ -4,13 +4,15 @@ import { Card } from "@mui/material";
 import { theme } from "../../../constants/theme";
 
 export const RootStack = styled(Stack)(() => ({
-  width: "calc(100vw - 24rem)",
+  width: "100%",
   minHeight: "calc(100vh - 4rem)",
   justifyContent: "flex-start",
 }));
 
 export const CardStyled = styled(Card)(() => ({
   backgroundColor: theme.colors.lighter,
+  border: "1px solid #E4F0F0",
+  boxShadow: "none",
   borderRadius: theme.borderRadius.sm,
   padding: theme.padding.lg,
   flexDirection: "row",

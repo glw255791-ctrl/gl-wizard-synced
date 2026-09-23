@@ -36,7 +36,7 @@ export const Label = styled(Typography)({
 
 // Button style
 export const StyledButton = styled(Button)({
-  color: theme.colors.white,
+  color: theme.colors.black,
   fontSize: theme.fontSize.lg,
   textTransform: "none",
   borderRadius: theme.borderRadius.lg,

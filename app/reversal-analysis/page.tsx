@@ -1,10 +1,9 @@
-// eslint-disable-next-line react-refresh/only-export-components
 export const metadata = {
   title: "Reversal Analysis - GL Wizard",
 };
 
-import { ReversalAnalysis } from "@/components/pages/reversal-analysis/reversal-analysis";
+import { ReversalAnalysisClient } from "./client";
 
 export default function Page() {
-  return <ReversalAnalysis />;
+  return <ReversalAnalysisClient />;
 }

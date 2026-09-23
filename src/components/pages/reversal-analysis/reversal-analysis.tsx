@@ -8,12 +8,20 @@ import { AnalysisStep, useReversalAnalysis } from "./reversal-analysis-model";
 import { GLDropdowns } from "../../composed/gl-dropdowns/gl-dropdowns";
 import { DataValidityInfo } from "../../composed/data-validity-info/data-validity-info";
 import { Header } from "../../composed/header/header";
-import { BasicDataOverview } from "../../basic-data-overview/basic-data-overview";
 import { Loader } from "../../ui-kit/loader-overlay/loader-overlay";
 import { ActionButton } from "../../composed/action-button/action-button";
 import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { WarningModal } from "../../composed/warning-modal/warning-modal";
 import { UndoButton } from "../../composed/undo-button/undo-button";
+import dynamic from "next/dynamic";
+
+const BasicDataOverview = dynamic(
+  () =>
+    import("../../basic-data-overview/basic-data-overview").then(
+      (mod) => mod.BasicDataOverview
+    ),
+  { ssr: false }
+);
 
 export function ReversalAnalysis() {
   const {
@@ -135,12 +143,14 @@ export function ReversalAnalysis() {
           </CardStyled>
 
           {/* GL Data Summary */}
+          {currentStep === AnalysisStep.ANALYZED && (
           <BasicDataOverview
             title="GL Data With Reversal Identified"
-            disabled={currentStep !== AnalysisStep.ANALYZED}
+            disabled={false}
             tableData={tableData}
             tableHeader={tableHeader}
           />
+          )}
 
           {/* Data Overview */}
           {/* <DataOverview
