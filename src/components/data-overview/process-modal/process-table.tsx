@@ -278,8 +278,13 @@ export const ProcessDataTable: React.FC<Props> = ({
    * Render
    * ---------------------------------------------------------------------- */
 
+  const gridHeight = Math.min(
+    Math.max((tableRows.length || 4) * ROW_HEIGHT + 16, ROW_HEIGHT * 8),
+    520
+  );
+
   return (
-    <Stack>
+    <Stack sx={{ width: "100%", maxWidth: "100%", minWidth: 0, flex: 1 }}>
       <TableScrollableWrapper id={id}>
         <TableHeaderStyled>
           <TableTitle>
@@ -292,14 +297,15 @@ export const ProcessDataTable: React.FC<Props> = ({
         <AutoSizer
           style={{
             ...styles.autosizerWrapper,
-            height: Math.min(
-              Math.max((rows?.length ?? 4) * ROW_HEIGHT + 16, ROW_HEIGHT * 8),
-              520
-            ),
+            height: gridHeight,
           }}
         >
-          {({ width, height }) =>
-            tableRows.length > 0 ? (
+          {({ width, height }) => {
+            const gridWidth = Math.max(0, Math.floor(width) - WIDTH_ADJUST);
+            const labelWidth = Math.floor(gridWidth * 0.72);
+            const valueWidth = Math.max(gridWidth - labelWidth, COLUMN_WIDTH);
+
+            return tableRows.length > 0 ? (
               <MultiGrid
                 ref={multiGridRef}
                 fixedColumnCount={1}
@@ -307,10 +313,13 @@ export const ProcessDataTable: React.FC<Props> = ({
                 rowCount={tableRows.length}
                 rowHeight={ROW_HEIGHT}
                 columnWidth={(params: Index) =>
-                  params.index === 0 ? COLUMN_WIDTH * 2 : COLUMN_WIDTH
+                  params.index === 0 ? labelWidth : valueWidth
                 }
-                width={width - WIDTH_ADJUST}
-                height={rows?.length ? rows.length * ROW_HEIGHT : height - 50}
+                width={gridWidth}
+                height={Math.max(0, Math.floor(height))}
+                style={{ outline: "none" }}
+                styleBottomLeftGrid={{ overflowX: "hidden" }}
+                styleBottomRightGrid={{ overflowX: "hidden" }}
                 cellRenderer={({ columnIndex, rowIndex, key, style }) => {
                   const column = tableColumns[columnIndex];
                   const row = tableRows[rowIndex];
@@ -342,8 +351,8 @@ export const ProcessDataTable: React.FC<Props> = ({
                   No rows available
                 </Typography>
               </Stack>
-            )
-          }
+            );
+          }}
         </AutoSizer>
       </TableScrollableWrapper>
     </Stack>

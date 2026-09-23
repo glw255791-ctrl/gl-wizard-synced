@@ -174,6 +174,25 @@ export const exportBasicTableToExcel = async (
 };
 
 /**
+ * Excel sheet names must be unique, ≤31 chars, and cannot contain: * ? : \ / [ ]
+ */
+function toUniqueSheetName(rawTitle: string, used: Set<string>, index: number) {
+  const cleaned =
+    rawTitle.replace(/[*?:\\/[\]]/g, "-").trim() || `Sheet ${index + 1}`;
+  const suffix = ` (${index + 1})`;
+  const maxBase = Math.max(1, 31 - suffix.length);
+  let candidate = `${cleaned.slice(0, maxBase)}${suffix}`;
+  let attempt = 2;
+  while (used.has(candidate.toLowerCase())) {
+    const altSuffix = ` (${index + 1}-${attempt})`;
+    candidate = `${cleaned.slice(0, Math.max(1, 31 - altSuffix.length))}${altSuffix}`;
+    attempt += 1;
+  }
+  used.add(candidate.toLowerCase());
+  return candidate;
+}
+
+/**
  * Exports multiple tables to a single Excel file with separate sheets
  * @param header - Array of table header definitions
  * @param dataArray - Array of data arrays, one per table
@@ -193,11 +212,7 @@ export const exportMultipleTablesToExcel = async (
   );
   onProgress?.(0, total);
   const workbook = await createWorkbook();
-
-  const formattedTitles = titles.map((title) =>
-    // eslint-disable-next-line no-useless-escape
-    title.replace(/[*?:\\/\[\]]/g, "-")
-  );
+  const usedSheetNames = new Set<string>();
 
   // Ensure dataArray and titles have the same length
   const minLength = Math.min(dataArray.length, titles.length);
@@ -205,14 +220,14 @@ export const exportMultipleTablesToExcel = async (
 
   for (let i = 0; i < minLength; i++) {
     const data = dataArray[i];
-    const title = formattedTitles[i];
+    const title = titles[i] ?? `Sheet ${i + 1}`;
 
     // Skip if data is empty
     if (!data || data.length === 0) continue;
 
-    // Create a new worksheet with the title (Excel sheet names have a 31 character limit)
-    const sheetName = title.length > 31 ? title.substring(0, 28) : title;
-    const worksheet = workbook.addWorksheet(`${sheetName}-${i + 1}`);
+    const worksheet = workbook.addWorksheet(
+      toUniqueSheetName(title, usedSheetNames, i)
+    );
 
     // Prepare fullHeader by excluding 'coaData'
     const fullHeader = Object.keys(data[0]).filter((key) => key !== "coaData");

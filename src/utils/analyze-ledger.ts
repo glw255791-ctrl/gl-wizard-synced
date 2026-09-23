@@ -127,9 +127,12 @@ export async function analyzeLedger(
         const dictionaryItem = dictionaryData?.find(
           (item) => Array.isArray(item.inputs) && sameValues(item.inputs, sortedValues)
         );
-        const result = dictionaryItem?.result ? [dictionaryItem.result] : sortedValues;
+        const result = dictionaryItem?.result
+          ? [dictionaryItem.result]
+          : [...sortedValues];
         for (let rowIndex = index; rowIndex < end; rowIndex += 1) {
-          rows[rowIndex].result = result;
+          // Copy so later in-place sorts cannot mutate a shared array.
+          rows[rowIndex].result = [...result];
         }
         index = end;
       } else {
@@ -141,7 +144,9 @@ export async function analyzeLedger(
   const groupedByAccountAndResult = new Map<string, Row[]>();
   for (const item of output) {
     const resultKey = item.result
-      ? item.result.sort((a: string, b: string) => a.localeCompare(b)).join("/")
+      ? [...item.result]
+          .sort((a: string, b: string) => a.localeCompare(b))
+          .join("/")
       : "unmatched";
     const key = `${item[glHeaders.date]}_${item[glHeaders.account]}_${resultKey}`;
     const group = groupedByAccountAndResult.get(key);
@@ -181,9 +186,11 @@ export async function analyzeLedger(
 
   const overviewTableData: Record<string, Row[]> = {};
   for (const item of output) {
-    const resultKey =
-      item.result?.sort((a: string, b: string) => String(a).localeCompare(String(b))).join("/") ||
-      "unmatched";
+    const resultKey = item.result
+      ? [...item.result]
+          .sort((a: string, b: string) => String(a).localeCompare(String(b)))
+          .join("/")
+      : "unmatched";
     if (!overviewTableData[resultKey]) overviewTableData[resultKey] = [];
     overviewTableData[resultKey].push(item);
   }

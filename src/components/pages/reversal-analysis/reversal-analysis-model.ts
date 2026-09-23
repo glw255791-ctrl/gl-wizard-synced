@@ -83,6 +83,8 @@ export function useReversalAnalysis() {
   const [dictionaryData, setDictionaryData] = useState<Record<string, any>[]>(
     []
   );
+  const [isHierarchyModalVisible, setIsHierarchyModalVisible] = useState(false);
+  const [hierarchyData, setHierarchyData] = useState<Record<string, any>[]>([]);
   const [dataDisplayHeader, setDataDisplayHeader] = useState<
     Record<string, any>[]
   >([]);
@@ -239,6 +241,12 @@ export function useReversalAnalysis() {
           groupingValue: "",
         },
       }));
+      setHierarchyData(
+        headers.map((item, index) => ({
+          value: item,
+          level: index + 1,
+        }))
+      );
       setCurrentStep(AnalysisStep.TO_UPLOAD_DICTIONARY);
     } catch (err) {
       setError(
@@ -325,6 +333,14 @@ export function useReversalAnalysis() {
           setDictionaryData([]);
           setIsDictionaryUploaded(false);
           return AnalysisStep.TO_UPLOAD_DICTIONARY;
+
+        case AnalysisStep.ANALYZED:
+          setTableData([]);
+          setOverviewTableData({});
+          setDataDisplayHeader([]);
+          return dictionaryData.length > 0
+            ? AnalysisStep.UPLOADED_DICTIONARY
+            : AnalysisStep.TO_UPLOAD_DICTIONARY;
 
         default:
           return prev;
@@ -519,6 +535,10 @@ export function useReversalAnalysis() {
     onDictionaryDrop,
     dictionaryData,
     isDictionaryUploaded,
+    hierarchyData,
+    isHierarchyModalVisible,
+    setIsHierarchyModalVisible,
+    setHierarchyData,
     overviewTableData,
     sortedDataDisplayHeader,
     loadingStatus,

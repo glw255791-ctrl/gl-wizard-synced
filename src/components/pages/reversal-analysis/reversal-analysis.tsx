@@ -1,6 +1,7 @@
 "use client";
 
-import { Grid2, Stack } from "@mui/material";
+import dynamic from "next/dynamic";
+import { Grid2, LinearProgress, Stack, Typography } from "@mui/material";
 import { FileDropzone } from "../../ui-kit/dropzone/dropzone";
 import { Dropdown } from "../../ui-kit/dropdown/dropdown";
 import { CardStyled, RootStack } from "./style";
@@ -14,15 +15,59 @@ import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { WarningModal } from "../../composed/warning-modal/warning-modal";
 import { UndoButton } from "../../composed/undo-button/undo-button";
 import { AnalysisSummary } from "../../composed/analysis-summary/analysis-summary";
+import { TrialBalanceCheck } from "../../composed/trial-balance-check/trial-balance-check";
+import { HierarchyModal } from "../../composed/hierarchy-modal/hierarchy-modal";
+import { HierarchyButton } from "../../composed/hierarchy-button/hierarchy-button";
+import { theme } from "@/constants/theme";
 import { useState } from "react";
-import dynamic from "next/dynamic";
+
+function ResultsPlaceholder({ label }: { label: string }) {
+  return (
+    <Stack
+      gap={1}
+      sx={{
+        backgroundColor: theme.colors.lighter,
+        border: `1px solid ${theme.colors.surface}`,
+        borderRadius: theme.borderRadius.sm,
+        padding: "1rem 1.15rem",
+      }}
+    >
+      <Typography color={theme.colors.medium}>Opening {label}</Typography>
+      <LinearProgress
+        sx={{
+          height: 8,
+          borderRadius: 999,
+          backgroundColor: theme.colors.surface,
+          "& .MuiLinearProgress-bar": {
+            borderRadius: 999,
+            backgroundColor: theme.colors.action,
+          },
+        }}
+      />
+    </Stack>
+  );
+}
 
 const BasicDataOverview = dynamic(
   () =>
     import("../../basic-data-overview/basic-data-overview").then(
       (mod) => mod.BasicDataOverview
     ),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => (
+      <ResultsPlaceholder label="GL Data With Reversal Identified" />
+    ),
+  }
+);
+
+const DataOverview = dynamic(
+  () =>
+    import("../../data-overview/data-overview").then((mod) => mod.DataOverview),
+  {
+    ssr: false,
+    loading: () => <ResultsPlaceholder label="Movement Tables" />,
+  }
 );
 
 export function ReversalAnalysis() {
@@ -39,6 +84,14 @@ export function ReversalAnalysis() {
     fileProgress,
     isWarningModalShown,
     isDictionaryUploaded,
+    isHierarchyModalVisible,
+    hierarchyData,
+    overviewTableData,
+    sortedDataDisplayHeader,
+    rawData,
+    setHierarchyData,
+    setIsHierarchyModalVisible,
+    setDataDisplayHeader,
     onDictionaryDrop,
     onPressExportUnmappedRows,
     setIsWarningModalShown,
@@ -76,7 +129,8 @@ export function ReversalAnalysis() {
             step={currentStep}
           />
 
-          {/* GL and CoA Upload Section */}
+          {/* GL and CoA Upload — hidden on Results; Undo brings them back */}
+          {currentStep !== AnalysisStep.ANALYZED && (
           <Grid2
             container
             spacing={2}
@@ -94,7 +148,7 @@ export function ReversalAnalysis() {
                 text="Drop GL file here"
                 fileName={glFileName}
                 uploaded={currentStep !== AnalysisStep.TO_UPLOAD_GL}
-                isDisabled={currentStep === AnalysisStep.ANALYZED}
+                isDisabled={false}
               >
                 {glHeaderOptions.length > 0 ? (
                 <GLDropdowns
@@ -171,6 +225,7 @@ export function ReversalAnalysis() {
               </FileDropzone>
             </Grid2>
           </Grid2>
+          )}
 
           {currentStep !== AnalysisStep.TO_UPLOAD_GL && (
           <CardStyled>
@@ -181,21 +236,40 @@ export function ReversalAnalysis() {
             ) : (
               <DataValidityInfo reviewData={reviewData} error={error} />
             )}
-            {(canUndo || canAnalyze) && (
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0, marginLeft: "auto" }}>
-                {canUndo && (
-                  <UndoButton disabled={false} onPressUndo={onPressBackBtn} />
-                )}
-                {canAnalyze && (
-                  <ActionButton
-                    disabled={false}
-                    onPressAnalyzeData={onPressAnalyzeData}
-                  />
-                )}
-              </Stack>
-            )}
+            <Stack
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              sx={{ flexShrink: 0, marginLeft: "auto" }}
+            >
+              {canUndo && (
+                <UndoButton disabled={false} onPressUndo={onPressBackBtn} />
+              )}
+              {canAnalyze && (
+                <HierarchyButton
+                  disabled={false}
+                  onPress={() => setIsHierarchyModalVisible(true)}
+                />
+              )}
+              {canAnalyze && (
+                <ActionButton
+                  disabled={false}
+                  onPressAnalyzeData={onPressAnalyzeData}
+                />
+              )}
+            </Stack>
           </CardStyled>
           )}
+
+          {rawData.glData.length > 0 &&
+            selectedHeaders.glHeaders.account &&
+            selectedHeaders.glHeaders.value && (
+              <TrialBalanceCheck
+                glRows={rawData.glData}
+                accountKey={selectedHeaders.glHeaders.account}
+                valueKey={selectedHeaders.glHeaders.value}
+              />
+            )}
 
           {/* GL Data Summary */}
           {currentStep === AnalysisStep.ANALYZED && (
@@ -213,19 +287,31 @@ export function ReversalAnalysis() {
           />
           )}
 
-          {/* Data Overview */}
-          {/* <DataOverview
+          {isHierarchyModalVisible && (
+            <HierarchyModal
+              hierarchyData={hierarchyData}
+              isOpen={isHierarchyModalVisible}
+              onClose={() => setIsHierarchyModalVisible(false)}
+              setHierarchyData={setHierarchyData}
+            />
+          )}
+
+          {currentStep === AnalysisStep.ANALYZED && (
+          <DataOverview
             mappingValue={selectedHeaders.coaHeaders.mappingValue}
+            displayValue={selectedHeaders.coaHeaders.displayValue}
             overviewTableData={overviewTableData}
             setDataDisplayHeader={setDataDisplayHeader}
             sortedDataDisplayHeader={sortedDataDisplayHeader}
             coaHeaderOptions={coaHeaderOptions}
             title="Movement Tables"
             valueKey={selectedHeaders.glHeaders.value}
+            disabled={currentStep !== AnalysisStep.ANALYZED}
+            hierarchyData={hierarchyData}
             basicTableData={tableData}
             basicTableHeader={tableHeader}
-            disabled={currentStep !== AnalysisStep.ANALYZED}
-          /> */}
+          />
+          )}
 
           {/* Warning Modal for Unmapped Rows */}
           <WarningModal

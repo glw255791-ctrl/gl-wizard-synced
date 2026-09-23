@@ -71,6 +71,14 @@ export function useReversalReclassificationAnalysis() {
   };
   const [error, setError] = useState<string | undefined>(undefined);
   const [tableData, setTableData] = useState<Record<string, any>[]>([]);
+  const [dataDisplayHeader, setDataDisplayHeader] = useState<
+    Record<string, any>[]
+  >([]);
+  const [overviewTableData, setOverviewTableData] = useState<
+    Record<string, any>
+  >({});
+  const [hierarchyData, setHierarchyData] = useState<Record<string, any>[]>([]);
+  const [isHierarchyModalVisible, setIsHierarchyModalVisible] = useState(false);
 
   const [selectedFilters, setSelectedFilters] = useState<CoaFilters>({
     header: "",
@@ -78,7 +86,7 @@ export function useReversalReclassificationAnalysis() {
   });
   const [selectedHeaders, setSelectedHeaders] = useState<SelectedHeaders>({
     glHeaders: { account: "", jen: "", date: "", value: "" },
-    coaHeaders: { mappingValue: "", displayValue: "", groupingValue: "" },
+    coaHeaders: { displayValue: "", mappingValue: "", groupingValue: "" },
   });
 
   // --- Derived Values ---
@@ -202,15 +210,20 @@ export function useReversalReclassificationAnalysis() {
         ...prev,
         coaHeaders: {
           mappingValue: headers[0],
-          displayValue: "",
+          displayValue: headers[0],
           groupingValue: "",
-          filters: { header: "", value: "" },
         },
       }));
       setSelectedFilters((prev) => ({
         ...prev,
         header: headers[0],
       }));
+      setHierarchyData(
+        headers.map((item, index) => ({
+          value: item,
+          level: index + 1,
+        }))
+      );
       setCurrentStep(AnalysisStep.TO_UPLOAD_DICTIONARY);
     } catch (err) {
       setError(
@@ -266,6 +279,9 @@ export function useReversalReclassificationAnalysis() {
       glHeaders: { account: "", date: "", jen: "", value: "" },
     });
     setSelectedFilters({ header: "", value: [] });
+    setOverviewTableData({});
+    setDataDisplayHeader([]);
+    setHierarchyData([]);
   };
 
   const onPressBackBtn = () => {
@@ -316,12 +332,44 @@ export function useReversalReclassificationAnalysis() {
               groupingValue: "",
             },
           }));
+          setHierarchyData([]);
           return AnalysisStep.TO_UPLOAD_COA;
+
+        case AnalysisStep.ANALYZED:
+          setTableData([]);
+          setOverviewTableData({});
+          setDataDisplayHeader([]);
+          return AnalysisStep.TO_UPLOAD_DICTIONARY;
 
         default:
           return prev;
       }
     });
+  };
+
+  const buildOverviewFromRows = (rows: Record<string, any>[]) => {
+    const mappingKey = selectedHeaders.coaHeaders.mappingValue;
+    const overview: Record<string, any[]> = {};
+    for (const item of rows) {
+      const resultKey = Array.isArray(item.result)
+        ? [...item.result]
+            .map(String)
+            .sort((a, b) => a.localeCompare(b))
+            .join("/")
+        : String(item.result ?? "unmatched");
+      if (!overview[resultKey]) overview[resultKey] = [];
+      overview[resultKey].push(item);
+    }
+
+    const existingCoaKeys = [
+      ...new Set(rows.map((item) => item.coaData?.[mappingKey])),
+    ];
+    const filteredCoaData = rawData.coaData
+      .filter((item) => existingCoaKeys.includes(item[mappingKey]))
+      .map((item) => ({ ...item, active: true }));
+
+    setOverviewTableData(overview);
+    setDataDisplayHeader(filteredCoaData);
   };
 
   // Analyze data (runs web worker)
@@ -336,12 +384,11 @@ export function useReversalReclassificationAnalysis() {
     );
 
     worker.onmessage = (event) => {
-      setTableData(
-        Object.values(event.data.groupedByAccountAndDate).flat() as Record<
-          string,
-          any
-        >[]
-      );
+      const flat = Object.values(
+        event.data.groupedByAccountAndDate
+      ).flat() as Record<string, any>[];
+      setTableData(flat);
+      buildOverviewFromRows(flat);
       setCurrentStep(AnalysisStep.ANALYZED);
       stopLoading();
       worker.terminate();
@@ -421,6 +468,19 @@ export function useReversalReclassificationAnalysis() {
   };
 
   // --- Return API ---
+  const sortedDataDisplayHeader = useMemo(() => {
+    const mappingKey = selectedHeaders.coaHeaders.mappingValue;
+    const sorted = (arr: Record<string, any>[]) =>
+      [...arr].sort((a, b) => {
+        const aVal = a[mappingKey];
+        const bVal = b[mappingKey];
+        return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+      });
+    const active = sorted(dataDisplayHeader.filter((item) => item.active));
+    const inactive = sorted(dataDisplayHeader.filter((item) => !item.active));
+    return [...active, { [mappingKey]: "total" }, ...inactive];
+  }, [dataDisplayHeader, selectedHeaders.coaHeaders.mappingValue]);
+
   return {
     onChangeGlHeader,
     onChangeCoaHeader,
@@ -430,6 +490,9 @@ export function useReversalReclassificationAnalysis() {
     onPressDownloadData,
     onPressResetBtn,
     onChangeCoaFilter,
+    setDataDisplayHeader,
+    setHierarchyData,
+    setIsHierarchyModalVisible,
     error,
     loadingStatus,
     fileProgress,
@@ -444,5 +507,9 @@ export function useReversalReclassificationAnalysis() {
     coaHeaderOptions,
     reviewData,
     onPressBackBtn,
+    overviewTableData,
+    sortedDataDisplayHeader,
+    hierarchyData,
+    isHierarchyModalVisible,
   };
 }
