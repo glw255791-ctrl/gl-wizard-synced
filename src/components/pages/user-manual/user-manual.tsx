@@ -1,6 +1,7 @@
 "use client";
 
-import { Typography } from "@mui/material";
+import { Stack } from "@mui/material";
+import DownloadIcon from "@mui/icons-material/Download";
 import { useState } from "react";
 
 import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
@@ -8,17 +9,19 @@ import { Header } from "../../composed/header/header";
 import {
   RootStack,
   ContentWrapper,
-  StyledButtonStack,
-  TextWrapper,
+  Panel,
   StyledTitle,
   StyledList,
-  ButtonsWrapper,
+  Intro,
+  SectionLabel,
+  AnalysisCard,
+  AnalysisTitle,
+  AnalysisMeta,
+  AnalysisBody,
+  DownloadButton,
+  DownloadError,
 } from "./style";
 
-/**
- * Fetches the file as a blob and triggers download via an anchor click.
- * This works more reliably across browsers and static environments.
- */
 async function fetchAndDownloadFile(url: string, downloadName: string) {
   try {
     const response = await fetch(url);
@@ -38,6 +41,24 @@ async function fetchAndDownloadFile(url: string, downloadName: string) {
   }
 }
 
+const analyses = [
+  {
+    title: "GL Transactions Analysis",
+    meta: "Groups by journal + date · uses dictionary",
+    body: "Names each balanced journal process from the dictionary or CoA display values, then builds Movement tables and Process Analysis.",
+  },
+  {
+    title: "Reversal",
+    meta: "Groups by journal + date · uses dictionary",
+    body: "Finds chunks inside the same journal that sum to zero and marks them as reversals that cancel each other.",
+  },
+  {
+    title: "Reversal / Reclassification",
+    meta: "Groups by account + date · no dictionary",
+    body: "Looks for zero-sum moves on the same account and date, with optional CoA filters. Labels them reversal/reclassification.",
+  },
+];
+
 export function UserManualPage() {
   const [downloadError, setDownloadError] = useState("");
 
@@ -48,132 +69,150 @@ export function UserManualPage() {
       setDownloadError("Could not download that file. Try again in a moment.");
     }
   };
+
   return (
     <PageWrapper>
       <RootStack>
         <Header title="User Manual" />
-        <ContentWrapper>
-          <TextWrapper>
-            <StyledTitle>General Usage</StyledTitle>
-            <StyledList>
-              <li>
-                Upload a general ledger, a chart of accounts, and an optional
-                dictionary. Then map the columns and review the validity bar.
-              </li>
-              <li>
-                Download the template files beside this text when you need a
-                starting chart of accounts or dictionary.
-              </li>
-            </StyledList>
-          </TextWrapper>
+        <Intro>
+          Prepare clean Excel files, choose the right analysis, then map columns
+          and review the results.
+        </Intro>
 
-          <TextWrapper>
-            <ButtonsWrapper>
-              <StyledTitle>Content Download</StyledTitle>
-              <StyledButtonStack
-                onClick={() =>
-                  download("/assets/files/serbia-coa.xlsx", "Serbia_CoA.xlsx")
-                }
-              >
-                <span>Serbia CoA</span>
-                <span>Download</span>
-              </StyledButtonStack>
-              <StyledButtonStack
-                onClick={() =>
-                  download(
-                    "/assets/files/international-coa.xlsx",
-                    "International_CoA.xlsx"
-                  )
-                }
-              >
-                <span>International CoA</span>
-                <span>Download</span>
-              </StyledButtonStack>
-              <StyledButtonStack
-                onClick={() =>
-                  download("/assets/files/dictionary.xlsx", "Dictionary.xlsx")
-                }
-              >
-                <span>Mapping Dictionary</span>
-                <span>Download</span>
-              </StyledButtonStack>
-              {downloadError ? <Typography>{downloadError}</Typography> : null}
-            </ButtonsWrapper>
-          </TextWrapper>
-        </ContentWrapper>
-        <ContentWrapper>
-          <TextWrapper>
-            <StyledTitle>Importing the General Ledger (GL)</StyledTitle>
-            <StyledList>
-              <li>
-                Ensure that each cell in the imported GL contains values only;
-                cells containing formulas may interrupt the analysis and will be
-                flagged as errors.
-              </li>
-              <li>
-                Do not include beginning balances in the GL. Inclusion of
-                beginning balances may result in inaccurate conclusions.
-              </li>
-              <li>
-                Verify that the sum of GL transactions is zero, both in total
-                and per journal entry. An incorrect GL may adversely affect the
-                analysis results.
-              </li>
-              <li>
-                The GL must include the following columns:
-                <ul style={{ paddingLeft: 20 }}>
-                  <li>Account Number</li>
-                  <li>Date</li>
-                  <li>Value</li>
-                  <li>Journal Entry Number</li>
-                </ul>
-              </li>
-              <li>
-                Ensure that account codes starting with a leading zero are
-                formatted as text to prevent the zero from being dropped.
-              </li>
-              <li>
-                Ensure that the Excel import file contains only one sheet, with
-                data starting in cell A1 and the first row serving as the
-                header.
-              </li>
-            </StyledList>
-          </TextWrapper>
-          <TextWrapper>
-            <StyledTitle>Importing the Chart of Accounts (CoA)</StyledTitle>
-            <StyledList>
-              <li>
-                The CoA must provide a value for every account code present in
-                the imported GL in the column mapped as “account code”. Accounts
-                without corresponding values in the CoA will be identified as
-                not matched.
-              </li>
-              <li>
-                Ensure that the GL and CoA contain a matching column with
-                identical values, so the software can correctly establish a
-                connection between the two.
-              </li>
-              <li>
-                For the standard groups, use the GL Wizard CoA and its FS
-                sub-group column. Download that file and map every GL account
-                to a value from that column. A chart of accounts you bring
-                yourself can still match accounts, but those standard groups
-                will be missing.
-              </li>
-              <li>
-                Ensure that the Excel import file contains only one sheet, with
-                data starting in cell A1 and the first row serving as the
-                header.
-              </li>
-              <li>
-                You may import a Chart of Accounts (CoA) according to your
-                preferences or adjust the default version. However, certain
-                integrated knowledge features might not operate as intended in
-                that case.
-              </li>
-            </StyledList>
-          </TextWrapper>
-        </ContentWrapper>
+        <Stack gap={1}>
+          <SectionLabel>Which analysis to use</SectionLabel>
+          <ContentWrapper>
+            {analyses.map((item) => (
+              <AnalysisCard key={item.title}>
+                <AnalysisTitle>{item.title}</AnalysisTitle>
+                <AnalysisMeta>{item.meta}</AnalysisMeta>
+                <AnalysisBody>{item.body}</AnalysisBody>
+              </AnalysisCard>
+            ))}
+          </ContentWrapper>
+        </Stack>
+
+        <Stack gap={1}>
+          <SectionLabel>Getting started</SectionLabel>
+          <ContentWrapper>
+            <Panel>
+              <StyledTitle>General usage</StyledTitle>
+              <StyledList>
+                <li>
+                  Upload a general ledger, a chart of accounts, and an optional
+                  dictionary. Map the columns and check the validity bar before
+                  Analyze.
+                </li>
+                <li>
+                  On Results, use Movement Tables and Process Analysis. Undo
+                  brings the upload and mapping fields back.
+                </li>
+                <li>
+                  Download the templates on the right when you need a starting
+                  CoA or dictionary.
+                </li>
+              </StyledList>
+            </Panel>
+
+            <Panel>
+              <StyledTitle>Templates</StyledTitle>
+              <Stack gap={1}>
+                <DownloadButton
+                  onClick={() =>
+                    download("/assets/files/serbia-coa.xlsx", "Serbia_CoA.xlsx")
+                  }
+                  endIcon={<DownloadIcon />}
+                >
+                  Serbia CoA
+                </DownloadButton>
+                <DownloadButton
+                  onClick={() =>
+                    download(
+                      "/assets/files/international-coa.xlsx",
+                      "International_CoA.xlsx"
+                    )
+                  }
+                  endIcon={<DownloadIcon />}
+                >
+                  International CoA
+                </DownloadButton>
+                <DownloadButton
+                  onClick={() =>
+                    download("/assets/files/dictionary.xlsx", "Dictionary.xlsx")
+                  }
+                  endIcon={<DownloadIcon />}
+                >
+                  Mapping Dictionary
+                </DownloadButton>
+                {downloadError ? (
+                  <DownloadError>{downloadError}</DownloadError>
+                ) : null}
+              </Stack>
+            </Panel>
+          </ContentWrapper>
+        </Stack>
+
+        <Stack gap={1}>
+          <SectionLabel>Import rules</SectionLabel>
+          <ContentWrapper>
+            <Panel>
+              <StyledTitle>General ledger (GL)</StyledTitle>
+              <StyledList>
+                <li>
+                  Use values only — formulas in cells can break the import.
+                </li>
+                <li>
+                  Do not include beginning balances; they skew the analysis.
+                </li>
+                <li>
+                  The sum of GL amounts should be zero overall and per journal
+                  entry.
+                </li>
+                <li>
+                  Required columns:
+                  <ul>
+                    <li>Account number</li>
+                    <li>Date</li>
+                    <li>Value</li>
+                    <li>Journal entry number</li>
+                  </ul>
+                </li>
+                <li>
+                  Format account codes with leading zeros as text so zeros are
+                  kept.
+                </li>
+                <li>
+                  One sheet only, data from A1, first row as headers.
+                </li>
+              </StyledList>
+            </Panel>
+
+            <Panel>
+              <StyledTitle>Chart of accounts (CoA)</StyledTitle>
+              <StyledList>
+                <li>
+                  Every GL account code needs a matching value in the CoA
+                  mapping column, or it shows as not mapped.
+                </li>
+                <li>
+                  GL and CoA must share the same matching column values so
+                  accounts can link.
+                </li>
+                <li>
+                  For full Movement / Process Analysis, prefer the GL Wizard CoA
+                  and map accounts to FS sub-group (or another Display category).
+                </li>
+                <li>
+                  One sheet only, data from A1, first row as headers.
+                </li>
+                <li>
+                  Custom CoAs still match accounts, but built-in grouping
+                  knowledge may be incomplete.
+                </li>
+              </StyledList>
+            </Panel>
+          </ContentWrapper>
+        </Stack>
       </RootStack>
     </PageWrapper>
   );

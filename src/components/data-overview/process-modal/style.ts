@@ -159,16 +159,20 @@ export const TableHeaderStyled = styled(Stack)({
 });
 
 export const SelectedTableWrapper = styled(Stack)({
-  gap: theme.gap.sm,
+  gap: theme.gap.md,
   flexDirection: "row",
-  overflow: "auto",
+  alignItems: "stretch",
+  overflowX: "auto",
+  overflowY: "hidden",
   width: "100%",
+  maxWidth: "100%",
+  minWidth: 0,
   justifyContent: "flex-start",
   borderRadius: theme.borderRadius.sm,
   backgroundColor: theme.colors.surface,
   border: `${theme.borderWidth.sm} solid ${theme.colors.softBlue}`,
   padding: theme.padding.md,
-  maxHeight: 180,
+  maxHeight: 220,
   flexShrink: 0,
 });
 
@@ -361,6 +365,21 @@ export const TablesWrapper = styled(Stack)({
   minWidth: 0,
   flex: 1,
   minHeight: 0,
+});
+
+export const ProcessTreeBranch = styled(Stack)({
+  flexDirection: "row",
+  alignItems: "flex-start",
+  gap: 12,
+  flex: "0 0 auto",
+  maxWidth: "100%",
+});
+
+export const ProcessTreeChildren = styled(Stack)({
+  flexDirection: "column",
+  gap: 10,
+  flex: "0 0 auto",
+  minWidth: 0,
 });
 
 export const LoaderContentWrapper = styled(Stack)({

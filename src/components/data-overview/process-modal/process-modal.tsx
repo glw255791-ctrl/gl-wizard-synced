@@ -12,6 +12,8 @@ import {
   TablesWrapper,
   LoaderContentWrapper,
   ExcelDownloadButton,
+  ProcessTreeBranch,
+  ProcessTreeChildren,
 } from "./style";
 import CloseIcon from "@mui/icons-material/Close";
 import { theme } from "@/constants/theme";
@@ -246,9 +248,10 @@ export function ProcessModal(props: ProcessModalProps) {
 
   const renderProcessTree = useCallback((): React.ReactNode => {
     const tree = buildTree(overallProcessObject);
+    if (!tree) return null;
 
     const renderTree = (node: Node, key: string) => (
-      <Stack style={{ flexDirection: "row", gap: 15 }} key={key}>
+      <ProcessTreeBranch key={key}>
         <ProcessDataTable
           id={`${node.title}-${node.level}`}
           title={node.title}
@@ -260,12 +263,14 @@ export function ProcessModal(props: ProcessModalProps) {
           setSearchByObject={(so) => so && setSearchByObject(so)}
           {...commonTableProps}
         />
-        <Stack style={{ flexDirection: "column", gap: 10 }}>
-          {node.children.map((child, index) =>
-            renderTree(child, `${key}-${index}`)
-          )}
-        </Stack>
-      </Stack>
+        {node.children.length > 0 ? (
+          <ProcessTreeChildren>
+            {node.children.map((child, index) =>
+              renderTree(child, `${key}-${index}`)
+            )}
+          </ProcessTreeChildren>
+        ) : null}
+      </ProcessTreeBranch>
     );
 
     return renderTree(tree, "0");

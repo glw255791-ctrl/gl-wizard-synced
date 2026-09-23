@@ -2,11 +2,9 @@
 
 import {
   Typography,
-  Paper,
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   IconButton,
   TableRow,
@@ -27,12 +25,13 @@ import {
   BlackText,
   InviteButton,
   SearchInput,
-  SearchBlock,
+  Toolbar,
   SearchField,
   ModalStyledInput,
   ModalActionButton,
   ModalContentWrapper,
   ModalBtnRow,
+  TablePanel,
 } from "./style";
 import { UserData, useUserManagementModel } from "./user-management-model";
 import EventRepeatIcon from "@mui/icons-material/EventRepeat";
@@ -45,6 +44,7 @@ import Tooltip from "@mui/material/Tooltip";
 import dayjs from "dayjs";
 import SearchIcon from "@mui/icons-material/Search";
 import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
+import { theme } from "@/constants/theme";
 
 export function UserManagementPage() {
   const {
@@ -83,10 +83,12 @@ export function UserManagementPage() {
           ) : (
             <GreenText>{dateStr}</GreenText>
           )}
-          <Stack direction="row" gap={1}>
+          <Stack direction="row" gap={0.5}>
             <Tooltip title="Extend licence">
               <IconButton
+                size="small"
                 aria-label="Extend licence"
+                sx={{ color: theme.colors.freshBlue }}
                 onClick={() =>
                   setModalProps({
                     modalAction: "EXTEND",
@@ -96,14 +98,16 @@ export function UserManagementPage() {
                   })
                 }
               >
-                <EventRepeatIcon />
+                <EventRepeatIcon fontSize="small" />
               </IconButton>
             </Tooltip>
             <Tooltip title="End licence">
               <span>
                 <IconButton
+                  size="small"
                   aria-label="End licence"
                   disabled={item.role === "admin"}
+                  sx={{ color: theme.colors.medium }}
                   onClick={() =>
                     setModalProps({
                       modalAction: "DEACTIVATE",
@@ -113,7 +117,7 @@ export function UserManagementPage() {
                     })
                   }
                 >
-                  <EventBusyIcon />
+                  <EventBusyIcon fontSize="small" />
                 </IconButton>
               </span>
             </Tooltip>
@@ -239,13 +243,25 @@ export function UserManagementPage() {
         </TableCell>
       </TableRow>
     ) : (
-      filteredUserData.map((row, index) => (
-        <TableRow key={index}>
+      filteredUserData.map((row) => (
+        <TableRow
+          key={row.id || row.email}
+          hover
+          sx={{
+            "&:last-child td": { borderBottom: 0 },
+          }}
+        >
           {columns.map((column) => (
             <TableCell
               key={column.key}
               align={column.align}
-              sx={{ width: column.width }}
+              sx={{
+                width: column.width,
+                borderBottom: `1px solid ${theme.colors.softBlue}`,
+                color: theme.colors.black,
+                fontSize: theme.fontSize.cell,
+                py: 1.1,
+              }}
             >
               {renderCellContent(column.key, row)}
             </TableCell>
@@ -260,28 +276,30 @@ export function UserManagementPage() {
       <PageWrapper>
         <RootStack>
           <Header title="User Management" />
-          <SearchBlock>
+          <Toolbar>
             <SearchField>
               <SearchInput
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search by name or email"
+                size="small"
                 slotProps={{
                   input: {
-                    style: {
-                      borderRadius: 16,
-                      height: 40,
-                    },
                     endAdornment:
                       searchTerm !== "" ? (
                         <IconButton
+                          size="small"
                           aria-label="Clear search"
                           onClick={() => setSearchTerm("")}
                         >
-                          <CloseIcon />
+                          <CloseIcon fontSize="small" />
                         </IconButton>
                       ) : (
-                        <SearchIcon aria-hidden="true" />
+                        <SearchIcon
+                          fontSize="small"
+                          sx={{ color: theme.colors.medium }}
+                          aria-hidden="true"
+                        />
                       ),
                   },
                 }}
@@ -300,16 +318,21 @@ export function UserManagementPage() {
             >
               Invite user
             </InviteButton>
-          </SearchBlock>
-          <TableContainer component={Paper}>
-            <Table size="small">
+          </Toolbar>
+          <TablePanel>
+            <Table size="small" stickyHeader>
               <TableHead>
                 <TableRow>
                   {columns.map((column) => (
                     <TableCell
                       key={column.key}
                       align={column.align}
-                      sx={{ width: column.width }}
+                      sx={{
+                        width: column.width,
+                        backgroundColor: theme.colors.darker,
+                        borderBottom: `1px solid ${theme.colors.freshBlue}`,
+                        py: 1.1,
+                      }}
                     >
                       <ColumnHeaderText>{column.label}</ColumnHeaderText>
                     </TableCell>
@@ -318,17 +341,20 @@ export function UserManagementPage() {
               </TableHead>
               <TableBody>{renderTableBody()}</TableBody>
             </Table>
-          </TableContainer>
+          </TablePanel>
         </RootStack>
       </PageWrapper>
 
       {/* Modal */}
-      <Modal open={!!modalProps}>
+      <Modal open={!!modalProps} onClose={() => setModalProps(undefined)}>
         <ModalContentStack>
           <ModalInnerContent>
             <ModalHeader>
               <BlackText variant="h6">{getModalTitle()}</BlackText>
-              <IconButton onClick={() => setModalProps(undefined)}>
+              <IconButton
+                onClick={() => setModalProps(undefined)}
+                sx={{ color: theme.colors.white }}
+              >
                 <CloseIcon />
               </IconButton>
             </ModalHeader>

@@ -4,162 +4,189 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Paper from "@mui/material/Paper";
+import TableContainer from "@mui/material/TableContainer";
 import { PickersTextField } from "@mui/x-date-pickers";
 import { theme } from "../../../constants/theme";
 
-// Root wrapper for the page
 export const RootStack = styled(Stack)({
   width: "100%",
+  minWidth: 0,
   minHeight: 0,
-  justifyContent: "flex-start",
   gap: theme.gap.lg,
 });
 
-// For the validity date stack (row layout for license info + buttons)
+export const Toolbar = styled(Stack)({
+  flexDirection: "row",
+  flexWrap: "wrap",
+  alignItems: "center",
+  gap: theme.gap.md,
+  padding: "0.75rem 1rem",
+  backgroundColor: theme.colors.surface,
+  border: `1px solid ${theme.colors.softBlue}`,
+  borderRadius: theme.borderRadius.md,
+});
+
+export const SearchField = styled(Stack)({
+  flex: "1 1 260px",
+  minWidth: 0,
+  maxWidth: 420,
+});
+
+export const SearchInput = styled(TextField)({
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    height: 40,
+    borderRadius: 16,
+    backgroundColor: theme.colors.white,
+    "& fieldset": {
+      borderColor: theme.colors.softBlue,
+    },
+    "&:hover fieldset": {
+      borderColor: theme.colors.freshBlue,
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: theme.colors.darker,
+    },
+  },
+});
+
+export const InviteButton = styled(Button)({
+  marginLeft: "auto",
+  height: 40,
+  borderRadius: 16,
+  backgroundColor: theme.colors.darker,
+  color: theme.colors.white,
+  paddingLeft: "1.1rem",
+  paddingRight: "1.1rem",
+  textTransform: "none",
+  fontWeight: 600,
+  boxShadow: "none",
+  "&:hover": {
+    backgroundColor: theme.colors.freshBlue,
+    boxShadow: "none",
+  },
+});
+
+export const TablePanel = styled(TableContainer)({
+  backgroundColor: theme.colors.white,
+  border: `1px solid ${theme.colors.softBlue}`,
+  borderRadius: theme.borderRadius.md,
+  overflow: "hidden",
+  boxShadow: "none",
+}) as typeof TableContainer;
+
+export const ColumnHeaderText = styled(Typography)({
+  fontWeight: 700,
+  fontSize: theme.fontSize.cell,
+  color: theme.colors.white,
+});
+
 export const ValidDateStack = styled(Stack)({
   flexDirection: "row",
   alignItems: "center",
-  justifyContent: "space-between",
+  justifyContent: "flex-end",
   gap: theme.gap.sm,
 });
 
-// Expired/valid text color styles
 export const RedText = styled(Typography)({
   color: theme.colors.red,
+  fontWeight: 600,
+  fontSize: theme.fontSize.cell,
 });
 
 export const GreenText = styled(Typography)({
-  color: theme.colors.green,
+  color: theme.colors.darker,
+  fontWeight: 600,
+  fontSize: theme.fontSize.cell,
 });
 
-// Header cell styles for table
-export const ColumnHeaderText = styled(Typography)({
-  fontWeight: "bold",
-});
-
-// Modal outer content style
 export const ModalContentStack = styled(Stack)({
   position: "absolute",
-  top: "40%",
+  top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 400,
-  backgroundColor: theme.colors.white,
-  borderRadius: theme.borderRadius.lg,
-  justifyContent: "center",
-  alignItems: "center",
-  padding: theme.padding.none,
+  width: "min(420px, calc(100vw - 2rem))",
+  backgroundColor: theme.colors.page,
+  borderRadius: theme.borderRadius.md,
+  border: `1px solid ${theme.colors.softBlue}`,
+  boxShadow: "0 18px 48px rgba(53, 111, 115, 0.28)",
+  overflow: "hidden",
 });
 
-// Modal inner content
 export const ModalInnerContent = styled(Stack)({
-  flex: 1,
   width: "100%",
-  padding: theme.padding.none,
-  justifyContent: "flex-start",
 });
 
-// Modal header bar
 export const ModalHeader = styled(Stack)({
   flexDirection: "row",
   justifyContent: "space-between",
   alignItems: "center",
-  padding: `${theme.padding.sm} ${theme.padding.lg}`,
-  borderBottom: `${theme.borderWidth.sm} solid ${theme.colors.darker}`,
+  padding: "0.75rem 1rem",
+  backgroundColor: theme.colors.darker,
+  color: theme.colors.white,
 });
 
-// Black text utility
 export const BlackText = styled(Typography)({
-  color: theme.colors.darker,
+  color: theme.colors.white,
+  fontWeight: 700,
 });
 
-// Modal content wrapper (for spacing)
 export const ModalContentWrapper = styled(Stack)({
-  alignItems: "center",
-  justifyContent: "center",
-  flex: 1,
-  gap: theme.gap.lg,
-  padding: `${theme.padding.lg} ${theme.padding.none}`,
+  alignItems: "stretch",
+  gap: theme.gap.md,
+  padding: "1rem 1.1rem 1.15rem",
 });
 
-// For input fields' custom width
-export const HalfWidthInput = styled(TextField)({
-  width: "50%",
-});
-
-// Modal button row
 export const ModalBtnRow = styled(Stack)({
   flexDirection: "row",
+  flexWrap: "wrap",
   gap: theme.gap.sm,
-  justifyContent: "center",
-  alignItems: "center",
 });
 
-// Modal Action Button
 export const ModalActionButton = styled(Button)({
-  height: theme.height.input,
-  borderRadius: theme.borderRadius.lg,
-  paddingLeft: theme.padding.lg,
-  paddingRight: theme.padding.lg,
+  height: 40,
+  borderRadius: 16,
+  paddingLeft: "1rem",
+  paddingRight: "1rem",
   textTransform: "none",
+  fontWeight: 600,
+  backgroundColor: theme.colors.darker,
+  color: theme.colors.white,
+  boxShadow: "none",
+  "&:hover": {
+    backgroundColor: theme.colors.freshBlue,
+    boxShadow: "none",
+  },
+  "&.Mui-disabled": {
+    backgroundColor: theme.colors.softBlue,
+    color: theme.colors.white,
+  },
 });
 
-// Modal input - for height and border radius (e.g., DatePicker/TextField input)
 export const ModalStyledInput = styled(TextField)({
-  height: theme.height.input,
-  borderRadius: theme.borderRadius.lg,
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    borderRadius: 16,
+    backgroundColor: theme.colors.white,
+  },
 });
 
 export const ModalStyledTextField = styled(PickersTextField)({
   height: theme.height.input,
   borderRadius: theme.borderRadius.lg,
 });
-// Modal input field wrapper (width)
+
+export const HalfWidthInput = styled(TextField)({
+  width: "50%",
+});
+
 export const ModalInputWrapper = styled("div")({
-  width: "80%",
+  width: "100%",
 });
 
-// Search bar block
-export const SearchBlock = styled(Stack)({
-  flex: 1,
-  maxHeight: "60px",
-  backgroundColor: theme.colors.lighter,
-  borderRadius: theme.borderRadius.sm,
-  alignItems: "center",
-  flexDirection: "row",
-  padding: `${theme.padding.sm} ${theme.padding.lg}`,
-  gap: theme.gap.lg,
-  justifyContent: "space-between",
-});
-
-// Search field wrapper
-export const SearchField = styled(Stack)({
-  flexDirection: "row",
-  gap: theme.gap.sm,
-  alignItems: "center",
-  backgroundColor: theme.colors.white,
-  borderRadius: theme.borderRadius.lg,
-});
-
-// Search TextField input style
-export const SearchInput = styled(TextField)({
-  borderRadius: theme.borderRadius.lg,
-  height: theme.height.input,
-});
-
-// "Invite user" Button
-export const InviteButton = styled(Button)({
-  borderRadius: theme.borderRadius.lg,
-  height: theme.height.input,
-  backgroundColor: theme.colors.action,
-  color: theme.colors.black,
-  paddingLeft: theme.padding.lg,
-  paddingRight: theme.padding.lg,
-  textTransform: "none",
-});
-
-// Table container style
+// Keep aliases used by older imports if any
+export const SearchBlock = Toolbar;
 export const StyledTableContainer = styled(Paper)({
-  backgroundColor: theme.colors.lighter,
-  borderRadius: theme.borderRadius.sm,
+  backgroundColor: theme.colors.white,
+  borderRadius: theme.borderRadius.md,
 });

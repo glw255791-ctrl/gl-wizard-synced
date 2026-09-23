@@ -32,6 +32,8 @@ const WIDTH_ADJUST = 2;
 const MAX_CHARS = 30;
 const SIDE_HEADER = "sideHeader";
 const TOTAL = "Total";
+const TOP_TABLE_WIDTH = 280;
+const TOP_TABLE_MAX_HEIGHT = 148;
 
 /* ============================================================================
  * Types
@@ -278,82 +280,113 @@ export const ProcessDataTable: React.FC<Props> = ({
    * Render
    * ---------------------------------------------------------------------- */
 
-  const gridHeight = Math.min(
-    Math.max((tableRows.length || 4) * ROW_HEIGHT + 16, ROW_HEIGHT * 8),
-    520
-  );
+  const isCompact = Boolean(isTopTable);
+  const gridHeight = isCompact
+    ? Math.min(
+        Math.max((tableRows.length || 2) * ROW_HEIGHT + 8, ROW_HEIGHT * 4),
+        TOP_TABLE_MAX_HEIGHT
+      )
+    : Math.min(
+        Math.max((tableRows.length || 4) * ROW_HEIGHT + 16, ROW_HEIGHT * 8),
+        520
+      );
+
+  const renderGrid = (width: number, height: number) => {
+    const gridWidth = Math.max(0, Math.floor(width) - WIDTH_ADJUST);
+    const labelWidth = Math.floor(gridWidth * 0.68);
+    const valueWidth = Math.max(gridWidth - labelWidth, 88);
+
+    if (tableRows.length === 0) {
+      return (
+        <Stack
+          height="100%"
+          width="100%"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Typography fontSize={14} fontWeight="bold">
+            No rows available
+          </Typography>
+        </Stack>
+      );
+    }
+
+    return (
+      <MultiGrid
+        ref={multiGridRef}
+        fixedColumnCount={1}
+        columnCount={tableColumns.length}
+        rowCount={tableRows.length}
+        rowHeight={ROW_HEIGHT}
+        columnWidth={(params: Index) =>
+          params.index === 0 ? labelWidth : valueWidth
+        }
+        width={gridWidth}
+        height={Math.max(0, Math.floor(height))}
+        style={{ outline: "none" }}
+        styleBottomLeftGrid={{ overflowX: "hidden" }}
+        styleBottomRightGrid={{ overflowX: "hidden" }}
+        cellRenderer={({ columnIndex, rowIndex, key, style }) => {
+          const column = tableColumns[columnIndex];
+          const row = tableRows[rowIndex];
+          if (!row) return null;
+
+          return (
+            <div key={key} style={style}>
+              <Stack
+                sx={{
+                  ...styles.cellBaseStyle,
+                  ...getStylesBasedOnColumn(column, row, mappingValue),
+                  ...getStylesBasedOnHeader(rowIndex, 0),
+                }}
+              >
+                {renderCellText(row, column)}
+              </Stack>
+            </div>
+          );
+        }}
+      />
+    );
+  };
 
   return (
-    <Stack sx={{ width: "100%", maxWidth: "100%", minWidth: 0, flex: 1 }}>
+    <Stack
+      sx={{
+        width: isCompact ? TOP_TABLE_WIDTH : "min(100%, 520px)",
+        minWidth: isCompact ? TOP_TABLE_WIDTH : 360,
+        maxWidth: isCompact ? TOP_TABLE_WIDTH : 520,
+        flex: "0 0 auto",
+      }}
+    >
       <TableScrollableWrapper id={id}>
         <TableHeaderStyled>
           <TableTitle>
             <Tooltip title={title}>
-              <Stack>{getElipsis(title, 40)}</Stack>
+              <Stack>{getElipsis(title, isCompact ? 28 : 40)}</Stack>
             </Tooltip>
           </TableTitle>
         </TableHeaderStyled>
 
-        <AutoSizer
-          style={{
-            ...styles.autosizerWrapper,
-            height: gridHeight,
-          }}
-        >
-          {({ width, height }) => {
-            const gridWidth = Math.max(0, Math.floor(width) - WIDTH_ADJUST);
-            const labelWidth = Math.floor(gridWidth * 0.72);
-            const valueWidth = Math.max(gridWidth - labelWidth, COLUMN_WIDTH);
-
-            return tableRows.length > 0 ? (
-              <MultiGrid
-                ref={multiGridRef}
-                fixedColumnCount={1}
-                columnCount={tableColumns.length}
-                rowCount={tableRows.length}
-                rowHeight={ROW_HEIGHT}
-                columnWidth={(params: Index) =>
-                  params.index === 0 ? labelWidth : valueWidth
-                }
-                width={gridWidth}
-                height={Math.max(0, Math.floor(height))}
-                style={{ outline: "none" }}
-                styleBottomLeftGrid={{ overflowX: "hidden" }}
-                styleBottomRightGrid={{ overflowX: "hidden" }}
-                cellRenderer={({ columnIndex, rowIndex, key, style }) => {
-                  const column = tableColumns[columnIndex];
-                  const row = tableRows[rowIndex];
-                  if (!row) return null;
-
-                  return (
-                    <div key={key} style={style}>
-                      <Stack
-                        sx={{
-                          ...styles.cellBaseStyle,
-                          ...getStylesBasedOnColumn(column, row, mappingValue),
-                          ...getStylesBasedOnHeader(rowIndex, 0),
-                        }}
-                      >
-                        {renderCellText(row, column)}
-                      </Stack>
-                    </div>
-                  );
-                }}
-              />
-            ) : (
-              <Stack
-                height="100%"
-                width="100%"
-                justifyContent="center"
-                alignItems="center"
-              >
-                <Typography fontSize={14} fontWeight="bold">
-                  No rows available
-                </Typography>
-              </Stack>
-            );
-          }}
-        </AutoSizer>
+        {isCompact ? (
+          <Stack
+            style={{
+              ...styles.autosizerWrapper,
+              height: gridHeight,
+              width: TOP_TABLE_WIDTH,
+            }}
+          >
+            {renderGrid(TOP_TABLE_WIDTH, gridHeight)}
+          </Stack>
+        ) : (
+          <AutoSizer
+            style={{
+              ...styles.autosizerWrapper,
+              height: gridHeight,
+            }}
+          >
+            {({ width, height }) => renderGrid(width, height)}
+          </AutoSizer>
+        )}
       </TableScrollableWrapper>
     </Stack>
   );

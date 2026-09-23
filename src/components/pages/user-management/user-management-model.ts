@@ -96,14 +96,14 @@ export function useUserManagementModel() {
 
   // ----- Table Columns -----
   const columns: Column[] = [
-    { key: "name", label: "Name", flex: 3 },
+    { key: "name", label: "Name", flex: 1.2 },
     { key: "email", label: "E-mail", flex: 2 },
     {
       key: "licencevaliduntil",
-      label: "Licence info",
-      width: 200,
-      align: "center",
-      flex: 2,
+      label: "Licence",
+      width: 220,
+      align: "right",
+      flex: 1.4,
     },
   ];
 
