@@ -1,19 +1,14 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Stack, Tooltip, Typography } from "@mui/material";
-import "react-virtualized/styles.css";
-import { AutoSizer, Index, MultiGrid } from "react-virtualized";
 
 import { getElipsis } from "../table/ellipsis";
 import { buildMovementTable } from "../table/build-movement-table";
 import { AnyType } from "../../../types";
 import {
-  getStylesBasedOnColumn,
-  getStylesBasedOnHeader,
   RowLabelWrapper,
   TableScrollableWrapper,
   TableHeaderStyled,
   TableTitle,
-  styles,
   IconButtonStyled,
   RowLabelCell,
   QueryStatsIconStyled,
@@ -21,27 +16,16 @@ import {
   RemoveCircleOutlineIconStyled,
   AmountCell,
   LabelText,
+  ProcessRow,
+  ProcessRowsBody,
+  ProcessTableShell,
 } from "./style";
 import { ProcessValue, SearchByObject } from "./types";
 
-/* ============================================================================
- * Constants
- * ========================================================================== */
-
-const ROW_HEIGHT = 36;
-const WIDTH_ADJUST = 2;
-const MAX_CHARS = 42;
-const SIDE_HEADER = "sideHeader";
+const MAX_CHARS = 52;
 const TOTAL = "Total";
-const TOP_TABLE_WIDTH = 420;
-const TOP_TABLE_MAX_HEIGHT = 200;
-const AMOUNT_COL_WIDTH = 128;
-const BOTTOM_TABLE_MIN = 460;
-const BOTTOM_TABLE_MAX = 720;
-
-/* ============================================================================
- * Types
- * ========================================================================== */
+const TOP_MAX_HEIGHT = 220;
+const BOTTOM_MAX_HEIGHT = 420;
 
 interface Filters {
   header: string;
@@ -66,10 +50,6 @@ interface Props {
   removeFromProcess?: (processValue: ProcessValue) => void;
 }
 
-/* ============================================================================
- * Component
- * ========================================================================== */
-
 export const ProcessDataTable: React.FC<Props> = ({
   title,
   mappingValue,
@@ -90,9 +70,6 @@ export const ProcessDataTable: React.FC<Props> = ({
   const [tableRows, setTableRows] = useState<Record<string, AnyType>[]>(
     rows || []
   );
-  const multiGridRef = useRef<MultiGrid>(null);
-
-  const tableColumns = useMemo(() => ["sideHeader", "total"], []);
 
   const stringifyWithoutBg = (row: Record<string, AnyType>) => {
     const copy = { ...row };
@@ -107,9 +84,7 @@ export const ProcessDataTable: React.FC<Props> = ({
 
   useEffect(() => {
     if (!isTopTable || !rows) return;
-
     setTableRows(rows);
-    multiGridRef.current?.forceUpdateGrids();
   }, [rows, isTopTable]);
 
   const generateTableData = () => {
@@ -126,7 +101,6 @@ export const ProcessDataTable: React.FC<Props> = ({
     }
 
     const ignoreKeys = ["header", "sideHeader", "total", "bg"];
-
     const valueKeys = Object.keys(generatedRows[1]).filter(
       (key) => !ignoreKeys.includes(key)
     );
@@ -165,203 +139,130 @@ export const ProcessDataTable: React.FC<Props> = ({
         rows.filter((row) => !omitRows.includes(stringifyWithoutBg(row)))
       );
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortedDataDisplayHeader, overviewTableData, overallProcessObject, rows]);
 
-  const renderCellText = (row: Record<string, AnyType>, column: string) => {
-    const isHeaderRow = row.header;
-    const rawValue = row[column] as string | undefined;
-    const displayValue = rawValue ? getElipsis(rawValue, MAX_CHARS) : "";
+  const renderActions = (row: Record<string, AnyType>) => {
+    if (row.header || row.sideHeader === TOTAL) return null;
 
-    if (column === "total") {
-      return <AmountCell>{displayValue}</AmountCell>;
-    }
-
-    if (isHeaderRow) {
-      return <LabelText>{displayValue}</LabelText>;
-    }
-
-    const tooltipTitle =
-      typeof rawValue === "string" && rawValue.length > MAX_CHARS
-        ? rawValue
-        : "";
-
-    return (
-      <RowLabelWrapper>
-        <Tooltip title={tooltipTitle}>
-          <LabelText>{displayValue}</LabelText>
-        </Tooltip>
-
+    if (isTopTable) {
+      return (
         <RowLabelCell>
-          {isTopTable ? (
-            <>
-              {row.sideHeader !== TOTAL && (
-                <IconButtonStyled
-                  onClick={() =>
-                    setSearchByObject({
-                      title,
-                      level,
-                      value: String(row.sideHeader),
-                      bg: row.bg as string,
-                    })
-                  }
-                >
-                  <QueryStatsIconStyled />
-                </IconButtonStyled>
-              )}
-
-              {level === maxProcessLevel && row.sideHeader !== TOTAL && (
-                <IconButtonStyled
-                  onClick={() =>
-                    removeFromProcess?.({
-                      title,
-                      level,
-                      rows: [row],
-                    })
-                  }
-                >
-                  <RemoveCircleOutlineIconStyled />
-                </IconButtonStyled>
-              )}
-            </>
-          ) : (
+          <IconButtonStyled
+            aria-label="Drill into related movements"
+            onClick={() =>
+              setSearchByObject({
+                title,
+                level,
+                value: String(row.sideHeader),
+                bg: row.bg as string,
+              })
+            }
+          >
+            <QueryStatsIconStyled />
+          </IconButtonStyled>
+          {level === maxProcessLevel ? (
             <IconButtonStyled
+              aria-label="Remove from process"
               onClick={() =>
-                onAddToProcess?.({
+                removeFromProcess?.({
                   title,
-                  rows: [row],
                   level,
+                  rows: [row],
                 })
               }
             >
-              <AddCircleOutlineIconStyled />
+              <RemoveCircleOutlineIconStyled />
             </IconButtonStyled>
-          )}
+          ) : null}
         </RowLabelCell>
-      </RowLabelWrapper>
-    );
-  };
-
-  const isCompact = Boolean(isTopTable);
-  const gridHeight = isCompact
-    ? Math.min(
-        Math.max((tableRows.length || 2) * ROW_HEIGHT + 8, ROW_HEIGHT * 3),
-        TOP_TABLE_MAX_HEIGHT
-      )
-    : Math.min(
-        Math.max((tableRows.length || 4) * ROW_HEIGHT + 16, ROW_HEIGHT * 6),
-        480
-      );
-
-  const renderGrid = (width: number, height: number) => {
-    const gridWidth = Math.max(0, Math.floor(width) - WIDTH_ADJUST);
-    const valueWidth = Math.min(AMOUNT_COL_WIDTH, Math.floor(gridWidth * 0.38));
-    const labelWidth = Math.max(gridWidth - valueWidth, 160);
-
-    if (tableRows.length === 0) {
-      return (
-        <Stack
-          height="100%"
-          width="100%"
-          justifyContent="center"
-          alignItems="center"
-        >
-          <Typography fontSize={14} fontWeight={600} color="text.secondary">
-            No rows available
-          </Typography>
-        </Stack>
       );
     }
 
     return (
-      <MultiGrid
-        ref={multiGridRef}
-        fixedColumnCount={1}
-        columnCount={tableColumns.length}
-        rowCount={tableRows.length}
-        rowHeight={ROW_HEIGHT}
-        columnWidth={(params: Index) =>
-          params.index === 0 ? labelWidth : valueWidth
-        }
-        width={gridWidth}
-        height={Math.max(0, Math.floor(height))}
-        style={{ outline: "none" }}
-        styleBottomLeftGrid={{ overflowX: "hidden", overflowY: "auto" }}
-        styleBottomRightGrid={{ overflowX: "hidden", overflowY: "auto" }}
-        cellRenderer={({ columnIndex, rowIndex, key, style }) => {
-          const column = tableColumns[columnIndex];
-          const row = tableRows[rowIndex];
-          if (!row) return null;
-
-          return (
-            <div
-              key={key}
-              style={{
-                ...style,
-                overflow: "hidden",
-                boxSizing: "border-box",
-              }}
-            >
-              <Stack
-                sx={{
-                  ...styles.cellBaseStyle,
-                  ...getStylesBasedOnColumn(column, row, mappingValue),
-                  ...getStylesBasedOnHeader(rowIndex, 0),
-                  height: "100%",
-                  width: "100%",
-                  boxSizing: "border-box",
-                  overflow: "hidden",
-                }}
-              >
-                {renderCellText(row, column)}
-              </Stack>
-            </div>
-          );
-        }}
-      />
+      <RowLabelCell>
+        <IconButtonStyled
+          aria-label="Add to process"
+          onClick={() =>
+            onAddToProcess?.({
+              title,
+              rows: [row],
+              level,
+            })
+          }
+        >
+          <AddCircleOutlineIconStyled />
+        </IconButtonStyled>
+      </RowLabelCell>
     );
   };
 
+  const maxHeight = isTopTable ? TOP_MAX_HEIGHT : BOTTOM_MAX_HEIGHT;
+
   return (
-    <Stack
-      sx={{
-        width: isCompact ? TOP_TABLE_WIDTH : "min(100%, 640px)",
-        minWidth: isCompact ? TOP_TABLE_WIDTH : BOTTOM_TABLE_MIN,
-        maxWidth: isCompact ? TOP_TABLE_WIDTH : BOTTOM_TABLE_MAX,
-        flex: "0 0 auto",
-      }}
-    >
+    <ProcessTableShell>
       <TableScrollableWrapper id={id}>
         <TableHeaderStyled>
           <TableTitle>
             <Tooltip title={title}>
-              <Stack>{getElipsis(title, isCompact ? 36 : 48)}</Stack>
+              <Stack>{getElipsis(title, 48)}</Stack>
             </Tooltip>
           </TableTitle>
         </TableHeaderStyled>
 
-        {isCompact ? (
-          <Stack
-            style={{
-              ...styles.autosizerWrapper,
-              height: gridHeight,
-              width: TOP_TABLE_WIDTH,
-            }}
-          >
-            {renderGrid(TOP_TABLE_WIDTH, gridHeight)}
-          </Stack>
-        ) : (
-          <AutoSizer
-            style={{
-              ...styles.autosizerWrapper,
-              height: gridHeight,
-            }}
-          >
-            {({ width, height }) => renderGrid(width, height)}
-          </AutoSizer>
-        )}
+        <ProcessRowsBody sx={{ maxHeight }}>
+          {tableRows.length === 0 ? (
+            <Stack
+              height={72}
+              width="100%"
+              justifyContent="center"
+              alignItems="center"
+            >
+              <Typography fontSize={14} fontWeight={600} color="text.secondary">
+                No rows available
+              </Typography>
+            </Stack>
+          ) : (
+            tableRows.map((row, index) => {
+              const label = row.sideHeader
+                ? getElipsis(String(row.sideHeader), MAX_CHARS)
+                : "";
+              const amount = row.total ? String(row.total) : "";
+              const tooltipTitle =
+                typeof row.sideHeader === "string" &&
+                row.sideHeader.length > MAX_CHARS
+                  ? row.sideHeader
+                  : "";
+              const bg =
+                row.bg && row.bg !== "white"
+                  ? String(row.bg)
+                  : index % 2 === 0
+                    ? "#fff"
+                    : "#f7fafb";
+              const isTotal =
+                row.sideHeader === TOTAL || row.sideHeader === mappingValue;
+
+              return (
+                <ProcessRow
+                  key={`${String(row.sideHeader)}-${index}`}
+                  sx={{
+                    backgroundColor: bg,
+                    fontWeight: isTotal ? 700 : 400,
+                  }}
+                >
+                  <RowLabelWrapper>
+                    <Tooltip title={tooltipTitle}>
+                      <LabelText>{label}</LabelText>
+                    </Tooltip>
+                    {renderActions(row)}
+                  </RowLabelWrapper>
+                  <AmountCell>{amount}</AmountCell>
+                </ProcessRow>
+              );
+            })
+          )}
+        </ProcessRowsBody>
       </TableScrollableWrapper>
-    </Stack>
+    </ProcessTableShell>
   );
 };
