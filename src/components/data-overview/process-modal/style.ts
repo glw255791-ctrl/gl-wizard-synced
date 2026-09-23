@@ -14,21 +14,20 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 // Modal content container (positioning the modal, centering, etc.)
 export const ModalContent = styled(Stack)(() => ({
-  flex: 1,
+  width: "min(1100px, calc(100vw - 3rem))",
+  height: "min(820px, calc(100vh - 3rem))",
   backgroundColor: theme.colors.white,
   borderRadius: theme.borderRadius.sm,
-  justifyContent: "center",
-  alignItems: "center",
-  margin: theme.padding.xl,
-  height: "calc(100vh - 60px)",
+  justifyContent: "flex-start",
+  alignItems: "stretch",
+  overflow: "hidden",
   color: theme.colors.black,
 }));
 
-// Inner content of the modal (vertically stacks the parts)
 export const ModalInnerContent = styled(Stack)(() => ({
   flex: 1,
   width: "100%",
-  height: 400,
+  minHeight: 0,
   padding: theme.padding.none,
   justifyContent: "flex-start",
 }));
@@ -68,12 +67,14 @@ export const ModalHeader = styled(Stack)(() => ({
 
 // Modal content wrapper (for the body, aligns content)
 export const ModalContentWrapper = styled(Stack)(() => ({
-  alignItems: "center",
-  justifyContent: "space-between",
+  alignItems: "stretch",
+  justifyContent: "flex-start",
   flex: 1,
-  gap: theme.gap.lg,
+  minHeight: 0,
+  width: "100%",
+  gap: theme.gap.md,
   padding: theme.padding.lg,
-  maxHeight: "calc(100vh - 200px)",
+  overflow: "hidden",
 }));
 
 // Title of the modal
@@ -94,6 +95,7 @@ export const TotalText = styled(Typography)({
 export const TableTitle = styled(Typography)({
   fontSize: theme.fontSize.lg,
   fontWeight: "bold",
+  color: theme.colors.white,
 });
 
 export const UncheckedIcon = styled(CancelRounded)({
@@ -122,37 +124,37 @@ export const TableScrollableWrapper = styled(Stack)({
   borderRadius: theme.borderRadius.sm,
   borderWidth: theme.borderWidth.sm,
   borderStyle: "solid",
-  borderColor: theme.colors.medium,
-  backgroundColor: theme.colors.medium,
-  height: "100%",
+  borderColor: theme.colors.softBlue,
+  backgroundColor: theme.colors.white,
+  width: "100%",
+  flex: 1,
+  minHeight: 0,
 });
 
 export const TableHeaderStyled = styled(Stack)({
-  width: "auto",
-  padding: theme.padding.md,
-  backgroundColor: theme.colors.medium,
+  width: "100%",
+  boxSizing: "border-box",
+  padding: "0.55rem 0.85rem",
+  backgroundColor: theme.colors.darker,
+  color: theme.colors.white,
   flexDirection: "row",
   justifyContent: "space-between",
   alignItems: "center",
   borderRadius: `${theme.borderRadius.sm} ${theme.borderRadius.sm} 0 0`,
-  height: 16,
+  minHeight: 40,
 });
 
 export const SelectedTableWrapper = styled(Stack)({
   gap: theme.gap.sm,
   flexDirection: "row",
-  overflowX: "auto",
-  overflowY: "auto",
-  width: "calc(100vw - 8rem)",
-  paddingBottom: theme.padding.md,
+  overflow: "auto",
+  width: "100%",
   justifyContent: "flex-start",
   borderRadius: theme.borderRadius.sm,
-  backgroundColor: theme.colors.lighter,
+  backgroundColor: theme.colors.surface,
   padding: theme.padding.md,
-  minHeight: 200,
-  height: 400,
-  display: "flex",
-  alignItems: "flex-start",
+  maxHeight: 180,
+  flexShrink: 0,
 });
 
 export const AddButton = styled(Button)({
@@ -195,13 +197,12 @@ export const styles: Record<string, CommonProps["style"]> = {
     fontSize: theme.fontSize.cell,
   },
   autosizerWrapper: {
-    width: 400,
-    height: 200,
+    width: "100%",
+    height: 480,
     overflow: "auto",
     borderBottomRightRadius: theme.borderRadius.sm,
     borderBottomLeftRadius: theme.borderRadius.sm,
-    backgroundColor: theme.colors.medium,
-    overflowX: "hidden",
+    backgroundColor: theme.colors.white,
   },
 };
 
@@ -291,11 +292,11 @@ export const StyledCircularProgress = styled(CircularProgress)({
 export const TablesWrapper = styled(Stack)({
   gap: theme.gap.lg,
   flexDirection: "row",
-  overflowX: "auto",
-  width: "calc(100vw - 8rem)",
-  paddingBottom: theme.padding.md,
-  height: 200,
-  overflowY: "hidden",
+  alignItems: "stretch",
+  overflow: "auto",
+  width: "100%",
+  flex: 1,
+  minHeight: 0,
 });
 
 export const LoaderContentWrapper = styled(Stack)({

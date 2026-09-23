@@ -1,4 +1,4 @@
-import { Stack, Tooltip, Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import { formatDate } from "date-fns";
 import {
   CheckedIcon,
@@ -15,9 +15,10 @@ import {
 import DownloadIcon from "@mui/icons-material/Download";
 import { Table, Column, AutoSizer } from "react-virtualized";
 import "react-virtualized/styles.css";
-import { getElipsis } from "../../data-overview/table/functions";
-import { useCallback } from "react";
+import { getElipsis } from "../../data-overview/table/ellipsis";
+import { useCallback, useState } from "react";
 import { exportTableToExcel } from "./functions";
+import { DownloadProgress } from "../download-progress/download-progress";
 import { TableHeader } from "../../../types";
 import { theme } from "../../../constants/theme";
 
@@ -61,34 +62,57 @@ export const BasicTable = ({
     key: string,
     value: string | Date | number | string[]
   ) => {
+    if (value == null) return "";
     switch (key) {
       case VALUE:
-        return Number(Number(value).toFixed(2)).toLocaleString("de-DE", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-          useGrouping: true,
-        });
+        return typeof value === "number"
+          ? Number(value.toFixed(2)).toLocaleString("de-DE", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+              useGrouping: true,
+            })
+          : String(value);
       case DATE:
-        return formatDate(value as Date, "dd-MM-yyyy");
+        return value instanceof Date
+          ? formatDate(value, "dd-MM-yyyy")
+          : String(value);
       case RESULT:
-        return reversalReclassification
-          ? String(value)
-          : (value as string[])?.join("/");
+        return Array.isArray(value)
+          ? reversalReclassification
+            ? String(value)
+            : value.join("/")
+          : String(value);
       default:
         return String(value);
     }
   };
 
-  const onExportTable = useCallback(() => {
-    exportTableToExcel(header, data);
+  const [exportProgress, setExportProgress] = useState<{
+    done: number;
+    total: number;
+  } | null>(null);
+
+  const onExportTable = useCallback(async () => {
+    setExportProgress({ done: 0, total: data.length });
+    try {
+      await exportTableToExcel(header, data, (done, total) =>
+        setExportProgress({ done, total })
+      );
+    } finally {
+      setExportProgress(null);
+    }
   }, [header, data]);
 
   return (
     <Wrapper>
       <TableHeaderStyled>
         <TableTitle>Data overview</TableTitle>
+        {exportProgress ? (
+          <DownloadProgress done={exportProgress.done} total={exportProgress.total} />
+        ) : null}
         <ExcelDownloadButton
           onClick={onExportTable}
+          disabled={exportProgress != null}
           variant="contained"
           endIcon={<DownloadIcon />}
         >
@@ -117,17 +141,15 @@ export const BasicTable = ({
                   minWidth={width / header.length}
                   maxWidth={width / header.length}
                   flexGrow={1}
-                  cellRenderer={({ cellData }) => (
-                    <Tooltip
-                      title={
-                        String(getCellValueFormatted(col.key, cellData))
-                          .length > MAX_CHARS
-                          ? getCellValueFormatted(col.key, cellData)
-                          : ""
-                      }
-                    >
+                  cellRenderer={({ cellData }) => {
+                    const text =
+                      col.key === REVERSAL
+                        ? ""
+                        : getCellValueFormatted(col.key, cellData);
+                    return (
                       <Typography
                         component={"div"}
+                        title={text.length > MAX_CHARS ? text : undefined}
                         style={{
                           ...styles.cellBaseStyle,
                           ...getCellStyleByHeader(col.key),
@@ -143,14 +165,11 @@ export const BasicTable = ({
                             <UncheckedIcon />
                           )
                         ) : (
-                          getElipsis(
-                            getCellValueFormatted(col.key, cellData),
-                            MAX_CHARS
-                          )
+                          getElipsis(text, MAX_CHARS)
                         )}
                       </Typography>
-                    </Tooltip>
-                  )}
+                    );
+                  }}
                   headerStyle={styles.headerWrapper}
                   headerRenderer={({ label }) => (
                     <Stack style={styles.headerCell}>

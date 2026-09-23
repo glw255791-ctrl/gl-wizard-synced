@@ -13,6 +13,8 @@ import { ActionButton } from "../../composed/action-button/action-button";
 import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { WarningModal } from "../../composed/warning-modal/warning-modal";
 import { UndoButton } from "../../composed/undo-button/undo-button";
+import { AnalysisSummary } from "../../composed/analysis-summary/analysis-summary";
+import { useState } from "react";
 import dynamic from "next/dynamic";
 
 const BasicDataOverview = dynamic(
@@ -34,6 +36,7 @@ export function ReversalAnalysis() {
     currentStep,
     error,
     loadingStatus,
+    fileProgress,
     isWarningModalShown,
     isDictionaryUploaded,
     onDictionaryDrop,
@@ -48,36 +51,69 @@ export function ReversalAnalysis() {
     onPressBackBtn,
   } = useReversalAnalysis();
 
+  const [glFileName, setGlFileName] = useState("");
+  const [coaFileName, setCoaFileName] = useState("");
+  const [dictionaryFileName, setDictionaryFileName] = useState("");
+  const resetAnalysis = () => {
+    setGlFileName("");
+    setCoaFileName("");
+    setDictionaryFileName("");
+    onPressResetBtn();
+  };
+  const canUndo = currentStep !== AnalysisStep.TO_UPLOAD_GL;
+  const canAnalyze =
+    currentStep === AnalysisStep.TO_UPLOAD_DICTIONARY ||
+    currentStep === AnalysisStep.UPLOADED_DICTIONARY;
+
   return (
     <>
-      <Loader loadingStatus={loadingStatus} />
+      <Loader loadingStatus={loadingStatus} fileProgress={fileProgress} />
       <PageWrapper>
         <RootStack spacing={2}>
-          <Header title="Reversal analysis" onPressResetBtn={onPressResetBtn} />
+          <Header
+            title="Reversal"
+            onPressResetBtn={resetAnalysis}
+            step={currentStep}
+          />
 
           {/* GL and CoA Upload Section */}
-          <Grid2 container spacing={2}>
-            {/* GL Upload */}
-            <Grid2 size={6}>
+          <Grid2
+            container
+            spacing={2}
+            sx={{
+              alignItems: "stretch",
+              "& > .MuiGrid2-root": { display: "flex" },
+            }}
+          >
+            <Grid2 size={glHeaderOptions.length > 0 ? 6 : 4}>
               <FileDropzone
-                onDrop={onGeneralLedgerDrop}
+                onDrop={(files) => {
+                  setGlFileName(files[0]?.name ?? "");
+                  onGeneralLedgerDrop(files);
+                }}
                 text="Drop GL file here"
+                fileName={glFileName}
                 uploaded={currentStep !== AnalysisStep.TO_UPLOAD_GL}
                 isDisabled={currentStep === AnalysisStep.ANALYZED}
               >
+                {glHeaderOptions.length > 0 ? (
                 <GLDropdowns
                   glHeaderOptions={glHeaderOptions}
                   selectedHeaders={selectedHeaders}
                   onChangeGlHeader={onChangeGlHeader}
                 />
+                ) : null}
               </FileDropzone>
             </Grid2>
 
-            {/* CoA & Dictionary Upload */}
-            <Grid2 size={6}>
+            <Grid2 size={glHeaderOptions.length > 0 ? 3 : 4}>
               <FileDropzone
-                onDrop={onChartOfAccountsDrop}
+                onDrop={(files) => {
+                  setCoaFileName(files[0]?.name ?? "");
+                  onChartOfAccountsDrop(files);
+                }}
                 text="Drop CoA file here"
+                fileName={coaFileName}
                 uploaded={
                   currentStep === AnalysisStep.TO_UPLOAD_DICTIONARY ||
                   currentStep === AnalysisStep.UPLOADED_DICTIONARY
@@ -86,10 +122,8 @@ export function ReversalAnalysis() {
                   currentStep === AnalysisStep.TO_UPLOAD_GL ||
                   currentStep === AnalysisStep.UPLOADED_GL
                 }
-                onAdditionalDrop={onDictionaryDrop}
-                additionalText="Drop Dictionary file here"
-                additionalUploaded={isDictionaryUploaded}
               >
+                {coaHeaderOptions.length > 0 ? (
                 <Stack spacing={1}>
                   <Dropdown
                     label="Matching column GL & CoA"
@@ -114,35 +148,62 @@ export function ReversalAnalysis() {
                     }
                   />
                 </Stack>
+                ) : null}
+              </FileDropzone>
+            </Grid2>
+
+            <Grid2 size={glHeaderOptions.length > 0 ? 3 : 4}>
+              <FileDropzone
+                optional
+                onDrop={(files) => {
+                  setDictionaryFileName(files[0]?.name ?? "");
+                  onDictionaryDrop(files);
+                }}
+                text="Drop Dictionary file here"
+                fileName={dictionaryFileName}
+                uploaded={isDictionaryUploaded}
+                isDisabled={
+                  currentStep !== AnalysisStep.TO_UPLOAD_DICTIONARY &&
+                  currentStep !== AnalysisStep.UPLOADED_DICTIONARY
+                }
+              >
+                {null}
               </FileDropzone>
             </Grid2>
           </Grid2>
 
+          {currentStep !== AnalysisStep.TO_UPLOAD_GL && (
           <CardStyled>
-            {currentStep !== AnalysisStep.TO_UPLOAD_GL &&
-            currentStep !== AnalysisStep.UPLOADED_GL ? (
-              <DataValidityInfo reviewData={reviewData} error={error} />
+            {currentStep === AnalysisStep.UPLOADED_GL ? (
+              <span style={{ flex: "1 1 auto", minWidth: 0, paddingRight: "1rem" }}>
+                Choose the four columns.
+              </span>
             ) : (
-              <Stack />
+              <DataValidityInfo reviewData={reviewData} error={error} />
             )}
-            {currentStep !== AnalysisStep.ANALYZED && (
-              <Stack direction="row" spacing={1} alignItems="center">
-                <UndoButton
-                  disabled={currentStep === AnalysisStep.TO_UPLOAD_GL}
-                  onPressUndo={onPressBackBtn}
-                />
-                <ActionButton
-                  disabled={
-                    currentStep !== AnalysisStep.TO_UPLOAD_DICTIONARY &&
-                    currentStep !== AnalysisStep.UPLOADED_DICTIONARY
-                  }
-                  onPressAnalyzeData={onPressAnalyzeData}
-                />
+            {(canUndo || canAnalyze) && (
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0, marginLeft: "auto" }}>
+                {canUndo && (
+                  <UndoButton disabled={false} onPressUndo={onPressBackBtn} />
+                )}
+                {canAnalyze && (
+                  <ActionButton
+                    disabled={false}
+                    onPressAnalyzeData={onPressAnalyzeData}
+                  />
+                )}
               </Stack>
             )}
           </CardStyled>
+          )}
 
           {/* GL Data Summary */}
+          {currentStep === AnalysisStep.ANALYZED && (
+            <AnalysisSummary
+              rows={tableData}
+              headers={selectedHeaders.glHeaders}
+            />
+          )}
           {currentStep === AnalysisStep.ANALYZED && (
           <BasicDataOverview
             title="GL Data With Reversal Identified"

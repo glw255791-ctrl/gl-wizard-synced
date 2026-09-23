@@ -49,7 +49,7 @@ export const fontSize = {
   lg: "0.95rem",
   xl: "1.25rem",
   xxl: "1.75rem",
-  icon: "5rem",
+  icon: "2.25rem",
 } as const;
 
 /**
@@ -151,6 +151,12 @@ export const colors = {
   lighter: "#FFFFFF",
   page: "#F8F9F6",
   surface: "#E4F0F0",
+  freshBlue: "#5A9298",
+  limeLight: "#E8EFCB",
+  limeSoft: "#D6E3A0",
+  softBlue: "#A9C8C9",
+  canvas: "#E5E9E8",
+  yellow: "#E8D75A",
 
   action: "#B8C96B",
   red: "#C62828",

@@ -6,7 +6,8 @@ export const Root = styled(Stack)({
   minHeight: "100vh",
   justifyContent: "center",
   alignItems: "center",
-  backgroundColor: "#E5E9E8",
+  backgroundColor: theme.colors.canvas,
+  backgroundImage: `linear-gradient(165deg, ${theme.colors.surface} 0%, ${theme.colors.page} 58%, ${theme.colors.canvas} 100%)`,
   padding: "2rem",
   boxSizing: "border-box",
 });
@@ -15,7 +16,7 @@ export const LoginBlock = styled(Stack)({
   width: "100%",
   maxWidth: 420,
   backgroundColor: theme.colors.lighter,
-  border: "1px solid #E4F0F0",
+  border: `1px solid ${theme.colors.surface}`,
   borderRadius: theme.borderRadius.lg,
   padding: "2rem 2rem 1.5rem",
   gap: "1rem",
@@ -30,7 +31,7 @@ export const LogoImage = styled("img")({
 });
 
 export const Label = styled(Typography)({
-  color: "#356F73",
+  color: theme.colors.darker,
   fontWeight: 700,
   fontSize: "1.5rem",
   letterSpacing: "0.01em",
@@ -54,7 +55,7 @@ export const LoginButton = styled(Button)({
   boxShadow: "none",
 
   "&:hover": {
-    backgroundColor: "#D6E3A0",
+    backgroundColor: theme.colors.limeSoft,
     boxShadow: "none",
   },
 });
@@ -68,6 +69,26 @@ export const ImageAndLogo = styled(Stack)({
 
 export const InputWrapper = styled(Box)({
   width: "100%",
+
+  "& .MuiOutlinedInput-root": {
+    borderRadius: "12px",
+    minHeight: 52,
+    backgroundColor: theme.colors.white,
+  },
+
+  "& .MuiOutlinedInput-input": {
+    padding: "14px 44px 14px 14px",
+  },
+
+  "& input:-webkit-autofill": {
+    WebkitBoxShadow: `0 0 0 100px ${theme.colors.white} inset`,
+    WebkitTextFillColor: theme.colors.black,
+    caretColor: theme.colors.black,
+  },
+
+  "& input::-webkit-credentials-auto-fill-button": {
+    marginRight: 4,
+  },
 });
 
 export const ErrorsBlock = styled(Stack)({

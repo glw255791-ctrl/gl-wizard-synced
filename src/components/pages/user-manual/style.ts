@@ -1,4 +1,4 @@
-import { styled, Stack, IconButton, Typography } from "@mui/material";
+import { styled, Stack, Typography, Button } from "@mui/material";
 import { theme } from "../../../constants/theme";
 
 // Styled root stack for the main page wrapper
@@ -18,18 +18,26 @@ export const ButtonsWrapper = styled(Stack)({
 });
 
 // Styled button stack for each download button
-export const StyledButtonStack = styled(Stack)({
+export const StyledButtonStack = styled(Button)({
   flex: 1,
-  height: 60,
+  height: 48,
   backgroundColor: theme.colors.lighter,
-  borderRadius: theme.borderRadius.sm,
-  border: `1px dashed ${theme.colors.darker}`,
+  borderRadius: "999px",
+  border: `1px solid ${theme.colors.surface}`,
   alignItems: "center",
   flexDirection: "row",
-  padding: `${theme.padding.sm} ${theme.padding.lg}`,
+  padding: `0 ${theme.padding.lg}`,
   gap: theme.gap.lg,
   justifyContent: "space-between",
-  color: theme.colors.darker,
+  color: theme.colors.black,
+  textTransform: "none",
+  fontWeight: 600,
+  boxShadow: "none",
+
+  "&:hover": {
+    backgroundColor: theme.colors.limeLight,
+    boxShadow: "none",
+  },
 });
 
 // Styled stack for text instruction blocks
@@ -42,16 +50,6 @@ export const TextWrapper = styled(Stack)({
   color: theme.colors.darker,
   gap: theme.gap.lg,
 });
-
-// IconButton override for colored icon
-export const StyledIconButton = styled(IconButton)({
-  color: theme.colors.darker,
-});
-
-// Optional: If you only want a specific icon style, create this
-export const StyledDownloadIcon = {
-  color: theme.colors.darker,
-};
 
 export const StyledTitle = styled(Typography)({
   fontWeight: "bold",

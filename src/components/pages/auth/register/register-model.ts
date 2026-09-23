@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase/supabase-client";
+import { supabaseBrowser } from "@/lib/supabase/browser-client";
 import { RegisterData } from "@/types";
 
 // Re-export type for backward compatibility
@@ -20,6 +20,7 @@ export function useRegisterModel() {
     name: "",
     password: "",
   });
+  const [submitting, setSubmitting] = useState(false);
 
   const onChangeField = (key: keyof RegisterData, value: string) => {
     setFieldErrors((prev) => ({ ...prev, [key]: "" }));
@@ -38,18 +39,24 @@ export function useRegisterModel() {
         return;
       }
 
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
+      setSubmitting(true);
 
-      if (!user || error) throw new Error("No authenticated user");
+      if (!supabaseBrowser) throw new Error("Supabase is not configured");
+
+      const {
+        data: { session },
+        error,
+      } = await supabaseBrowser.auth.getSession();
+
+      if (!session || error) throw new Error("No authenticated user");
 
       const res = await fetch("/api/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({
-          userId: user.id,
           password,
           name,
         }),
@@ -61,6 +68,7 @@ export function useRegisterModel() {
       router.push("/registered");
     } catch (err: any) {
       setFieldErrors((p) => ({ ...p, rest: err.message }));
+      setSubmitting(false);
     }
   };
 
@@ -70,5 +78,6 @@ export function useRegisterModel() {
     fieldErrors,
     registerData,
     onChangeField,
+    submitting,
   };
 }

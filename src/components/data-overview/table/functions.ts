@@ -1,26 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { formatDate } from "date-fns";
-import { Workbook } from "exceljs";
 import saveAs from "file-saver";
-import { TableHeader } from "../../composed/basic-table/basic-table";
+import { createWorkbook } from "../../../utils/workbook";
+export { getElipsis } from "./ellipsis";
+import type { TableHeader } from "../../../types";
 import { AnyType } from "../../../types";
-
-/**
- * Truncates text to a maximum length and adds ellipsis
- * @param text - The text to truncate
- * @param maxLength - Maximum length before truncation (default: 53)
- * @returns Truncated text with ellipsis or original text if within limit
- */
-export const getElipsis = (
-  text: string,
-  maxLength: number = 53
-): string | undefined => {
-  if (typeof text !== "string" || text.length < maxLength) {
-    return text;
-  }
-  const sliceLength = maxLength - 3;
-  return `${text.slice(0, sliceLength)}...`;
-};
 
 /**
  * Exports table data to Excel format
@@ -28,12 +12,22 @@ export const getElipsis = (
  * @param sortedDataDisplayHeader - Array of sorted display header data
  * @param mappingValue - The mapping value key for filtering headers
  */
+function dateCell(value: unknown) {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return formatDate(value, "dd-MM-yyyy");
+  }
+  return typeof value === "object" && value != null ? "" : value;
+}
+
 export const exportTableToExcel = async (
   tableRows: Record<string, AnyType>[],
   sortedDataDisplayHeader: Record<string, AnyType>[],
-  mappingValue: string
+  mappingValue: string,
+  onProgress?: (done: number, total: number) => void
 ) => {
-  const workbook = new Workbook();
+  const total = Math.max(tableRows.length, 1);
+  onProgress?.(0, total);
+  const workbook = await createWorkbook();
   const worksheet = workbook.addWorksheet("Sheet1");
 
   const headers: string[] = [
@@ -51,13 +45,18 @@ export const exportTableToExcel = async (
     "total",
   ]);
 
-  // Add data rows (skip index 0)
-  tableRows.slice(1).forEach((row) => {
+  for (let index = 1; index < tableRows.length; index += 1) {
+    const row = tableRows[index];
     if (row.sideHeader !== "Include") {
       const data = headers.map((item) => row[item]);
       worksheet.addRow([row.sideHeader, ...data, row.total]);
     }
-  });
+    if (index % 200 === 0) {
+      onProgress?.(index, total);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+  }
+  onProgress?.(total, total);
 
   // Set all column widths
   worksheet.columns.forEach((column) => {
@@ -106,9 +105,12 @@ export const exportTableToExcel = async (
 export const exportBasicTableToExcel = async (
   header: TableHeader[],
   data: Record<string, string>[],
-  title: string
+  title: string,
+  onProgress?: (done: number, total: number) => void
 ) => {
-  const workbook = new Workbook();
+  const total = Math.max(data.length, 1);
+  onProgress?.(0, total);
+  const workbook = await createWorkbook();
   const worksheet = workbook.addWorksheet("Sheet1");
 
   // Prepare fullHeader by excluding 'coaData'
@@ -116,33 +118,35 @@ export const exportBasicTableToExcel = async (
   const coaHeader = Object.keys(data[0].coaData);
   worksheet.addRow([...fullHeader, ...coaHeader, "reversal"]);
 
-  data.forEach((row) => {
+  for (let index = 0; index < data.length; index += 1) {
+    const row = data[index];
     const rowData = fullHeader.map((item) => {
       const val = row[item];
 
-      // If it's the 'result' key and object, join by '/'
       if (item === "result" && typeof val === "object") {
         return (val as string[]).join("/");
       }
 
-      // If matching key is column with key 'date', format date
       const dateHeader = header.find((h) => h.key === "date");
       if (dateHeader && item === dateHeader.title) {
-        return formatDate(val, "dd-MM-yyyy");
+        return dateCell(val);
       }
 
-      // Ensure primitive, not object
       return typeof val === "object" ? "" : val;
     });
 
-    // Fix typing issue: Use keyof typeof row.coaData to avoid implicit 'any'
     const coaData = coaHeader.map(
       (item) => row.coaData?.[item as keyof typeof row.coaData]
     );
     const reversal = (row as any).reversal;
 
     worksheet.addRow([...rowData, ...coaData, reversal]);
-  });
+    if (index % 400 === 0) {
+      onProgress?.(index + 1, total);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+  }
+  onProgress?.(total, total);
 
   worksheet.columns.forEach((column) => {
     column.width = 24;
@@ -180,9 +184,15 @@ export const exportMultipleTablesToExcel = async (
   header: TableHeader[],
   dataArray: Record<string, string>[][],
   titles: string[],
-  fileName: string = "multiple_tables.xlsx"
+  fileName: string = "multiple_tables.xlsx",
+  onProgress?: (done: number, total: number) => void
 ) => {
-  const workbook = new Workbook();
+  const total = Math.max(
+    dataArray.reduce((sum, rows) => sum + (rows?.length ?? 0), 0),
+    1
+  );
+  onProgress?.(0, total);
+  const workbook = await createWorkbook();
 
   const formattedTitles = titles.map((title) =>
     // eslint-disable-next-line no-useless-escape
@@ -191,6 +201,7 @@ export const exportMultipleTablesToExcel = async (
 
   // Ensure dataArray and titles have the same length
   const minLength = Math.min(dataArray.length, titles.length);
+  let written = 0;
 
   for (let i = 0; i < minLength; i++) {
     const data = dataArray[i];
@@ -208,22 +219,20 @@ export const exportMultipleTablesToExcel = async (
     const coaHeader = Object.keys(data[0].coaData);
     worksheet.addRow([...fullHeader, ...coaHeader, "reversal"]);
 
-    data.forEach((row) => {
+    for (let rowIndex = 0; rowIndex < data.length; rowIndex += 1) {
+      const row = data[rowIndex];
       const rowData = fullHeader.map((item) => {
         const val = row[item];
 
-        // If it's the 'result' key and object, join by '/'
         if (item === "result" && typeof val === "object") {
           return (val as string[]).join("/");
         }
 
-        // If matching key is column with key 'date', format date
         const dateHeader = header.find((h) => h.key === "date");
         if (dateHeader && item === dateHeader.title) {
-          return formatDate(val, "dd-MM-yyyy");
+          return dateCell(val);
         }
 
-        // Ensure primitive, not object
         return typeof val === "object" ? "" : val;
       });
 
@@ -232,7 +241,12 @@ export const exportMultipleTablesToExcel = async (
       );
       const reversal = (row as any).reversal;
       worksheet.addRow([...rowData, ...coaData, reversal]);
-    });
+      written += 1;
+      if (written % 400 === 0) {
+        onProgress?.(written, total);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+    }
 
     // Set column widths
     worksheet.columns.forEach((column) => {
@@ -255,6 +269,7 @@ export const exportMultipleTablesToExcel = async (
     });
   }
 
+  onProgress?.(total, total);
   const buffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([buffer], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

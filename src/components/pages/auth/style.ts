@@ -3,59 +3,67 @@ import { theme } from "../../../constants/theme";
 
 // Root container
 export const Root = styled(Stack)({
-  width: "calc(100vw - 6rem)",
-  minHeight: "calc(100vh - 4rem)",
+  width: "100%",
+  minHeight: "100vh",
   justifyContent: "center",
   alignItems: "center",
+  backgroundColor: theme.colors.canvas,
+  backgroundImage: `linear-gradient(165deg, ${theme.colors.surface} 0%, ${theme.colors.page} 58%, ${theme.colors.canvas} 100%)`,
+  padding: "2rem",
+  boxSizing: "border-box",
 });
 
-// Login block container
 export const LoginBlock = styled(Stack)({
-  width: 400,
+  width: "100%",
+  maxWidth: 420,
   backgroundColor: theme.colors.lighter,
+  border: `1px solid ${theme.colors.surface}`,
   borderRadius: theme.borderRadius.lg,
-  padding: theme.padding.lg,
-  gap: theme.gap.lg,
+  padding: "2rem 2rem 1.5rem",
+  gap: "1rem",
   justifyContent: "center",
-  alignItems: "center",
+  alignItems: "stretch",
+  boxShadow: "none",
 });
 
-// Logo image style
 export const LogoImage = styled("img")({
-  height: "8rem",
-  width: "8rem",
-  marginBottom: "-0.5rem",
+  height: "4.5rem",
+  width: "4.5rem",
 });
 
-// Label style
 export const Label = styled(Typography)({
   color: theme.colors.darker,
-  fontWeight: "bold",
-  fontSize: theme.fontSize.xl,
+  fontWeight: 700,
+  fontSize: "1.5rem",
+  letterSpacing: "0.01em",
 });
 
-// Message style
 export const Message = styled(Typography)({
-  color: theme.colors.darker,
-  fontSize: theme.fontSize.lg,
-  paddingBottom: theme.padding.lg,
+  color: theme.colors.medium,
+  fontSize: "0.95rem",
+  textAlign: "center",
 });
 
-// Button style
 export const StyledButton = styled(Button)({
   backgroundColor: theme.colors.action,
   color: theme.colors.black,
-  fontSize: theme.fontSize.lg,
-  borderRadius: theme.borderRadius.lg,
-  height: theme.height.input,
-  paddingLeft: theme.padding.lg,
-  paddingRight: theme.padding.lg,
+  fontSize: "1rem",
+  fontWeight: 600,
+  borderRadius: "999px",
+  height: 44,
   textTransform: "none",
+  width: "100%",
+  boxShadow: "none",
+
+  "&:hover": {
+    backgroundColor: theme.colors.limeSoft,
+    boxShadow: "none",
+  },
 });
 
-// Image and logo stack
 export const ImageAndLogo = styled(Stack)({
-  paddingBottom: theme.padding.lg,
+  gap: "0.35rem",
+  paddingBottom: "0.5rem",
   justifyContent: "center",
   alignItems: "center",
 });

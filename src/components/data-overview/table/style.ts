@@ -18,6 +18,7 @@ export const TotalText = styled(Typography)({
 export const TableTitle = styled(Typography)({
   fontSize: theme.fontSize.lg,
   fontWeight: "bold",
+  color: theme.colors.white,
 });
 
 // Icon styles
@@ -61,16 +62,21 @@ export const RowLabelCell = styled(Stack)({
 });
 
 export const TableScrollableWrapper = styled(Stack)({
+  position: "relative",
   borderRadius: theme.borderRadius.sm,
   borderWidth: theme.borderWidth.sm,
   borderStyle: "solid",
-  borderColor: theme.colors.medium,
+  borderColor: theme.colors.softBlue,
+  overflow: "hidden",
 });
 
 export const TableHeaderStyled = styled(Stack)({
+  position: "relative",
+  zIndex: 2,
   width: "auto",
   padding: theme.padding.lg,
-  backgroundColor: theme.colors.medium,
+  backgroundColor: theme.colors.darker,
+  color: theme.colors.white,
   flexDirection: "row",
   justifyContent: "space-between",
   alignItems: "center",
@@ -106,7 +112,7 @@ export const styles: Record<string, CommonProps["style"]> = {
     maxHeight: theme.height.table,
     borderBottomRightRadius: theme.borderRadius.sm,
     borderBottomLeftRadius: theme.borderRadius.sm,
-    backgroundColor: theme.colors.medium,
+    backgroundColor: theme.colors.white,
   },
 };
 
@@ -141,10 +147,10 @@ export const getStylesBasedOnColumn = (
   let backgroundColor: string;
   if (isSideHeader) {
     backgroundColor = isSelectedRow
-      ? theme.colors.medium
-      : theme.colors.lighter;
+      ? theme.colors.softBlue
+      : theme.colors.surface;
   } else {
-    backgroundColor = isTotalColumn ? theme.colors.lighter : (row.bg as string);
+    backgroundColor = isTotalColumn ? theme.colors.surface : (row.bg as string);
   }
 
   return {
@@ -152,15 +158,15 @@ export const getStylesBasedOnColumn = (
     borderRightWidth: isSideHeader
       ? theme.borderWidth.md
       : theme.borderWidth.sm,
-    borderRightColor: isSideHeader ? theme.colors.medium : theme.colors.lighter,
+    borderRightColor: isSideHeader ? theme.colors.softBlue : theme.colors.surface,
     borderLeftWidth: isTotalColumn
       ? theme.borderWidth.md
       : theme.borderWidth.none,
     borderLeftStyle: "solid",
-    borderLeftColor: theme.colors.medium,
+    borderLeftColor: theme.colors.softBlue,
     fontWeight: isBoldRow ? "bold" : "initial",
     borderBottomStyle: "solid",
-    borderBottomColor: theme.colors.medium,
+    borderBottomColor: theme.colors.surface,
     textAlign: isSideHeader ? "left" : "right",
     alignItems: isSideHeader ? "left" : "flex-end",
   };

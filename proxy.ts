@@ -1,6 +1,5 @@
-// proxy.ts
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
 const protectedRoutes = [
   "/dashboard",
@@ -12,26 +11,50 @@ const protectedRoutes = [
   "/about",
 ];
 
-export function proxy(req: NextRequest) {
-  console.log(">>> PROXY INVOKED <<<");
-  const pathname = req.nextUrl.pathname;
-  console.log("Path:", pathname);
+function isProtected(pathname: string) {
+  return (
+    pathname === "/" ||
+    protectedRoutes.some((path) => pathname.startsWith(path))
+  );
+}
 
-  // Update this line with your actual project ref
-  const token = req.cookies.get("sb-vhqrolkbkaojskbspwpi-auth-token")?.value;
-  console.log("Token present:", !!token);
+export async function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  if (!isProtected(pathname)) return NextResponse.next();
 
-  // Rest of your logic (root redirect + protected routes)
-  if (pathname === "/" && !token) {
-    return NextResponse.redirect(new URL("/login", req.url));
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  const isProtected = protectedRoutes.some((path) => pathname.startsWith(path));
-  if (isProtected && !token) {
-    return NextResponse.redirect(new URL("/login", req.url));
+  let response = NextResponse.next({ request });
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) =>
+          request.cookies.set(name, value)
+        );
+        response = NextResponse.next({ request });
+        cookiesToSet.forEach(({ name, value, options }) => {
+          response.cookies.set(name, value, options);
+        });
+      },
+    },
+  });
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {

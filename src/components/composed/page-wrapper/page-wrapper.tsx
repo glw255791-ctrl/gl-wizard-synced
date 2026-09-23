@@ -1,21 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { Alert, Snackbar } from "@mui/material";
+import { Alert, Snackbar, Tooltip } from "@mui/material";
 import {
   Root,
   Row,
   Left,
   Banner,
   BannerLogo,
-  BannerLogoWrap,
   BannerTitle,
+  BannerAccount,
+  BannerAccountName,
+  BannerAccountButton,
   BannerButton,
   BtnGroupsWrapper,
   TopBtns,
   BottomBtns,
   Content,
   MenuBtn,
-  MenuBtnActive,
 } from "./style";
 import { JSX, useEffect, useState } from "react";
 import WidgetsIcon from "@mui/icons-material/Widgets";
@@ -27,6 +28,8 @@ import HelpCenterIcon from "@mui/icons-material/HelpCenter";
 import PrivacyTipIcon from "@mui/icons-material/PrivacyTip";
 import MenuIcon from "@mui/icons-material/Menu";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
+import PersonIcon from "@mui/icons-material/Person";
+import LogoutIcon from "@mui/icons-material/Logout";
 import { supabaseBrowser } from "@/lib/supabase/browser-client";
 import { isLicenceExpired } from "@/lib/licence";
 import { SnackbarProps } from "../../pages/user-management/user-management-model";
@@ -34,6 +37,33 @@ import { usePathname, useRouter } from "next/navigation";
 
 interface Props {
   children: JSX.Element;
+}
+
+function NavLink({
+  menuPath,
+  pathname,
+  collapsed,
+  label,
+  ...rest
+}: {
+  menuPath: string;
+  pathname: string;
+  collapsed: boolean;
+  label: string;
+  [key: string]: any;
+}) {
+  const isActive = pathname === menuPath;
+  return (
+    <MenuBtn
+      {...rest}
+      className={isActive ? "nav-active" : undefined}
+      aria-current={isActive ? "page" : undefined}
+      title={label}
+      aria-label={label}
+    >
+      {collapsed ? null : label}
+    </MenuBtn>
+  );
 }
 
 export function PageWrapper({ children }: Props) {
@@ -49,6 +79,8 @@ export function PageWrapper({ children }: Props) {
   const [userRole, setUserRole] = useState<"user" | "admin" | undefined>(
     undefined
   );
+  const [accountName, setAccountName] = useState("");
+  const [accountMeta, setAccountMeta] = useState("");
 
   useEffect(() => {
     const stored = window.localStorage.getItem("gl-wizard-nav-collapsed");
@@ -98,38 +130,43 @@ export function PageWrapper({ children }: Props) {
         });
       }
       setUserRole(profile.role);
+      setAccountName(profile.full_name || "");
+      if (profile.role === "admin") {
+        setAccountMeta("Administrator");
+      } else if (profile.licence_valid_until) {
+        setAccountMeta(
+          `Licence until ${new Date(profile.licence_valid_until).toLocaleDateString("de-DE")}`
+        );
+      }
     }
     checkSession();
   }, [router]);
 
-  // Utility for a left menu button; highlights if active
-  const MenuButton = ({
-    menuPath,
-    ...rest
-  }: {
-    menuPath: string;
-    [key: string]: any;
-  }) => {
-    const isActive = pathname === menuPath;
-    const ButtonComponent = isActive ? MenuBtnActive : MenuBtn;
-    return (
-      <ButtonComponent
-        {...rest}
-        className={isActive ? "nav-active" : undefined}
-        title={typeof rest.children === "string" ? rest.children : undefined}
-      >
-        {navCollapsed ? null : rest.children}
-      </ButtonComponent>
-    );
+  const handleLogout = async () => {
+    localStorage.clear();
+    if (supabaseBrowser) {
+      await supabaseBrowser.auth.signOut();
+    }
+    router.push("/login");
   };
 
   return (
     <Root>
       <Banner>
-        <BannerLogoWrap>
-          <BannerLogo src="/logo.png" alt="GL Wizard" />
-        </BannerLogoWrap>
+        <BannerLogo src="/logo-white.png" alt="GL Wizard" />
         <BannerTitle>GL Wizard</BannerTitle>
+        <BannerAccount>
+          <PersonIcon aria-hidden="true" />
+          <BannerAccountName>
+            <span>{accountName}</span>
+            {accountMeta ? <span className="account-meta">{accountMeta}</span> : null}
+          </BannerAccountName>
+          <Tooltip title="Log out">
+            <BannerAccountButton aria-label="Log out" onClick={handleLogout}>
+              <LogoutIcon />
+            </BannerAccountButton>
+          </Tooltip>
+        </BannerAccount>
       </Banner>
       <Row>
         <Left collapsed={navCollapsed}>
@@ -141,72 +178,87 @@ export function PageWrapper({ children }: Props) {
           </BannerButton>
           <BtnGroupsWrapper>
             <TopBtns>
-              <MenuButton
+              <NavLink
                 menuPath="/dashboard"
+                pathname={pathname}
+                collapsed={navCollapsed}
+                label="Main Menu"
                 startIcon={<WidgetsIcon />}
                 variant="contained"
                 onClick={() => router.push("/dashboard")}
-              >
-                Main Menu
-              </MenuButton>
-              <MenuButton
+              />
+              <NavLink
                 menuPath="/general-analysis"
+                pathname={pathname}
+                collapsed={navCollapsed}
+                label="GL Transactions Analysis"
                 startIcon={<TableChartIcon />}
                 variant="contained"
                 onClick={() => router.push("/general-analysis")}
-              >
-                GL Transactions Analysis
-              </MenuButton>
-              <MenuButton
+              />
+              <NavLink
                 menuPath="/reversal-analysis"
+                pathname={pathname}
+                collapsed={navCollapsed}
+                label="Reversal"
                 startIcon={<RepeatOnIcon />}
                 variant="contained"
                 onClick={() => router.push("/reversal-analysis")}
-              >
-                Reversal
-              </MenuButton>
-              <MenuButton
+              />
+              <NavLink
                 menuPath="/reversal-reclassification-analysis"
+                pathname={pathname}
+                collapsed={navCollapsed}
+                label="Reversal/Reclassification"
                 startIcon={<ShuffleOnIcon />}
                 variant="contained"
                 onClick={() =>
                   router.push("/reversal-reclassification-analysis")
                 }
-              >
-                Reversal/Reclassification
-              </MenuButton>
-              {userRole === "admin" && (
-                <MenuButton
+              />
+              {userRole !== "user" && (
+                <NavLink
                   menuPath="/user-management"
+                  pathname={pathname}
+                  collapsed={navCollapsed}
+                  label="User Management"
                   startIcon={<GroupIcon />}
                   variant="contained"
+                  disabled={userRole !== "admin"}
                   onClick={() => router.push("/user-management")}
-                >
-                  User Management
-                </MenuButton>
+                  sx={
+                    userRole === "admin"
+                      ? undefined
+                      : { visibility: "hidden", pointerEvents: "none" }
+                  }
+                  aria-hidden={userRole !== "admin"}
+                  tabIndex={userRole === "admin" ? 0 : -1}
+                />
               )}
             </TopBtns>
             <BottomBtns>
-              <MenuButton
+              <NavLink
                 menuPath="/user-manual"
+                pathname={pathname}
+                collapsed={navCollapsed}
+                label="User Manual"
                 startIcon={<HelpCenterIcon />}
                 variant="contained"
                 onClick={() => router.push("/user-manual")}
-              >
-                User Manual
-              </MenuButton>
-              <MenuButton
+              />
+              <NavLink
                 menuPath="/about"
+                pathname={pathname}
+                collapsed={navCollapsed}
+                label="About"
                 startIcon={<PrivacyTipIcon />}
                 variant="contained"
                 onClick={() => router.push("/about")}
-              >
-                About
-              </MenuButton>
+              />
             </BottomBtns>
           </BtnGroupsWrapper>
         </Left>
-        <Content>{children}</Content>
+        <Content data-app-content>{children}</Content>
       </Row>
       <Snackbar
         open={snackbarProps.open}

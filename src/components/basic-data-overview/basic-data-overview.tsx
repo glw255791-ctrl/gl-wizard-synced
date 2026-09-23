@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import { AccordionSummary, AccordionDetails, Stack } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { StyledAccordionWrapper, Title } from "../data-overview/style";
@@ -18,19 +19,30 @@ export const BasicDataOverview: React.FC<Props> = ({
   tableHeader,
   tableData,
   reversalReclassification,
-}) => (
-  <StyledAccordionWrapper disabled={disabled}>
-    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-      <Title>{title}</Title>
-    </AccordionSummary>
-    <AccordionDetails>
-      <Stack>
-        <BasicTable
-          header={tableHeader}
-          data={tableData}
-          reversalReclassification={reversalReclassification}
-        />
-      </Stack>
-    </AccordionDetails>
-  </StyledAccordionWrapper>
-);
+}) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <StyledAccordionWrapper
+      disabled={disabled}
+      expanded={open}
+      onChange={(_, expanded) => setOpen(expanded)}
+      TransitionProps={{ unmountOnExit: true }}
+    >
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+        <Title>{title}</Title>
+      </AccordionSummary>
+      <AccordionDetails>
+        {open && (
+          <Stack>
+            <BasicTable
+              header={tableHeader}
+              data={tableData}
+              reversalReclassification={reversalReclassification}
+            />
+          </Stack>
+        )}
+      </AccordionDetails>
+    </StyledAccordionWrapper>
+  );
+};

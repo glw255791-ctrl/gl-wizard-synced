@@ -1,30 +1,54 @@
+function buildPrefixIndex(coaData, mappingKey) {
+  const root = { item: null, children: new Map() };
+  for (const item of coaData) {
+    const code = String(item[mappingKey] ?? "");
+    if (!code) continue;
+    let node = root;
+    for (let i = 0; i < code.length; i += 1) {
+      const char = code[i];
+      let next = node.children.get(char);
+      if (!next) {
+        next = { item: null, children: new Map() };
+        node.children.set(char, next);
+      }
+      node = next;
+    }
+    node.item = item;
+  }
+  return root;
+}
+
+function matchAccount(root, account) {
+  let node = root;
+  let best = null;
+  for (let i = 0; i < account.length; i += 1) {
+    node = node.children.get(account[i]);
+    if (!node) break;
+    if (node.item) best = node.item;
+  }
+  return best;
+}
+
 self.onmessage = (event) => {
   const { rawData, selectedHeaders, dictionaryData } = event.data;
+  const mappingKey = selectedHeaders.coaHeaders.mappingValue;
+  const emptyCoa = rawData.coaData[0]
+    ? Object.keys(rawData.coaData[0]).reduce((prev, curr) => {
+        prev[curr] = "not mapped";
+        return prev;
+      }, {})
+    : {};
+  const coaRoot = buildPrefixIndex(rawData.coaData, mappingKey);
 
   const output = rawData.glData.map((item) => {
-    const foundCoaItems = rawData.coaData
-      .filter((item) => item[selectedHeaders.coaHeaders.mappingValue] !== "")
-      .filter((coaItem) =>
-        String(item[selectedHeaders.glHeaders.account]).startsWith(
-          coaItem[selectedHeaders.coaHeaders.mappingValue]
-        )
-      );
-
-    const betterMatchingCoaItem = foundCoaItems.sort(
-      (a, b) => b.length - a.length
-    )[0];
+    const betterMatchingCoaItem = matchAccount(
+      coaRoot,
+      String(item[selectedHeaders.glHeaders.account] ?? "")
+    );
 
     return {
       ...item,
-      // ...(betterMatchingCoaItem
-      //   ? {}
-      //   : { [selectedHeaders.glHeaders.account]: "not mapped" }),
-      coaData:
-        betterMatchingCoaItem ??
-        Object.keys(rawData.coaData[0]).reduce((prev, curr) => {
-          prev[curr] = "not mapped";
-          return prev;
-        }, {}),
+      coaData: betterMatchingCoaItem ?? emptyCoa,
     };
   });
 
@@ -62,7 +86,7 @@ self.onmessage = (event) => {
               // Check if every value is in item.inputs, and vice versa (set equality)
               const inputsSorted = [...item.inputs].sort();
               const valuesSorted = [...coaValues].sort();
-              return inputsSorted?.find((v, i) => v === valuesSorted[i]);
+              return inputsSorted.every((v, i) => v === valuesSorted[i]);
             });
             row.result = dictionaryItem?.result
               ? [dictionaryItem.result]

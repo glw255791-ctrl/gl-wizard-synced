@@ -1,10 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo, useState } from "react";
-import { Workbook } from "exceljs";
 import { format as formatDate } from "date-fns";
 import { saveAs } from "file-saver";
 import { TableHeader } from "../../composed/basic-table/basic-table";
 import { exportTableToExcel } from "../../composed/basic-table/functions";
+import { createWorkbook, readFirstSheet } from "../../../utils/workbook";
+import { dictionaryFromRows } from "../../../utils/dictionary";
+import {
+  readFileWithProgress,
+  type FileReadProgress,
+} from "../../../utils/read-file";
 import {
   RawData,
   GlHeaders,
@@ -39,6 +44,40 @@ export function useReversalAnalysis() {
   const [unmappedRows, setUnmappedRows] = useState<Record<string, any>[]>([]);
   const [isWarningModalShown, setIsWarningModalShown] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState(false);
+  const [fileProgress, setFileProgress] = useState<FileReadProgress | null>(
+    null
+  );
+
+  const stopLoading = () => {
+    setLoadingStatus(false);
+    setFileProgress(null);
+  };
+
+  const readTracked = (file: File) => {
+    setLoadingStatus(true);
+    setFileProgress({
+      name: file.name,
+      loaded: 0,
+      total: file.size,
+      phase: "reading",
+    });
+    return readFileWithProgress(file, (loaded, total) => {
+      setFileProgress({
+        name: file.name,
+        loaded,
+        total,
+        phase: "reading",
+      });
+    }).then((buffer) => {
+      setFileProgress({
+        name: file.name,
+        loaded: file.size,
+        total: file.size,
+        phase: "workbook",
+      });
+      return buffer;
+    });
+  };
 
   const [isDictionaryUploaded, setIsDictionaryUploaded] = useState(false);
   const [dictionaryData, setDictionaryData] = useState<Record<string, any>[]>(
@@ -69,11 +108,12 @@ export function useReversalAnalysis() {
 
     const getDateBoundary = (fn: typeof Math.min | typeof Math.max) => {
       if (!dateKey) return "";
-      const times = rawData.glData.map((item) =>
-        new Date(item[dateKey]).getTime()
-      );
+      const times = rawData.glData
+        .map((item) => new Date(item[dateKey]).getTime())
+        .filter((time) => !Number.isNaN(time));
       if (!times.length) return "";
-      return formatDate(new Date(fn(...times)), "dd-MM-yyyy");
+      const bound = times.reduce((best, time) => fn(best, time));
+      return formatDate(new Date(bound), "dd-MM-yyyy");
     };
 
     return {
@@ -124,37 +164,26 @@ export function useReversalAnalysis() {
 
     setLoadingStatus(true);
 
-    const buffer = await file.arrayBuffer();
-    const workerUrl = new URL(
-      "../../../workers/dictionary-worker.js",
-      import.meta.url
-    );
-    const worker = new Worker(workerUrl, { type: "module" });
-
-    worker.postMessage({ buffer });
-
-    worker.onmessage = (e) => {
-      const { data, error } = e.data;
-
-      if (error) {
-        setError(error);
-        setLoadingStatus(false);
+    try {
+      const buffer = await readTracked(file);
+      const { rows } = await readFirstSheet(buffer);
+      const data = dictionaryFromRows(rows);
+      if (!data.length) {
+        setError("No dictionary rows found in that file.");
+        setTimeout(() => setError(undefined), 5000);
         return;
       }
-
       setDictionaryData(data);
-      setLoadingStatus(false);
       setIsDictionaryUploaded(true);
-      worker.terminate();
-    };
-
-    worker.onerror = (error) => {
-      setError(error.message);
-      console.error("Worker error:", error);
-      setLoadingStatus(false);
-      worker.terminate();
-    };
-    setCurrentStep(AnalysisStep.UPLOADED_DICTIONARY);
+      setCurrentStep(AnalysisStep.UPLOADED_DICTIONARY);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Could not read the dictionary."
+      );
+      setTimeout(() => setError(undefined), 5000);
+    } finally {
+      stopLoading();
+    }
   };
 
   const onGeneralLedgerDrop = async (acceptedFiles: File[]) => {
@@ -172,78 +201,55 @@ export function useReversalAnalysis() {
       return;
     }
 
-    setLoadingStatus(true);
-    const buffer = await file.arrayBuffer();
-    const worker = new Worker(new URL("./gl-worker.js", import.meta.url), {
-      type: "module",
-    });
-
-    worker.postMessage({ buffer });
-
-    worker.onmessage = (e) => {
-      const { glData, glHeaders, error } = e.data;
-      if (error) {
-        setError(error);
-        setLoadingStatus(false);
-        return;
-      }
-
-      setRawData((prev) => ({ ...prev, glData, glHeaders }));
-
-      worker.onerror = (workerError) => {
-        setError(workerError.message);
-        console.error("Worker error:", workerError);
-        setLoadingStatus(false);
-        worker.terminate();
-      };
-
+    try {
+      const buffer = await readTracked(file);
+      const { rows, headers } = await readFirstSheet(buffer);
+      setRawData((prev) => ({ ...prev, glData: rows, glHeaders: headers }));
       setCurrentStep(AnalysisStep.UPLOADED_GL);
-      setLoadingStatus(false);
-      worker.terminate();
-    };
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Could not read the general ledger."
+      );
+    } finally {
+      stopLoading();
+    }
   };
 
   const onChartOfAccountsDrop = async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
-    if (!file) return;
+    if (!file) {
+      setError("Could not read that file. Drop an .xlsx chart of accounts.");
+      setTimeout(() => setError(undefined), 5000);
+      return;
+    }
 
-    const buffer = await file.arrayBuffer();
-    const workbook = new Workbook();
-    await workbook.xlsx.load(buffer);
-
-    const sheet = workbook.worksheets[0];
-    if (!sheet) return;
-
-    // Get first row for column names, cast as string[]
-    const columnNames: string[] = sheet.getRow(1).values as string[];
-
-    // Skip header row, parse data into records
-    const rows = sheet
-      .getSheetValues()
-      .slice(2)
-      .map((row: any) =>
-        columnNames.reduce((acc, col, i) => {
-          acc[col] = row[i]?.result ?? row[i] ?? "";
-          return acc;
-        }, {} as Record<string, any>)
+    try {
+      const buffer = await readTracked(file);
+      const { rows, headers } = await readFirstSheet(buffer);
+      setRawData((prev) => ({
+        ...prev,
+        coaData: rows,
+        coaHeaders: headers,
+      }));
+      setSelectedHeaders((prev) => ({
+        ...prev,
+        coaHeaders: {
+          displayValue: headers[0],
+          mappingValue: headers[0],
+          groupingValue: "",
+        },
+      }));
+      setCurrentStep(AnalysisStep.TO_UPLOAD_DICTIONARY);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Could not read the chart of accounts."
       );
-
-    setRawData((prev) => ({
-      ...prev,
-      coaData: rows,
-      coaHeaders: columnNames.filter(Boolean),
-    }));
-
-    setSelectedHeaders((prev) => ({
-      ...prev,
-      coaHeaders: {
-        displayValue: columnNames.filter(Boolean)[0],
-        mappingValue: columnNames.filter(Boolean)[0],
-        groupingValue: "",
-      },
-    }));
-
-    setCurrentStep(AnalysisStep.TO_UPLOAD_DICTIONARY);
+      setTimeout(() => setError(undefined), 6000);
+    } finally {
+      stopLoading();
+    }
   };
 
   const onChangeGlHeader = (key: keyof GlHeaders, value: string) => {
@@ -373,14 +379,14 @@ export function useReversalAnalysis() {
       setTableData(Object.values(outputVal as Record<string, any>[]).flat());
       setOverviewTableData(condensedDataByResult);
       setCurrentStep(AnalysisStep.ANALYZED);
-      setLoadingStatus(false);
+      stopLoading();
       worker.terminate();
     };
 
     worker.onerror = (error) => {
       setError(error.message);
       console.error("Worker error:", error);
-      setLoadingStatus(false);
+      stopLoading();
       worker.terminate();
     };
 
@@ -413,7 +419,7 @@ export function useReversalAnalysis() {
       };
     });
 
-    const workbook = new Workbook();
+    const workbook = await createWorkbook();
     const worksheet = workbook.addWorksheet("Sheet 1");
 
     // Extract headers from object keys
@@ -487,8 +493,16 @@ export function useReversalAnalysis() {
     return [...active, { [mappingKey]: "total" }, ...inactive];
   }, [dataDisplayHeader, selectedHeaders.coaHeaders.mappingValue]);
 
-  const onPressExportUnmappedRows = () => {
-    exportTableToExcel(tableHeader, unmappedRows);
+  const onPressExportUnmappedRows = async (
+    onProgress?: (done: number, total: number) => void
+  ) => {
+    await exportTableToExcel(
+      tableHeader,
+      unmappedRows,
+      onProgress,
+      "unmapped-rows.xlsx"
+    );
+    setIsWarningModalShown(false);
   };
 
   // Expose handlers and state
@@ -508,6 +522,7 @@ export function useReversalAnalysis() {
     overviewTableData,
     sortedDataDisplayHeader,
     loadingStatus,
+    fileProgress,
     error,
     currentStep,
     tableHeader,

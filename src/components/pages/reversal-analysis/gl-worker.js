@@ -1,35 +1,53 @@
 import { Workbook } from "exceljs";
 
-self.onmessage = async (event) => {
-  const { buffer } = event.data;
-
-  const workbook = new Workbook();
-  await workbook.xlsx.load(buffer);
-  const sheet = workbook.worksheets[0];
-
-  if (!sheet) {
-    self.postMessage({ error: "No sheet found." });
-    return;
-  }
-
-  const columnNames = sheet.getRow(1).values;
+function readSheet(sheet) {
+  const headerRow = sheet.getRow(1).values;
+  const columnNames = Array.isArray(headerRow) ? headerRow : [];
 
   const rows = sheet
     .getSheetValues()
-    .slice(2) // Skip header and first data row (exceljs uses 1-based arrays)
-    .map((row) => {
-      return columnNames.reduce((acc, col, index) => {
+    .slice(2)
+    .filter((row) => Array.isArray(row))
+    .map((row) =>
+      columnNames.reduce((acc, col, index) => {
+        if (!col) return acc;
         const cell = row[index];
         acc[col] =
           cell && typeof cell === "object" && "result" in cell
             ? cell.result
             : cell ?? "";
         return acc;
-      }, {});
-    });
+      }, {})
+    );
 
-  self.postMessage({
+  return {
     glData: rows,
     glHeaders: columnNames.filter(Boolean),
-  });
+  };
+}
+
+self.onmessage = async (event) => {
+  try {
+    const { buffer } = event.data;
+    const workbook = new Workbook();
+    await workbook.xlsx.load(buffer);
+    const sheet = workbook.worksheets[0];
+
+    if (!sheet) {
+      self.postMessage({ error: "No sheet found in that file." });
+      return;
+    }
+
+    const result = readSheet(sheet);
+    if (!result.glHeaders.length) {
+      self.postMessage({ error: "No column names found in the first row." });
+      return;
+    }
+
+    self.postMessage(result);
+  } catch (error) {
+    self.postMessage({
+      error: error?.message || "Could not read that spreadsheet.",
+    });
+  }
 };

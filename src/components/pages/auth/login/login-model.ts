@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LoginData } from "../../../../types";
-import { supabase } from "@/lib/supabase/supabase-client";
 
 // Re-export type for backward compatibility
 export type { LoginData };
@@ -12,6 +11,7 @@ export function useLoginModel() {
     password: "",
   });
 
+  const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<LoginData & { rest: string }>({
     email: "",
     password: "",
@@ -23,8 +23,13 @@ export function useLoginModel() {
     setLoginData((prev) => ({ ...prev, [key]: value }));
   };
 
-  const onLogin = async () => {
-    const { email, password } = loginData;
+  const onLogin = async (filled?: { email?: string; password?: string }) => {
+    const email = filled?.email || loginData.email;
+    const password = filled?.password || loginData.password;
+
+    if (email !== loginData.email || password !== loginData.password) {
+      setLoginData({ email, password });
+    }
 
     if (!email || !password) {
       setFieldErrors((prev) => ({
@@ -36,7 +41,7 @@ export function useLoginModel() {
     }
 
     try {
-      // call serverless endpoint
+      setSubmitting(true);
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -49,11 +54,6 @@ export function useLoginModel() {
         return;
       }
 
-      // set the session in Supabase client (writes to localStorage)
-      if (data.session) {
-        await supabase.auth.setSession(data.session);
-      }
-
       router.push("/dashboard");
     } catch (err: unknown) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -62,11 +62,14 @@ export function useLoginModel() {
         ...prev,
         rest: error?.message || "Unknown error",
       }));
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return {
     onLogin,
+    submitting,
     setLoginData,
     router,
     loginData,

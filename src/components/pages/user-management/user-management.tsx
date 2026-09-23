@@ -41,6 +41,7 @@ import { useEffect } from "react";
 import { Header } from "../../composed/header/header";
 import CloseIcon from "@mui/icons-material/Close";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import Tooltip from "@mui/material/Tooltip";
 import dayjs from "dayjs";
 import SearchIcon from "@mui/icons-material/Search";
 import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
@@ -83,31 +84,39 @@ export function UserManagementPage() {
             <GreenText>{dateStr}</GreenText>
           )}
           <Stack direction="row" gap={1}>
-            <IconButton
-              onClick={() =>
-                setModalProps({
-                  modalAction: "EXTEND",
-                  id: item.id,
-                  date: new Date(),
-                  email: "",
-                })
-              }
-            >
-              <EventRepeatIcon />
-            </IconButton>
-            <IconButton
-              disabled={item.role === "admin"}
-              onClick={() =>
-                setModalProps({
-                  modalAction: "DEACTIVATE",
-                  id: item.id,
-                  date: dayjs().subtract(1, "day").toDate(),
-                  email: "",
-                })
-              }
-            >
-              <EventBusyIcon />
-            </IconButton>
+            <Tooltip title="Extend licence">
+              <IconButton
+                aria-label="Extend licence"
+                onClick={() =>
+                  setModalProps({
+                    modalAction: "EXTEND",
+                    id: item.id,
+                    date: new Date(),
+                    email: "",
+                  })
+                }
+              >
+                <EventRepeatIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="End licence">
+              <span>
+                <IconButton
+                  aria-label="End licence"
+                  disabled={item.role === "admin"}
+                  onClick={() =>
+                    setModalProps({
+                      modalAction: "DEACTIVATE",
+                      id: item.id,
+                      date: dayjs().subtract(1, "day").toDate(),
+                      email: "",
+                    })
+                  }
+                >
+                  <EventBusyIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
           </Stack>
         </ValidDateStack>
       );
@@ -225,7 +234,7 @@ export function UserManagementPage() {
       <TableRow>
         <TableCell colSpan={columns.length} align="center">
           <Typography variant="body2" color="textSecondary">
-            No data available
+            No users yet.
           </Typography>
         </TableCell>
       </TableRow>
@@ -250,25 +259,29 @@ export function UserManagementPage() {
     <>
       <PageWrapper>
         <RootStack>
-          <Header title="User management" />
+          <Header title="User Management" />
           <SearchBlock>
             <SearchField>
               <SearchInput
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by name or email"
                 slotProps={{
                   input: {
                     style: {
                       borderRadius: 16,
-                      height: 32,
+                      height: 40,
                     },
                     endAdornment:
                       searchTerm !== "" ? (
-                        <IconButton onClick={() => setSearchTerm("")}>
+                        <IconButton
+                          aria-label="Clear search"
+                          onClick={() => setSearchTerm("")}
+                        >
                           <CloseIcon />
                         </IconButton>
                       ) : (
-                        <SearchIcon />
+                        <SearchIcon aria-hidden="true" />
                       ),
                   },
                 }}

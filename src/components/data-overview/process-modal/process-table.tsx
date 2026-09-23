@@ -3,7 +3,8 @@ import { Stack, Tooltip, Typography } from "@mui/material";
 import "react-virtualized/styles.css";
 import { AutoSizer, Index, MultiGrid } from "react-virtualized";
 
-import { getElipsis } from "../table/functions";
+import { getElipsis } from "../table/ellipsis";
+import { buildMovementTable } from "../table/build-movement-table";
 import { AnyType } from "../../../types";
 import {
   getStylesBasedOnColumn,
@@ -19,7 +20,6 @@ import {
   AddCircleOutlineIconStyled,
   RemoveCircleOutlineIconStyled,
 } from "./style";
-import { colors } from "../../../constants/theme";
 import { ProcessValue, SearchByObject } from "./types";
 
 /* ============================================================================
@@ -134,18 +134,23 @@ export const ProcessDataTable: React.FC<Props> = ({
    * ---------------------------------------------------------------------- */
 
   const generateTableData = () => {
-    const worker = new Worker(
-      new URL("../table/generate-table-data.js", import.meta.url)
+    const { rows: generatedRows } = buildMovementTable({
+      sortedDataDisplayHeader,
+      overviewTableData: overviewTableData ?? {},
+      groupingValue,
+      valueKey,
+      selectedFilter,
+    });
+    if (!generatedRows[1]) {
+      setTableRows([]);
+      return;
+    }
+
+    const ignoreKeys = ["header", "sideHeader", "total", "bg"];
+
+    const valueKeys = Object.keys(generatedRows[1]).filter(
+      (key) => !ignoreKeys.includes(key)
     );
-
-    worker.onmessage = (e) => {
-      const { rows: generatedRows } = e.data;
-
-      const ignoreKeys = ["header", "sideHeader", "total", "bg"];
-
-      const valueKeys = Object.keys(generatedRows[1]).filter(
-        (key) => !ignoreKeys.includes(key)
-      );
 
       // Rows already added to process for this table
       const omitRows = overallProcessObject
@@ -164,17 +169,6 @@ export const ProcessDataTable: React.FC<Props> = ({
         );
 
       setTableRows([...filteredRows]);
-    };
-
-    worker.postMessage({
-      sortedDataDisplayHeader,
-      overviewTableData,
-      mappingValue,
-      groupingValue,
-      valueKey,
-      selectedFilter,
-      colors,
-    });
   };
 
   /* ------------------------------------------------------------------------
@@ -298,7 +292,10 @@ export const ProcessDataTable: React.FC<Props> = ({
         <AutoSizer
           style={{
             ...styles.autosizerWrapper,
-            ...(rows?.length ? { height: rows.length * ROW_HEIGHT } : {}),
+            height: Math.min(
+              Math.max((rows?.length ?? 4) * ROW_HEIGHT + 16, ROW_HEIGHT * 8),
+              520
+            ),
           }}
         >
           {({ width, height }) =>

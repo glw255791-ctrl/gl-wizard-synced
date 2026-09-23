@@ -4,83 +4,52 @@ import {
   HeaderBtnsWrapperRight,
   HeaderWrapper,
   IconButtonStyled,
-  NameWrapper,
   Title,
   Wrapper,
 } from "./style";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import LogoutIcon from "@mui/icons-material/Logout";
-import PersonIcon from "@mui/icons-material/Person";
-import { useEffect, useState } from "react";
-import { supabaseBrowser } from "@/lib/supabase/browser-client";
+import Tooltip from "@mui/material/Tooltip";
+import { AnalysisStep } from "@/types";
+import { StepRail } from "../step-rail/step-rail";
+
 interface Props {
   title?: string;
   onPressResetBtn?: () => void;
+  step?: AnalysisStep;
 }
 
-export const Header = ({ title, onPressResetBtn }: Props) => {
+export const Header = ({ title, onPressResetBtn, step }: Props) => {
   const router = useRouter();
-  const [user, setUser] = useState("");
-
-  const handleLogout = async () => {
-    localStorage.clear();
-    if (supabaseBrowser) {
-      await supabaseBrowser.auth.signOut();
-    }
-
-    router.push("/login");
-  };
-
-  useEffect(() => {
-    if (!supabaseBrowser) return;
-
-    const checkAuth = async () => {
-      const {
-        data: { session },
-      } = await supabaseBrowser.auth.getSession();
-      if (!session) return;
-
-      const { data: profile, error } = await supabaseBrowser
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .single();
-
-      if (error || !profile) return;
-
-      setUser(profile.full_name || "");
-    };
-
-    checkAuth();
-  }, []);
 
   return (
-    <Wrapper>
-      <HeaderWrapper>
+    <Wrapper data-page-header>
+      <HeaderWrapper sx={step != null ? { marginBottom: "1.15rem" } : undefined}>
         <HeaderBtnsWrapper>
           {title && (
-            <IconButtonStyled onClick={() => router.push("/dashboard")}>
-              <ArrowBackIcon />
-            </IconButtonStyled>
+            <Tooltip title="Back to main menu">
+              <IconButtonStyled
+                aria-label="Back to main menu"
+                onClick={() => router.push("/dashboard")}
+              >
+                <ArrowBackIcon />
+              </IconButtonStyled>
+            </Tooltip>
           )}
           {onPressResetBtn && (
-            <IconButtonStyled onClick={onPressResetBtn}>
-              <RestartAltIcon />
-            </IconButtonStyled>
+            <Tooltip title="Reset">
+              <IconButtonStyled aria-label="Reset" onClick={onPressResetBtn}>
+                <RestartAltIcon />
+              </IconButtonStyled>
+            </Tooltip>
           )}
         </HeaderBtnsWrapper>
 
         <Title>{title ?? "Main Menu"}</Title>
 
-        <HeaderBtnsWrapperRight>
-          <PersonIcon />
-          <NameWrapper>{user}</NameWrapper>
-          <IconButtonStyled onClick={handleLogout}>
-            <LogoutIcon />
-          </IconButtonStyled>
-        </HeaderBtnsWrapperRight>
+        <HeaderBtnsWrapperRight />
       </HeaderWrapper>
+      {step != null && <StepRail step={step} />}
     </Wrapper>
   );
 };
