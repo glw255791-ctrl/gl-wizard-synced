@@ -14,8 +14,12 @@ import {
   ExcelDownloadButton,
   ProcessTreeBranch,
   ProcessTreeChildren,
+  SectionLabel,
+  FilterChip,
+  FilterChipClear,
 } from "./style";
 import CloseIcon from "@mui/icons-material/Close";
+import ClearIcon from "@mui/icons-material/Clear";
 import { theme } from "@/constants/theme";
 import {
   useCallback,
@@ -35,6 +39,7 @@ import {
   formatCurrency,
 } from "./process-modal-funcs";
 import { getElipsis } from "../table/ellipsis";
+import { toResultPath } from "../table/functions";
 import {
   SearchByObject,
   TableData,
@@ -70,7 +75,7 @@ export function ProcessModal(props: ProcessModalProps) {
   >(undefined);
   const [lazyTablesData, setLazyTablesData] = useState<TableData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [processName, setProcessName] = useState("");
+  const [exportFileName, setExportFileName] = useState("");
 
   /* ===========================================================================
    * Refs & transitions
@@ -320,7 +325,7 @@ export function ProcessModal(props: ProcessModalProps) {
       setLazyTablesData([]);
       setOverallProcessObject([]);
       setSearchByObjectInternal(undefined);
-      setProcessName("");
+      setExportFileName("");
       sideHeaderColorMapRef.current.clear();
       return;
     }
@@ -443,28 +448,19 @@ export function ProcessModal(props: ProcessModalProps) {
             <Stack
               style={{
                 flexDirection: "row",
-                gap: 10,
+                gap: 12,
                 alignItems: "center",
                 flexWrap: "wrap",
-                minHeight: 52,
-                padding: "10px 24px",
+                minHeight: 56,
+                padding: "12px 20px",
                 borderBottom: `1px solid ${theme.colors.softBlue}`,
                 backgroundColor: theme.colors.surface,
               }}
             >
-              <ExcelDownloadButton
-                disabled={searchByObject === undefined}
-                variant="contained"
-                onClick={() => {
-                  setSearchByObject(undefined);
-                }}
-              >
-                Back to initial Table
-              </ExcelDownloadButton>
               <Input
                 disableUnderline
                 style={{
-                  width: 220,
+                  width: 240,
                   height: theme.height.input,
                   boxSizing: "border-box",
                   border: `1px solid ${theme.colors.softBlue}`,
@@ -474,14 +470,15 @@ export function ProcessModal(props: ProcessModalProps) {
                   backgroundColor: theme.colors.white,
                   color: theme.colors.black,
                 }}
-                placeholder="Enter process name"
-                value={processName}
-                onChange={(e) => setProcessName(e.target.value)}
+                placeholder="Export file name"
+                value={exportFileName}
+                onChange={(e) => setExportFileName(e.target.value)}
               />
               <ExcelDownloadButton
-                disabled={processName === ""}
+                disabled={exportFileName.trim() === ""}
                 variant="contained"
                 onClick={async () => {
+                  const fileName = exportFileName.trim();
                   const allRows = overallProcessObject
                     .map((item) =>
                       item.rows.map((row) => ({
@@ -493,11 +490,8 @@ export function ProcessModal(props: ProcessModalProps) {
 
                   const tableDataByRows = allRows.map((item) => {
                     return basicTableData.filter((tableItem) => {
-                      const result = Array.isArray(tableItem.result)
-                        ? tableItem.result.join("/")
-                        : String(tableItem.result ?? "");
                       return (
-                        result === item.sideHeader &&
+                        toResultPath(tableItem.result) === item.sideHeader &&
                         tableItem.coaData[
                           commonTableProps.groupingValue as keyof AnyType
                         ] ===
@@ -520,86 +514,109 @@ export function ProcessModal(props: ProcessModalProps) {
                   );
                   await exportTreeToExcel(
                     buildTree(overallProcessObject),
-                    `${processName}.xlsx`
+                    `${fileName}.xlsx`
                   );
                 }}
               >
-                Export
+                Export Excel
               </ExcelDownloadButton>
-              <Stack
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 5,
-                  marginLeft: 4,
-                }}
-              >
-                <Typography
-                  style={{ fontSize: 14, color: theme.colors.medium }}
-                >{`Currently active comment: `}</Typography>
+
+              {searchByObject ? (
+                <FilterChip>
+                  <Typography
+                    component="span"
+                    style={{
+                      fontSize: 13,
+                      color: theme.colors.medium,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Drilled into
+                  </Typography>
+                  <Typography
+                    component="span"
+                    style={{
+                      fontWeight: 700,
+                      fontSize: 13,
+                      color: theme.colors.darker,
+                      maxWidth: 280,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                    title={searchByObject.value}
+                  >
+                    {getElipsis(searchByObject.value, 48)}
+                  </Typography>
+                  <FilterChipClear
+                    aria-label="Clear drill-down filter"
+                    onClick={() => setSearchByObject(undefined)}
+                    size="small"
+                  >
+                    <ClearIcon fontSize="small" />
+                  </FilterChipClear>
+                </FilterChip>
+              ) : (
                 <Typography
                   style={{
-                    fontWeight: "bold",
-                    fontSize: 14,
-                    color: theme.colors.darker,
+                    fontSize: 13,
+                    color: theme.colors.medium,
+                    marginLeft: 4,
                   }}
-                >{`${getElipsis(
-                  searchByObject?.value || "All",
-                  100
-                )} `}</Typography>
-                <Typography
-                  style={{ fontSize: 14, color: theme.colors.medium }}
-                >{`from `}</Typography>
-                <Typography
-                  style={{
-                    fontWeight: "bold",
-                    fontSize: 14,
-                    color: theme.colors.darker,
-                  }}
-                >{`${getElipsis(
-                  searchByObject?.title ??
-                    (initialProcessObject?.title || ""),
-                  50
-                )}`}</Typography>
-              </Stack>
+                >
+                  {initialProcessObject?.title
+                    ? `Starting from ${getElipsis(initialProcessObject.title, 40)}`
+                    : null}
+                </Typography>
+              )}
             </Stack>
 
             <ModalContentWrapper>
               {(isLoading || overallProcessObject.length > 0) && (
-              <SelectedTableWrapper>
-                {isLoading ? (
-                  <LoaderContentWrapper>
-                    <LoaderContent>
-                      <LoaderText>Loading...</LoaderText>
-                    </LoaderContent>
-                    <StyledCircularProgress />
-                  </LoaderContentWrapper>
-                ) : (
-                  renderProcessTree()
-                )}
-              </SelectedTableWrapper>
+                <Stack gap={0.75} minWidth={0} width="100%">
+                  <SectionLabel>Selected process</SectionLabel>
+                  <SelectedTableWrapper>
+                    {isLoading ? (
+                      <LoaderContentWrapper>
+                        <LoaderContent>
+                          <LoaderText>Loading...</LoaderText>
+                        </LoaderContent>
+                        <StyledCircularProgress />
+                      </LoaderContentWrapper>
+                    ) : (
+                      renderProcessTree()
+                    )}
+                  </SelectedTableWrapper>
+                </Stack>
               )}
 
-              <TablesWrapper>
-                {isLoading ? (
-                  <LoaderContentWrapper>
-                    <LoaderContent>
-                      <LoaderText>
-                        Analysing, this may take a while...
-                      </LoaderText>
-                      <StyledCircularProgress />
-                    </LoaderContent>
-                  </LoaderContentWrapper>
-                ) : renderedTables.length > 0 ? (
-                  renderedTables
-                ) : (
-                  <LoaderContentWrapper>
-                    <LoaderContent>
-                      <Typography>No tables to display</Typography>
-                    </LoaderContent>
-                  </LoaderContentWrapper>
-                )}
-              </TablesWrapper>
+              <Stack gap={0.75} flex={1} minHeight={0} minWidth={0} width="100%">
+                <SectionLabel>
+                  {searchByObject
+                    ? "Related movements — click + to add"
+                    : "Starting movements — click + to add"}
+                </SectionLabel>
+                <TablesWrapper>
+                  {isLoading ? (
+                    <LoaderContentWrapper>
+                      <LoaderContent>
+                        <LoaderText>
+                          Analysing, this may take a while...
+                        </LoaderText>
+                        <StyledCircularProgress />
+                      </LoaderContent>
+                    </LoaderContentWrapper>
+                  ) : renderedTables.length > 0 ? (
+                    renderedTables
+                  ) : (
+                    <LoaderContentWrapper>
+                      <LoaderContent>
+                        <Typography>No tables to display</Typography>
+                      </LoaderContent>
+                    </LoaderContentWrapper>
+                  )}
+                </TablesWrapper>
+              </Stack>
             </ModalContentWrapper>
           </Stack>
         </ModalInnerContent>

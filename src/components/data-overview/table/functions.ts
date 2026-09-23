@@ -7,6 +7,21 @@ import type { TableHeader } from "../../../types";
 import { AnyType } from "../../../types";
 
 /**
+ * Matches overviewTableData keys from the analysis workers:
+ * array results are sorted then joined with "/".
+ */
+export function toResultPath(result: unknown): string {
+  if (Array.isArray(result)) {
+    return [...result]
+      .map(String)
+      .sort((a, b) => a.localeCompare(b))
+      .join("/");
+  }
+  if (result == null) return "";
+  return String(result);
+}
+
+/**
  * Exports table data to Excel format
  * @param tableRows - Array of table row data
  * @param sortedDataDisplayHeader - Array of sorted display header data
@@ -108,6 +123,10 @@ export const exportBasicTableToExcel = async (
   title: string,
   onProgress?: (done: number, total: number) => void
 ) => {
+  if (!data?.length || !data[0]) {
+    throw new Error("No ledger rows found for this line.");
+  }
+
   const total = Math.max(data.length, 1);
   onProgress?.(0, total);
   const workbook = await createWorkbook();
@@ -115,7 +134,7 @@ export const exportBasicTableToExcel = async (
 
   // Prepare fullHeader by excluding 'coaData'
   const fullHeader = Object.keys(data[0]).filter((key) => key !== "coaData");
-  const coaHeader = Object.keys(data[0].coaData);
+  const coaHeader = Object.keys(data[0].coaData ?? {});
   worksheet.addRow([...fullHeader, ...coaHeader, "reversal"]);
 
   for (let index = 0; index < data.length; index += 1) {
@@ -231,7 +250,7 @@ export const exportMultipleTablesToExcel = async (
 
     // Prepare fullHeader by excluding 'coaData'
     const fullHeader = Object.keys(data[0]).filter((key) => key !== "coaData");
-    const coaHeader = Object.keys(data[0].coaData);
+    const coaHeader = Object.keys(data[0].coaData ?? {});
     worksheet.addRow([...fullHeader, ...coaHeader, "reversal"]);
 
     for (let rowIndex = 0; rowIndex < data.length; rowIndex += 1) {

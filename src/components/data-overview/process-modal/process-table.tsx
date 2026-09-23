@@ -19,6 +19,8 @@ import {
   QueryStatsIconStyled,
   AddCircleOutlineIconStyled,
   RemoveCircleOutlineIconStyled,
+  AmountCell,
+  LabelText,
 } from "./style";
 import { ProcessValue, SearchByObject } from "./types";
 
@@ -26,14 +28,16 @@ import { ProcessValue, SearchByObject } from "./types";
  * Constants
  * ========================================================================== */
 
-const COLUMN_WIDTH = 128;
-const ROW_HEIGHT = 24;
+const ROW_HEIGHT = 36;
 const WIDTH_ADJUST = 2;
-const MAX_CHARS = 30;
+const MAX_CHARS = 42;
 const SIDE_HEADER = "sideHeader";
 const TOTAL = "Total";
-const TOP_TABLE_WIDTH = 280;
-const TOP_TABLE_MAX_HEIGHT = 148;
+const TOP_TABLE_WIDTH = 420;
+const TOP_TABLE_MAX_HEIGHT = 200;
+const AMOUNT_COL_WIDTH = 128;
+const BOTTOM_TABLE_MIN = 460;
+const BOTTOM_TABLE_MAX = 720;
 
 /* ============================================================================
  * Types
@@ -83,46 +87,23 @@ export const ProcessDataTable: React.FC<Props> = ({
   isTopTable,
   setSearchByObject,
 }) => {
-  /* ------------------------------------------------------------------------
-   * State & refs
-   * ---------------------------------------------------------------------- */
-
   const [tableRows, setTableRows] = useState<Record<string, AnyType>[]>(
     rows || []
   );
   const multiGridRef = useRef<MultiGrid>(null);
 
-  /* ------------------------------------------------------------------------
-   * Derived values
-   * ---------------------------------------------------------------------- */
-
   const tableColumns = useMemo(() => ["sideHeader", "total"], []);
 
-  /* ------------------------------------------------------------------------
-   * Helpers
-   * ---------------------------------------------------------------------- */
-
-  /**
-   * Stringifies a row without the `bg` property.
-   * Used to compare rows while ignoring background color changes.
-   */
   const stringifyWithoutBg = (row: Record<string, AnyType>) => {
     const copy = { ...row };
     delete copy.bg;
     return JSON.stringify(copy);
   };
 
-  /**
-   * Returns the highest level currently present in the process object.
-   */
   const maxProcessLevel = overallProcessObject.reduce(
     (max, item) => Math.max(max, item.level),
     0
   );
-
-  /* ------------------------------------------------------------------------
-   * Sync table rows for top tables when `rows` prop changes
-   * ---------------------------------------------------------------------- */
 
   useEffect(() => {
     if (!isTopTable || !rows) return;
@@ -130,10 +111,6 @@ export const ProcessDataTable: React.FC<Props> = ({
     setTableRows(rows);
     multiGridRef.current?.forceUpdateGrids();
   }, [rows, isTopTable]);
-
-  /* ------------------------------------------------------------------------
-   * Table data generation (Web Worker)
-   * ---------------------------------------------------------------------- */
 
   const generateTableData = () => {
     const { rows: generatedRows } = buildMovementTable({
@@ -154,28 +131,23 @@ export const ProcessDataTable: React.FC<Props> = ({
       (key) => !ignoreKeys.includes(key)
     );
 
-      // Rows already added to process for this table
-      const omitRows = overallProcessObject
-        .filter((item) => item.title === title)
-        .flatMap((item) => item.rows)
-        .map(stringifyWithoutBg);
+    const omitRows = overallProcessObject
+      .filter((item) => item.title === title)
+      .flatMap((item) => item.rows)
+      .map(stringifyWithoutBg);
 
-      const filteredRows = generatedRows
-        .slice(2, generatedRows.length - 1)
-        .filter((row: Record<string, string>) =>
-          valueKeys.some((key) => row[key] !== "0,00" && generatedRows[0][key])
-        )
-        .filter(
-          (row: Record<string, AnyType>) =>
-            !omitRows.includes(stringifyWithoutBg(row))
-        );
+    const filteredRows = generatedRows
+      .slice(2, generatedRows.length - 1)
+      .filter((row: Record<string, string>) =>
+        valueKeys.some((key) => row[key] !== "0,00" && generatedRows[0][key])
+      )
+      .filter(
+        (row: Record<string, AnyType>) =>
+          !omitRows.includes(stringifyWithoutBg(row))
+      );
 
-      setTableRows([...filteredRows]);
+    setTableRows([...filteredRows]);
   };
-
-  /* ------------------------------------------------------------------------
-   * Main effect – decides between worker-based or direct filtering
-   * ---------------------------------------------------------------------- */
 
   useEffect(() => {
     if (sortedDataDisplayHeader && overviewTableData) {
@@ -183,13 +155,11 @@ export const ProcessDataTable: React.FC<Props> = ({
       return;
     }
 
-    // Rows already added to process (top-level only)
     const omitRows = overallProcessObject
       .filter((item) => item.title === title && !item.parent)
       .flatMap((item) => item.rows)
       .map(stringifyWithoutBg);
 
-    // Important: filter from original `rows` prop, not state
     if (!isTopTable) {
       setTableRows(
         rows.filter((row) => !omitRows.includes(stringifyWithoutBg(row)))
@@ -199,18 +169,17 @@ export const ProcessDataTable: React.FC<Props> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortedDataDisplayHeader, overviewTableData, overallProcessObject, rows]);
 
-  /* ------------------------------------------------------------------------
-   * Cell renderer
-   * ---------------------------------------------------------------------- */
-
   const renderCellText = (row: Record<string, AnyType>, column: string) => {
     const isHeaderRow = row.header;
     const rawValue = row[column] as string | undefined;
-    const displayValue = rawValue ? getElipsis(rawValue, 35) : "";
+    const displayValue = rawValue ? getElipsis(rawValue, MAX_CHARS) : "";
 
-    // Non-side header cells or header rows
-    if (isHeaderRow || column !== SIDE_HEADER) {
-      return <Stack>{displayValue}</Stack>;
+    if (column === "total") {
+      return <AmountCell>{displayValue}</AmountCell>;
+    }
+
+    if (isHeaderRow) {
+      return <LabelText>{displayValue}</LabelText>;
     }
 
     const tooltipTitle =
@@ -221,9 +190,7 @@ export const ProcessDataTable: React.FC<Props> = ({
     return (
       <RowLabelWrapper>
         <Tooltip title={tooltipTitle}>
-          <Typography component="span" style={{ fontSize: 12 }}>
-            {displayValue}
-          </Typography>
+          <LabelText>{displayValue}</LabelText>
         </Tooltip>
 
         <RowLabelCell>
@@ -276,25 +243,21 @@ export const ProcessDataTable: React.FC<Props> = ({
     );
   };
 
-  /* ------------------------------------------------------------------------
-   * Render
-   * ---------------------------------------------------------------------- */
-
   const isCompact = Boolean(isTopTable);
   const gridHeight = isCompact
     ? Math.min(
-        Math.max((tableRows.length || 2) * ROW_HEIGHT + 8, ROW_HEIGHT * 4),
+        Math.max((tableRows.length || 2) * ROW_HEIGHT + 8, ROW_HEIGHT * 3),
         TOP_TABLE_MAX_HEIGHT
       )
     : Math.min(
-        Math.max((tableRows.length || 4) * ROW_HEIGHT + 16, ROW_HEIGHT * 8),
-        520
+        Math.max((tableRows.length || 4) * ROW_HEIGHT + 16, ROW_HEIGHT * 6),
+        480
       );
 
   const renderGrid = (width: number, height: number) => {
     const gridWidth = Math.max(0, Math.floor(width) - WIDTH_ADJUST);
-    const labelWidth = Math.floor(gridWidth * 0.68);
-    const valueWidth = Math.max(gridWidth - labelWidth, 88);
+    const valueWidth = Math.min(AMOUNT_COL_WIDTH, Math.floor(gridWidth * 0.38));
+    const labelWidth = Math.max(gridWidth - valueWidth, 160);
 
     if (tableRows.length === 0) {
       return (
@@ -304,7 +267,7 @@ export const ProcessDataTable: React.FC<Props> = ({
           justifyContent="center"
           alignItems="center"
         >
-          <Typography fontSize={14} fontWeight="bold">
+          <Typography fontSize={14} fontWeight={600} color="text.secondary">
             No rows available
           </Typography>
         </Stack>
@@ -324,20 +287,31 @@ export const ProcessDataTable: React.FC<Props> = ({
         width={gridWidth}
         height={Math.max(0, Math.floor(height))}
         style={{ outline: "none" }}
-        styleBottomLeftGrid={{ overflowX: "hidden" }}
-        styleBottomRightGrid={{ overflowX: "hidden" }}
+        styleBottomLeftGrid={{ overflowX: "hidden", overflowY: "auto" }}
+        styleBottomRightGrid={{ overflowX: "hidden", overflowY: "auto" }}
         cellRenderer={({ columnIndex, rowIndex, key, style }) => {
           const column = tableColumns[columnIndex];
           const row = tableRows[rowIndex];
           if (!row) return null;
 
           return (
-            <div key={key} style={style}>
+            <div
+              key={key}
+              style={{
+                ...style,
+                overflow: "hidden",
+                boxSizing: "border-box",
+              }}
+            >
               <Stack
                 sx={{
                   ...styles.cellBaseStyle,
                   ...getStylesBasedOnColumn(column, row, mappingValue),
                   ...getStylesBasedOnHeader(rowIndex, 0),
+                  height: "100%",
+                  width: "100%",
+                  boxSizing: "border-box",
+                  overflow: "hidden",
                 }}
               >
                 {renderCellText(row, column)}
@@ -352,9 +326,9 @@ export const ProcessDataTable: React.FC<Props> = ({
   return (
     <Stack
       sx={{
-        width: isCompact ? TOP_TABLE_WIDTH : "min(100%, 520px)",
-        minWidth: isCompact ? TOP_TABLE_WIDTH : 360,
-        maxWidth: isCompact ? TOP_TABLE_WIDTH : 520,
+        width: isCompact ? TOP_TABLE_WIDTH : "min(100%, 640px)",
+        minWidth: isCompact ? TOP_TABLE_WIDTH : BOTTOM_TABLE_MIN,
+        maxWidth: isCompact ? TOP_TABLE_WIDTH : BOTTOM_TABLE_MAX,
         flex: "0 0 auto",
       }}
     >
@@ -362,7 +336,7 @@ export const ProcessDataTable: React.FC<Props> = ({
         <TableHeaderStyled>
           <TableTitle>
             <Tooltip title={title}>
-              <Stack>{getElipsis(title, isCompact ? 28 : 40)}</Stack>
+              <Stack>{getElipsis(title, isCompact ? 36 : 48)}</Stack>
             </Tooltip>
           </TableTitle>
         </TableHeaderStyled>

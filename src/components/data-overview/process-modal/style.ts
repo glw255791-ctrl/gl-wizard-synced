@@ -14,8 +14,8 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 // Modal content container (positioning the modal, centering, etc.)
 export const ModalContent = styled(Stack)(() => ({
-  width: "min(1100px, calc(100vw - 3rem))",
-  height: "min(820px, calc(100vh - 3rem))",
+  width: "min(1280px, calc(100vw - 2rem))",
+  height: "min(900px, calc(100vh - 2rem))",
   backgroundColor: theme.colors.page,
   borderRadius: theme.borderRadius.md,
   justifyContent: "flex-start",
@@ -36,17 +36,17 @@ export const ModalInnerContent = styled(Stack)(() => ({
 }));
 
 export const QueryStatsIconStyled = styled(QueryStatsIcon)({
-  fontSize: theme.fontSize.lg,
+  fontSize: 18,
   color: theme.colors.freshBlue,
 });
 
 export const AddCircleOutlineIconStyled = styled(AddCircleOutlineIcon)({
-  fontSize: theme.fontSize.lg,
+  fontSize: 18,
   color: theme.colors.darker,
 });
 
 export const RemoveCircleOutlineIconStyled = styled(RemoveCircleOutlineIcon)({
-  fontSize: theme.fontSize.lg,
+  fontSize: 18,
   color: theme.colors.medium,
 });
 
@@ -103,9 +103,40 @@ export const TotalText = styled(Typography)({
 });
 
 export const TableTitle = styled(Typography)({
-  fontSize: theme.fontSize.lg,
-  fontWeight: "bold",
+  fontSize: "0.95rem",
+  fontWeight: 700,
   color: theme.colors.white,
+  lineHeight: 1.2,
+});
+
+export const SectionLabel = styled(Typography)({
+  fontSize: "0.75rem",
+  fontWeight: 700,
+  letterSpacing: "0.06em",
+  textTransform: "uppercase",
+  color: theme.colors.freshBlue,
+});
+
+export const FilterChip = styled(Stack)({
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 8,
+  marginLeft: "auto",
+  padding: "6px 8px 6px 12px",
+  borderRadius: 20,
+  backgroundColor: theme.colors.white,
+  border: `1px solid ${theme.colors.softBlue}`,
+  maxWidth: "100%",
+  minWidth: 0,
+});
+
+export const FilterChipClear = styled(IconButton)({
+  padding: 4,
+  color: theme.colors.medium,
+  "&:hover": {
+    color: theme.colors.darker,
+    backgroundColor: theme.colors.canvas,
+  },
 });
 
 export const UncheckedIcon = styled(CancelRounded)({
@@ -115,19 +146,48 @@ export const UncheckedIcon = styled(CancelRounded)({
 
 // Button/Stack styles
 export const IconButtonStyled = styled(IconButton)({
-  padding: theme.padding.none,
+  padding: 2,
+  flexShrink: 0,
 });
 
 export const RowLabelWrapper = styled(Stack)({
   flexDirection: "row",
-  justifyContent: "space-between",
   alignItems: "center",
+  gap: 6,
+  width: "100%",
+  minWidth: 0,
+  overflow: "hidden",
 });
 
 export const RowLabelCell = styled(Stack)({
   flexDirection: "row",
-  gap: theme.gap.sm,
+  gap: 2,
   alignItems: "center",
+  flexShrink: 0,
+});
+
+export const LabelText = styled(Typography)({
+  flex: 1,
+  minWidth: 0,
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+  fontSize: 12.5,
+  lineHeight: 1.3,
+  color: theme.colors.black,
+});
+
+export const AmountCell = styled(Typography)({
+  width: "100%",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+  fontSize: 12.5,
+  lineHeight: 1.3,
+  fontVariantNumeric: "tabular-nums",
+  fontWeight: 600,
+  textAlign: "right",
+  color: theme.colors.darker,
 });
 
 export const TableScrollableWrapper = styled(Stack)({
@@ -163,7 +223,7 @@ export const SelectedTableWrapper = styled(Stack)({
   flexDirection: "row",
   alignItems: "stretch",
   overflowX: "auto",
-  overflowY: "hidden",
+  overflowY: "auto",
   width: "100%",
   maxWidth: "100%",
   minWidth: 0,
@@ -171,8 +231,8 @@ export const SelectedTableWrapper = styled(Stack)({
   borderRadius: theme.borderRadius.sm,
   backgroundColor: theme.colors.surface,
   border: `${theme.borderWidth.sm} solid ${theme.colors.softBlue}`,
-  padding: theme.padding.md,
-  maxHeight: 220,
+  padding: "0.75rem",
+  maxHeight: 260,
   flexShrink: 0,
 });
 
@@ -242,14 +302,13 @@ export const RemoveButton = styled(Button)({
 // Miscellaneous, reusable style objects
 export const styles: Record<string, CommonProps["style"]> = {
   cellBaseStyle: {
-    padding: `${theme.padding.none} ${theme.padding.sm}`,
+    padding: "0 10px",
     borderRightStyle: "solid",
-    wordWrap: "break-word",
-    overflowWrap: "break-word",
-    whiteSpace: "normal",
+    whiteSpace: "nowrap",
     justifyContent: "center",
     borderBottomStyle: "solid",
-    fontSize: theme.fontSize.cell,
+    fontSize: 12.5,
+    overflow: "hidden",
   },
   autosizerWrapper: {
     width: "100%",
@@ -365,19 +424,19 @@ export const TablesWrapper = styled(Stack)({
   minWidth: 0,
   flex: 1,
   minHeight: 0,
+  paddingBottom: 4,
 });
 
 export const ProcessTreeBranch = styled(Stack)({
   flexDirection: "row",
   alignItems: "flex-start",
-  gap: 12,
+  gap: 14,
   flex: "0 0 auto",
-  maxWidth: "100%",
 });
 
 export const ProcessTreeChildren = styled(Stack)({
   flexDirection: "column",
-  gap: 10,
+  gap: 12,
   flex: "0 0 auto",
   minWidth: 0,
 });

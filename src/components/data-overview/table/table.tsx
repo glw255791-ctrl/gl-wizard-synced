@@ -15,6 +15,7 @@ import {
   exportMultipleTablesToExcel,
   exportTableToExcel,
   getElipsis,
+  toResultPath,
 } from "./functions";
 import {
   CheckedIcon,
@@ -238,9 +239,17 @@ export const DataTable: React.FC<Props> = ({
 
   // Handles Excel export for a specific row
   const handleDownloadByRow = (value: string) => {
+    if (!value || value === "Total" || value === INCLUDE) return;
+
     const filteredValues = basicTableData.filter(
-      (item) => (item.result as unknown as string[]).join("/") === value
+      (item) => toResultPath(item.result) === value
     );
+
+    if (filteredValues.length === 0) {
+      setExportError("No ledger rows found for this line.");
+      return;
+    }
+
     void runExport(filteredValues.length, (onProgress) =>
       exportBasicTableToExcel(basicTableHeader, filteredValues, value, onProgress)
     );
@@ -248,19 +257,24 @@ export const DataTable: React.FC<Props> = ({
 
   const downloadGroupedByRow = () => {
     const rows = viewableRows
-      .filter((row) => !row.header)
+      .filter(
+        (row) =>
+          !row.header &&
+          row.sideHeader !== "Total" &&
+          row.sideHeader !== INCLUDE
+      )
       .map((item) => String(item.sideHeader));
 
     const tableDataByRows = rows.map((row) =>
-      basicTableData.filter((item) => {
-        const result = Array.isArray(item.result)
-          ? item.result.join("/")
-          : String(item.result ?? "");
-        return result === row;
-      })
+      basicTableData.filter((item) => toResultPath(item.result) === row)
     );
 
     const rowCount = tableDataByRows.reduce((sum, group) => sum + group.length, 0);
+    if (rowCount === 0) {
+      setExportError("No ledger rows found to export.");
+      return;
+    }
+
     void runExport(rowCount, (onProgress) =>
       exportMultipleTablesToExcel(
         basicTableHeader,
@@ -280,16 +294,22 @@ export const DataTable: React.FC<Props> = ({
       return <Stack>{getElipsis(val ?? "", MAX_CHARS)}</Stack>;
     }
 
+    const canDownloadRow =
+      row.sideHeader !== "Total" && row.sideHeader !== INCLUDE;
+
     return (
       <RowLabelWrapper>
         {getElipsis(val, MAX_CHARS * 1.25)}
-        <RowLabelCell>
-          <IconButtonStyled
-            onClick={() => handleDownloadByRow(String(row[column]))}
-          >
-            <DownloadIconStyled />
-          </IconButtonStyled>
-        </RowLabelCell>
+        {canDownloadRow ? (
+          <RowLabelCell>
+            <IconButtonStyled
+              aria-label="Download ledger rows for this line"
+              onClick={() => handleDownloadByRow(String(row[column]))}
+            >
+              <DownloadIconStyled />
+            </IconButtonStyled>
+          </RowLabelCell>
+        ) : null}
       </RowLabelWrapper>
     );
   };
