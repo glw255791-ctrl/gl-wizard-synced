@@ -16,12 +16,14 @@ import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 export const ModalContent = styled(Stack)(() => ({
   width: "min(1100px, calc(100vw - 3rem))",
   height: "min(820px, calc(100vh - 3rem))",
-  backgroundColor: theme.colors.white,
-  borderRadius: theme.borderRadius.sm,
+  backgroundColor: theme.colors.page,
+  borderRadius: theme.borderRadius.md,
   justifyContent: "flex-start",
   alignItems: "stretch",
   overflow: "hidden",
   color: theme.colors.black,
+  border: `${theme.borderWidth.sm} solid ${theme.colors.softBlue}`,
+  boxShadow: "0 18px 48px rgba(53, 111, 115, 0.28)",
 }));
 
 export const ModalInnerContent = styled(Stack)(() => ({
@@ -30,22 +32,26 @@ export const ModalInnerContent = styled(Stack)(() => ({
   minHeight: 0,
   padding: theme.padding.none,
   justifyContent: "flex-start",
+  backgroundColor: theme.colors.page,
 }));
 
 export const QueryStatsIconStyled = styled(QueryStatsIcon)({
   fontSize: theme.fontSize.lg,
+  color: theme.colors.freshBlue,
 });
 
 export const AddCircleOutlineIconStyled = styled(AddCircleOutlineIcon)({
   fontSize: theme.fontSize.lg,
+  color: theme.colors.darker,
 });
 
 export const RemoveCircleOutlineIconStyled = styled(RemoveCircleOutlineIcon)({
   fontSize: theme.fontSize.lg,
+  color: theme.colors.medium,
 });
 
 export const EnabledSearchIconStyled = styled(CheckCircleIcon)({
-  color: theme.colors.green,
+  color: theme.colors.freshBlue,
 });
 
 export const DisabledSearchIconStyled = styled(RemoveCircleIcon)({
@@ -61,8 +67,10 @@ export const ModalHeader = styled(Stack)(() => ({
   flexDirection: "row",
   justifyContent: "space-between",
   alignItems: "center",
-  padding: theme.padding.md,
-  borderBottom: `${theme.borderWidth.sm}px solid ${theme.colors.gray}`,
+  padding: "0.85rem 1.1rem",
+  backgroundColor: theme.colors.darker,
+  color: theme.colors.white,
+  borderBottom: `${theme.borderWidth.sm} solid ${theme.colors.freshBlue}`,
 }));
 
 // Modal content wrapper (for the body, aligns content)
@@ -75,15 +83,17 @@ export const ModalContentWrapper = styled(Stack)(() => ({
   gap: theme.gap.md,
   padding: theme.padding.lg,
   overflow: "hidden",
+  backgroundColor: theme.colors.page,
 }));
 
 // Title of the modal
 export const Title = styled(Typography)(() => ({
-  textAlign: "center",
-  color: theme.colors.black,
+  textAlign: "left",
+  color: theme.colors.white,
   flex: 1,
-  fontWeight: "bold",
+  fontWeight: 700,
   fontSize: theme.fontSize.xl,
+  letterSpacing: "0.01em",
 }));
 
 // Typography styles
@@ -127,15 +137,19 @@ export const TableScrollableWrapper = styled(Stack)({
   borderColor: theme.colors.softBlue,
   backgroundColor: theme.colors.white,
   width: "100%",
+  maxWidth: "100%",
+  minWidth: 0,
   flex: 1,
   minHeight: 0,
+  overflow: "hidden",
+  boxShadow: "0 1px 0 rgba(53, 111, 115, 0.08)",
 });
 
 export const TableHeaderStyled = styled(Stack)({
   width: "100%",
   boxSizing: "border-box",
   padding: "0.55rem 0.85rem",
-  backgroundColor: theme.colors.darker,
+  backgroundColor: theme.colors.freshBlue,
   color: theme.colors.white,
   flexDirection: "row",
   justifyContent: "space-between",
@@ -152,6 +166,7 @@ export const SelectedTableWrapper = styled(Stack)({
   justifyContent: "flex-start",
   borderRadius: theme.borderRadius.sm,
   backgroundColor: theme.colors.surface,
+  border: `${theme.borderWidth.sm} solid ${theme.colors.softBlue}`,
   padding: theme.padding.md,
   maxHeight: 180,
   flexShrink: 0,
@@ -162,8 +177,12 @@ export const AddButton = styled(Button)({
   paddingRight: theme.padding.md,
   borderRadius: theme.borderRadius.sm,
   height: 30,
-  backgroundColor: theme.colors.green,
+  backgroundColor: theme.colors.darker,
+  color: theme.colors.white,
   textTransform: "none",
+  "&:hover": {
+    backgroundColor: theme.colors.freshBlue,
+  },
 });
 
 export const ExcelDownloadButton = styled(Button)({
@@ -171,9 +190,41 @@ export const ExcelDownloadButton = styled(Button)({
   paddingRight: 16,
   borderRadius: 16,
   height: theme.height.input,
-  backgroundColor: theme.colors.action,
-  color: theme.colors.black,
+  backgroundColor: theme.colors.darker,
+  color: theme.colors.white,
   textTransform: "none",
+  boxShadow: "none",
+  "&:hover": {
+    backgroundColor: theme.colors.freshBlue,
+    boxShadow: "none",
+  },
+  "&.Mui-disabled": {
+    backgroundColor: theme.colors.softBlue,
+    color: theme.colors.white,
+    opacity: 0.7,
+  },
+});
+
+export const SecondaryButton = styled(Button)({
+  paddingLeft: 16,
+  paddingRight: 16,
+  borderRadius: 16,
+  height: theme.height.input,
+  backgroundColor: theme.colors.surface,
+  color: theme.colors.darker,
+  border: `${theme.borderWidth.sm} solid ${theme.colors.softBlue}`,
+  textTransform: "none",
+  boxShadow: "none",
+  "&:hover": {
+    backgroundColor: theme.colors.canvas,
+    borderColor: theme.colors.freshBlue,
+    boxShadow: "none",
+  },
+  "&.Mui-disabled": {
+    backgroundColor: theme.colors.canvas,
+    color: theme.colors.gray,
+    borderColor: theme.colors.gray,
+  },
 });
 
 export const RemoveButton = styled(Button)({
@@ -198,8 +249,11 @@ export const styles: Record<string, CommonProps["style"]> = {
   },
   autosizerWrapper: {
     width: "100%",
+    maxWidth: "100%",
+    minWidth: 0,
     height: 480,
-    overflow: "auto",
+    // MultiGrid owns scrolling; overflow auto here + AutoSizer loops width to infinity.
+    overflow: "hidden",
     borderBottomRightRadius: theme.borderRadius.sm,
     borderBottomLeftRadius: theme.borderRadius.sm,
     backgroundColor: theme.colors.white,
@@ -230,9 +284,14 @@ export const getStylesBasedOnColumn = (
   let backgroundColor: string;
   if (isSideHeader) {
     backgroundColor =
-      row.bg !== "white" ? (row.bg as string) : theme.colors.lighter;
+      row.bg !== "white" ? (row.bg as string) : theme.colors.surface;
   } else {
-    backgroundColor = isTotalColumn ? theme.colors.lighter : (row.bg as string);
+    backgroundColor =
+      isTotalColumn
+        ? theme.colors.surface
+        : row.bg === "white"
+          ? theme.colors.white
+          : (row.bg as string);
   }
 
   return {
@@ -240,15 +299,16 @@ export const getStylesBasedOnColumn = (
     borderRightWidth: isSideHeader
       ? theme.borderWidth.md
       : theme.borderWidth.sm,
-    borderRightColor: isSideHeader ? theme.colors.medium : theme.colors.lighter,
+    borderRightColor: isSideHeader ? theme.colors.freshBlue : theme.colors.softBlue,
     borderLeftWidth: isTotalColumn
       ? theme.borderWidth.md
       : theme.borderWidth.none,
     borderLeftStyle: "solid",
-    borderLeftColor: theme.colors.medium,
+    borderLeftColor: theme.colors.freshBlue,
     fontWeight: isBoldRow ? "bold" : "initial",
     borderBottomStyle: "solid",
-    borderBottomColor: theme.colors.medium,
+    borderBottomColor: theme.colors.softBlue,
+    color: theme.colors.black,
     textAlign: isSideHeader ? "left" : "right",
   };
 };
@@ -271,30 +331,34 @@ export const getStylesBasedOnHeader = (
 
 // Styled stack container for the loader content
 export const LoaderContent = styled(Stack)({
-  backgroundColor: theme.colors.lighter,
+  backgroundColor: theme.colors.surface,
   borderRadius: 36,
   flexDirection: "row",
   alignItems: "center",
   gap: theme.gap.lg,
   padding: `${theme.padding.lg} ${theme.padding.xl}`,
+  border: `${theme.borderWidth.sm} solid ${theme.colors.softBlue}`,
 });
 
 // Styled typography for the loader text
 export const LoaderText = styled(Typography)({
-  color: theme.colors.medium,
+  color: theme.colors.darker,
 });
 
 // Styled circular progress indicator
 export const StyledCircularProgress = styled(CircularProgress)({
-  color: theme.colors.medium,
+  color: theme.colors.freshBlue,
 });
 
 export const TablesWrapper = styled(Stack)({
   gap: theme.gap.lg,
   flexDirection: "row",
   alignItems: "stretch",
-  overflow: "auto",
+  overflowX: "auto",
+  overflowY: "hidden",
   width: "100%",
+  maxWidth: "100%",
+  minWidth: 0,
   flex: 1,
   minHeight: 0,
 });

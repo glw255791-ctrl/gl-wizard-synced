@@ -97,7 +97,7 @@ self.onmessage = (event) => {
           for (const row of chunk)
             row.result = dictionaryItem?.result
               ? [dictionaryItem.result]
-              : sortedValues;
+              : [...sortedValues];
           i = j + 1;
           break;
         }
@@ -111,7 +111,7 @@ self.onmessage = (event) => {
   const groupedByAccountAndResult = new Map();
   for (const item of unwrapped) {
     const resultKey = item.result
-      ? item.result.sort((a, b) => a.localeCompare(b)).join("/")
+      ? [...item.result].sort((a, b) => a.localeCompare(b)).join("/")
       : "unmatched";
     const key = `${item[glHeaders.date]}_${
       item[glHeaders.account]
@@ -172,7 +172,9 @@ self.onmessage = (event) => {
   const condensedDataByResult = new Map();
   for (const item of output) {
     const resultKey =
-      item.result?.sort((a, b) => a.localeCompare(b)).join("/") || "unmatched";
+      (item.result &&
+        [...item.result].sort((a, b) => a.localeCompare(b)).join("/")) ||
+      "unmatched";
 
     if (!condensedDataByResult.has(resultKey)) {
       condensedDataByResult.set(resultKey, []);

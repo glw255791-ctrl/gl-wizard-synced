@@ -89,9 +89,14 @@ export const ExcelDownloadButton = styled(Button)({
   paddingRight: theme.padding.lg,
   borderRadius: theme.borderRadius.lg,
   height: theme.height.input,
-  backgroundColor: theme.colors.action,
-  color: theme.colors.black,
+  backgroundColor: theme.colors.darker,
+  color: theme.colors.white,
   textTransform: "none",
+  boxShadow: "none",
+  "&:hover": {
+    backgroundColor: theme.colors.freshBlue,
+    boxShadow: "none",
+  },
 });
 
 // Miscellaneous, reusable style objects
@@ -108,7 +113,10 @@ export const styles: Record<string, CommonProps["style"]> = {
   },
   autosizerWrapper: {
     width: "100%",
-    overflow: "auto",
+    maxWidth: "100%",
+    minWidth: 0,
+    // MultiGrid owns scrolling; overflow auto here fights AutoSizer width.
+    overflow: "hidden",
     maxHeight: theme.height.table,
     borderBottomRightRadius: theme.borderRadius.sm,
     borderBottomLeftRadius: theme.borderRadius.sm,

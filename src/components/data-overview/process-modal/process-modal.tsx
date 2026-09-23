@@ -14,6 +14,7 @@ import {
   ExcelDownloadButton,
 } from "./style";
 import CloseIcon from "@mui/icons-material/Close";
+import { theme } from "@/constants/theme";
 import {
   useCallback,
   useEffect,
@@ -428,17 +429,45 @@ export function ProcessModal(props: ProcessModalProps) {
         <ModalInnerContent>
           <ModalHeader>
             <Title>Process Analysis</Title>
+            <IconButton onClick={onClose} sx={{ color: theme.colors.white }}>
+              <CloseIcon />
+            </IconButton>
+          </ModalHeader>
+
+          <Stack sx={{ flex: 1, minHeight: 0, width: "100%" }}>
             <Stack
-              style={{ flexDirection: "row", gap: 10, alignItems: "center" }}
+              style={{
+                flexDirection: "row",
+                gap: 10,
+                alignItems: "center",
+                flexWrap: "wrap",
+                minHeight: 52,
+                padding: "10px 24px",
+                borderBottom: `1px solid ${theme.colors.softBlue}`,
+                backgroundColor: theme.colors.surface,
+              }}
             >
+              <ExcelDownloadButton
+                disabled={searchByObject === undefined}
+                variant="contained"
+                onClick={() => {
+                  setSearchByObject(undefined);
+                }}
+              >
+                Back to initial Table
+              </ExcelDownloadButton>
               <Input
                 disableUnderline
                 style={{
-                  width: 200,
-                  border: "1px solid #ccc",
-                  borderRadius: 25,
-                  padding: "0 15px",
+                  width: 220,
+                  height: theme.height.input,
+                  boxSizing: "border-box",
+                  border: `1px solid ${theme.colors.softBlue}`,
+                  borderRadius: 16,
+                  padding: "0 14px",
                   fontSize: 14,
+                  backgroundColor: theme.colors.white,
+                  color: theme.colors.black,
                 }}
                 placeholder="Enter process name"
                 value={processName}
@@ -492,54 +521,42 @@ export function ProcessModal(props: ProcessModalProps) {
               >
                 Export
               </ExcelDownloadButton>
-              <IconButton onClick={onClose}>
-                <CloseIcon />
-              </IconButton>
-            </Stack>
-          </ModalHeader>
-
-          <Stack sx={{ flex: 1, minHeight: 0, width: "100%" }}>
-            <Stack
-              style={{
-                flexDirection: "row",
-                gap: 10,
-                alignItems: "center",
-                height: 40,
-                paddingLeft: 30,
-              }}
-            >
-              <ExcelDownloadButton
-                disabled={searchByObject === undefined}
-                variant="contained"
-                onClick={() => {
-                  setSearchByObject(undefined);
+              <Stack
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 5,
+                  marginLeft: 4,
                 }}
               >
-                Back to initial Table
-              </ExcelDownloadButton>
-              {
-                <Stack
-                  style={{ flexDirection: "row", alignItems: "center", gap: 5 }}
-                >
-                  <Typography
-                    style={{ fontSize: 14 }}
-                  >{`Currently active comment: `}</Typography>
-                  <Typography
-                    style={{ fontWeight: "bold", fontSize: 14 }}
-                  >{`${getElipsis(
-                    searchByObject?.value || "All",
-                    100
-                  )} `}</Typography>
-                  <Typography style={{ fontSize: 14 }}>{`from `}</Typography>
-                  <Typography
-                    style={{ fontWeight: "bold", fontSize: 14 }}
-                  >{`${getElipsis(
-                    searchByObject?.title ??
-                      (initialProcessObject?.title || ""),
-                    50
-                  )}`}</Typography>
-                </Stack>
-              }
+                <Typography
+                  style={{ fontSize: 14, color: theme.colors.medium }}
+                >{`Currently active comment: `}</Typography>
+                <Typography
+                  style={{
+                    fontWeight: "bold",
+                    fontSize: 14,
+                    color: theme.colors.darker,
+                  }}
+                >{`${getElipsis(
+                  searchByObject?.value || "All",
+                  100
+                )} `}</Typography>
+                <Typography
+                  style={{ fontSize: 14, color: theme.colors.medium }}
+                >{`from `}</Typography>
+                <Typography
+                  style={{
+                    fontWeight: "bold",
+                    fontSize: 14,
+                    color: theme.colors.darker,
+                  }}
+                >{`${getElipsis(
+                  searchByObject?.title ??
+                    (initialProcessObject?.title || ""),
+                  50
+                )}`}</Typography>
+              </Stack>
             </Stack>
 
             <ModalContentWrapper>

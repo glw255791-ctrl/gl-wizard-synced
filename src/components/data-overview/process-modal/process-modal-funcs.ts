@@ -65,7 +65,6 @@ export function buildTree(data: ProcessValue[]): Node {
     const node = map.get(`${item.title}_${item.level}`)!;
 
     if (!item.parent) {
-      // root node
       roots.push(node);
     } else {
       const parentNode = map.get(`${item.parent.title}_${item.parent.level}`);
@@ -73,46 +72,43 @@ export function buildTree(data: ProcessValue[]): Node {
         parentNode.children.push(node);
       }
     }
+  });
 
-    const computeHeight = (node: Node): number => {
-      if (!node) return 1;
-      if (node?.children?.length === 0) {
-        // leaf node
-        node.height = node.rows.length + 1;
-        return node.height;
-      }
-
-      let sum = 0;
-      for (const child of node?.children || []) {
-        sum += computeHeight(child);
-      }
-
-      // Take the max of children's height and own rows + 1 (for title)
-      node.height = Math.max(sum, node.rows.length + 1);
+  const computeHeight = (node: Node): number => {
+    if (!node) return 1;
+    if (node.children.length === 0) {
+      node.height = node.rows.length + 1;
       return node.height;
-    };
+    }
 
-    // Adjust children to fill parent's height (last child takes remaining space)
-    const adjustChildrenHeight = (node: Node): void => {
-      if (!node || node.children.length === 0) return;
+    let sum = 0;
+    for (const child of node.children) {
+      sum += computeHeight(child);
+    }
 
-      const childrenSum = node.children.reduce((sum, c) => sum + c.height, 0);
-      const extraHeight = node.height - childrenSum;
+    node.height = Math.max(sum, node.rows.length + 1);
+    return node.height;
+  };
 
-      if (extraHeight > 0 && node.children.length > 0) {
-        // Last child takes the remaining height
-        node.children[node.children.length - 1].height += extraHeight;
-      }
+  const adjustChildrenHeight = (node: Node): void => {
+    if (!node || node.children.length === 0) return;
 
-      // Recurse into children
-      for (const child of node.children) {
-        adjustChildrenHeight(child);
-      }
-    };
+    const childrenSum = node.children.reduce((sum, c) => sum + c.height, 0);
+    const extraHeight = node.height - childrenSum;
 
+    if (extraHeight > 0) {
+      node.children[node.children.length - 1].height += extraHeight;
+    }
+
+    for (const child of node.children) {
+      adjustChildrenHeight(child);
+    }
+  };
+
+  if (roots[0]) {
     computeHeight(roots[0]);
     adjustChildrenHeight(roots[0]);
-  });
+  }
 
   return roots[0];
 }

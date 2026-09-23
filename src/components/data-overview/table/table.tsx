@@ -365,8 +365,8 @@ export const DataTable: React.FC<Props> = ({
             columnCount={tableColumns.length}
             rowHeight={ROW_HEIGHT}
             rowCount={viewableRows.length}
-            width={width - WIDTH_ADJUST}
-            height={height}
+            width={Math.max(0, Math.floor(width) - WIDTH_ADJUST)}
+            height={Math.max(0, Math.floor(height))}
             cellRenderer={({ columnIndex, rowIndex, key, style }) => {
               const column = tableColumns[columnIndex];
               const row = viewableRows[rowIndex];

@@ -27,9 +27,9 @@ export const Header = ({ title, onPressResetBtn, step }: Props) => {
       <HeaderWrapper sx={step != null ? { marginBottom: "1.15rem" } : undefined}>
         <HeaderBtnsWrapper>
           {title && (
-            <Tooltip title="Back to main menu">
+            <Tooltip title="Back to dashboard">
               <IconButtonStyled
-                aria-label="Back to main menu"
+                aria-label="Back to dashboard"
                 onClick={() => router.push("/dashboard")}
               >
                 <ArrowBackIcon />
@@ -45,7 +45,7 @@ export const Header = ({ title, onPressResetBtn, step }: Props) => {
           )}
         </HeaderBtnsWrapper>
 
-        <Title>{title ?? "Main Menu"}</Title>
+        <Title>{title ?? "Dashboard"}</Title>
 
         <HeaderBtnsWrapperRight />
       </HeaderWrapper>

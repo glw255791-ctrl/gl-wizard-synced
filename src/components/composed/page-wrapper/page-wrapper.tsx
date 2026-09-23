@@ -182,7 +182,7 @@ export function PageWrapper({ children }: Props) {
                 menuPath="/dashboard"
                 pathname={pathname}
                 collapsed={navCollapsed}
-                label="Main Menu"
+                label="Dashboard"
                 startIcon={<WidgetsIcon />}
                 variant="contained"
                 onClick={() => router.push("/dashboard")}

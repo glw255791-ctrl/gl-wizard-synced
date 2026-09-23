@@ -157,8 +157,8 @@ export function GeneralAnalysis() {
             step={currentStep}
           />
 
-          {/* GL and CoA Upload */}
-
+          {/* GL and CoA Upload — hidden on Results; Undo brings them back */}
+          {currentStep !== AnalysisStep.ANALYZED && (
           <Grid2
             container
             spacing={2}
@@ -175,7 +175,7 @@ export function GeneralAnalysis() {
                 }}
                 text="Drop GL file here"
                 fileName={glFileName}
-                isDisabled={currentStep === AnalysisStep.ANALYZED}
+                isDisabled={false}
                 uploaded={currentStep !== AnalysisStep.TO_UPLOAD_GL}
               >
                 {glHeaderOptions.length > 0 ? (
@@ -199,13 +199,11 @@ export function GeneralAnalysis() {
                 fileName={coaFileName}
                 uploaded={
                   currentStep === AnalysisStep.TO_UPLOAD_DICTIONARY ||
-                  currentStep === AnalysisStep.UPLOADED_DICTIONARY ||
-                  currentStep === AnalysisStep.ANALYZED
+                  currentStep === AnalysisStep.UPLOADED_DICTIONARY
                 }
                 isDisabled={
                   currentStep === AnalysisStep.TO_UPLOAD_GL ||
-                  currentStep === AnalysisStep.UPLOADED_GL ||
-                  currentStep === AnalysisStep.ANALYZED
+                  currentStep === AnalysisStep.UPLOADED_GL
                 }
               >
                 {coaHeaderOptions.length > 0 ? (
@@ -248,14 +246,14 @@ export function GeneralAnalysis() {
                 uploaded={isDictionaryUploaded}
                 isDisabled={
                   currentStep !== AnalysisStep.TO_UPLOAD_DICTIONARY &&
-                  currentStep !== AnalysisStep.UPLOADED_DICTIONARY &&
-                  currentStep !== AnalysisStep.ANALYZED
+                  currentStep !== AnalysisStep.UPLOADED_DICTIONARY
                 }
               >
                 {null}
               </FileDropzone>
             </Grid2>
           </Grid2>
+          )}
 
           {/* Data Validity and Analysis Action */}
 
