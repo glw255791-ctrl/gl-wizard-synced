@@ -4,7 +4,7 @@ import { theme } from "../../../constants/theme";
 // Styled root stack for the main page wrapper
 export const RootStack = styled(Stack)({
   gap: theme.gap.lg,
-  width: "calc(100vw - 24rem)",
+  width: "100%",
 });
 
 // Wrapper for rows of buttons or content

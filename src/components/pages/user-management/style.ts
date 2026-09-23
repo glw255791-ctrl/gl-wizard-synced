@@ -9,7 +9,7 @@ import { theme } from "../../../constants/theme";
 
 // Root wrapper for the page
 export const RootStack = styled(Stack)({
-  width: "calc(100vw - 24rem)",
+  width: "100%",
   minHeight: "calc(100vh - 4rem)",
   justifyContent: "flex-start",
   gap: theme.gap.lg,
@@ -152,6 +152,7 @@ export const InviteButton = styled(Button)({
   borderRadius: theme.borderRadius.lg,
   height: theme.height.input,
   backgroundColor: theme.colors.action,
+  color: theme.colors.black,
   paddingLeft: theme.padding.lg,
   paddingRight: theme.padding.lg,
   textTransform: "none",

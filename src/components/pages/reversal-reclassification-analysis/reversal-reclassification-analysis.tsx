@@ -10,11 +10,19 @@ import { AnalysisStep } from "../general-analysis/general-analysis-model";
 import { GLDropdowns } from "../../composed/gl-dropdowns/gl-dropdowns";
 import { Header } from "../../composed/header/header";
 import { DataValidityInfo } from "../../composed/data-validity-info/data-validity-info";
-import { BasicDataOverview } from "../../basic-data-overview/basic-data-overview";
 import { Loader } from "../../ui-kit/loader-overlay/loader-overlay";
 import { ActionButton } from "../../composed/action-button/action-button";
 import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { UndoButton } from "../../composed/undo-button/undo-button";
+import dynamic from "next/dynamic";
+
+const BasicDataOverview = dynamic(
+  () =>
+    import("../../basic-data-overview/basic-data-overview").then(
+      (mod) => mod.BasicDataOverview
+    ),
+  { ssr: false }
+);
 
 export function ReversaReclassificationAnalysis() {
   const {
@@ -136,13 +144,15 @@ export function ReversaReclassificationAnalysis() {
             </Stack>
           </CardStyled>
           {/* GL Data Overview */}
+          {currentStep === AnalysisStep.ANALYZED && (
           <BasicDataOverview
             title="GL Data With Transaction Types"
             reversalReclassification
-            disabled={currentStep !== AnalysisStep.ANALYZED}
+            disabled={false}
             tableData={tableData}
             tableHeader={tableHeader}
           />
+          )}
         </RootStack>
       </PageWrapper>
     </>

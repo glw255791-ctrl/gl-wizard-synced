@@ -84,6 +84,7 @@ export const ExcelDownloadButton = styled(Button)({
   borderRadius: theme.borderRadius.lg,
   height: theme.height.input,
   backgroundColor: theme.colors.action,
+  color: theme.colors.black,
   textTransform: "none",
 });
 

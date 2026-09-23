@@ -16,4 +16,5 @@ export const StyledButton = styled(Button)({
   paddingLeft: theme.padding.lg,
   paddingRight: theme.padding.lg,
   backgroundColor: theme.colors.action,
+  color: theme.colors.black,
 });

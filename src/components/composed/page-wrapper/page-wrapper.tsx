@@ -5,7 +5,11 @@ import {
   Root,
   Row,
   Left,
-  Title,
+  Banner,
+  BannerLogo,
+  BannerLogoWrap,
+  BannerTitle,
+  BannerButton,
   BtnGroupsWrapper,
   TopBtns,
   BottomBtns,
@@ -21,7 +25,10 @@ import ShuffleOnIcon from "@mui/icons-material/ShuffleOn";
 import GroupIcon from "@mui/icons-material/Group";
 import HelpCenterIcon from "@mui/icons-material/HelpCenter";
 import PrivacyTipIcon from "@mui/icons-material/PrivacyTip";
-import { supabase } from "@/lib/supabase/supabase-client";
+import MenuIcon from "@mui/icons-material/Menu";
+import MenuOpenIcon from "@mui/icons-material/MenuOpen";
+import { supabaseBrowser } from "@/lib/supabase/browser-client";
+import { isLicenceExpired } from "@/lib/licence";
 import { SnackbarProps } from "../../pages/user-management/user-management-model";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -38,18 +45,34 @@ export function PageWrapper({ children }: Props) {
     severity: "",
     open: false,
   });
+  const [navCollapsed, setNavCollapsed] = useState(false);
   const [userRole, setUserRole] = useState<"user" | "admin" | undefined>(
     undefined
   );
 
   useEffect(() => {
+    const stored = window.localStorage.getItem("gl-wizard-nav-collapsed");
+    if (stored === "true") setNavCollapsed(true);
+  }, []);
+
+  const toggleNav = () => {
+    setNavCollapsed((current) => {
+      const next = !current;
+      window.localStorage.setItem("gl-wizard-nav-collapsed", String(next));
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    if (!supabaseBrowser) return;
+
     async function checkSession() {
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await supabaseBrowser.auth.getSession();
       if (!session) return;
 
-      const { data: profile, error } = await supabase
+      const { data: profile, error } = await supabaseBrowser
         .from("profiles")
         .select("*")
         .eq("id", session.user.id)
@@ -57,12 +80,17 @@ export function PageWrapper({ children }: Props) {
 
       if (error || !profile) return;
 
+      if (profile.role !== "admin" && isLicenceExpired(profile.licence_valid_until)) {
+        router.push("/licence-expired");
+        return;
+      }
+
       const today = new Date();
       const expiry = new Date(profile.licence_valid_until);
       const diffTime = expiry.getTime() - today.getTime();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-      if (diffDays < 14) {
+      if (diffDays >= 0 && diffDays < 14) {
         setSnackbarProps({
           message: `Your licence will expire in ${diffDays} days.`,
           severity: "warning",
@@ -84,14 +112,33 @@ export function PageWrapper({ children }: Props) {
   }) => {
     const isActive = pathname === menuPath;
     const ButtonComponent = isActive ? MenuBtnActive : MenuBtn;
-    return <ButtonComponent {...rest} />;
+    return (
+      <ButtonComponent
+        {...rest}
+        className={isActive ? "nav-active" : undefined}
+        title={typeof rest.children === "string" ? rest.children : undefined}
+      >
+        {navCollapsed ? null : rest.children}
+      </ButtonComponent>
+    );
   };
 
   return (
     <Root>
+      <Banner>
+        <BannerLogoWrap>
+          <BannerLogo src="/logo.png" alt="GL Wizard" />
+        </BannerLogoWrap>
+        <BannerTitle>GL Wizard</BannerTitle>
+      </Banner>
       <Row>
-        <Left>
-          <Title>GL Wizard</Title>
+        <Left collapsed={navCollapsed}>
+          <BannerButton
+            onClick={toggleNav}
+            aria-label={navCollapsed ? "Show menu" : "Hide menu"}
+          >
+            {navCollapsed ? <MenuIcon /> : <MenuOpenIcon />}
+          </BannerButton>
           <BtnGroupsWrapper>
             <TopBtns>
               <MenuButton

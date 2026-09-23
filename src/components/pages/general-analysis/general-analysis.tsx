@@ -1,23 +1,36 @@
 "use client";
+import dynamic from "next/dynamic";
 import { Grid2, Stack } from "@mui/material";
 import { FileDropzone } from "../../ui-kit/dropzone/dropzone";
 import { Dropdown } from "../../ui-kit/dropdown/dropdown";
 import { Header } from "../../composed/header/header";
 import { GLDropdowns } from "../../composed/gl-dropdowns/gl-dropdowns";
 import { DataValidityInfo } from "../../composed/data-validity-info/data-validity-info";
-import { BasicDataOverview } from "../../basic-data-overview/basic-data-overview";
-import { DataOverview } from "../../data-overview/data-overview";
-import { Loader } from "../../ui-kit/loader-overlay/loader-overlay";
-import { ActionButton } from "../../composed/action-button/action-button";
-import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
-import { WarningModal } from "../../composed/warning-modal/warning-modal";
 import { AnalysisStep, useGeneralAnalysis } from "./general-analysis-model";
 import { CardStyled, RootStack } from "./style";
-import { supabase } from "@/lib/supabase/supabase-client";
+import { supabaseBrowser } from "@/lib/supabase/browser-client";
 import { useState, useEffect, useMemo } from "react";
 import { UndoButton } from "../../composed/undo-button/undo-button";
 import { HierarchyModal } from "../../composed/hierarchy-modal/hierarchy-modal";
 import { HierarchyButton } from "../../composed/hierarchy-button/hierarchy-button";
+import { Loader } from "../../ui-kit/loader-overlay/loader-overlay";
+import { ActionButton } from "../../composed/action-button/action-button";
+import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
+import { WarningModal } from "../../composed/warning-modal/warning-modal";
+
+const BasicDataOverview = dynamic(
+  () =>
+    import("../../basic-data-overview/basic-data-overview").then(
+      (mod) => mod.BasicDataOverview
+    ),
+  { ssr: false }
+);
+
+const DataOverview = dynamic(
+  () =>
+    import("../../data-overview/data-overview").then((mod) => mod.DataOverview),
+  { ssr: false }
+);
 
 export function GeneralAnalysis() {
   const {
@@ -55,12 +68,14 @@ export function GeneralAnalysis() {
     undefined
   );
   useEffect(() => {
+    if (!supabaseBrowser) return;
+
     const checkSession = async () => {
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await supabaseBrowser.auth.getSession();
       if (session) {
-        const { data: profile, error } = await supabase
+        const { data: profile, error } = await supabaseBrowser
           .from("profiles")
           .select("role")
           .eq("id", session.user.id)
@@ -193,10 +208,10 @@ export function GeneralAnalysis() {
           </CardStyled>
 
           {/* Overviews */}
-          {isAdmin && (
+          {currentStep === AnalysisStep.ANALYZED && isAdmin && (
             <BasicDataOverview
               title="GL Data With Transaction Types"
-              disabled={currentStep !== AnalysisStep.ANALYZED}
+              disabled={false}
               tableData={tableData}
               tableHeader={tableHeader}
             />
@@ -211,6 +226,7 @@ export function GeneralAnalysis() {
             />
           )}
 
+          {currentStep === AnalysisStep.ANALYZED && (
           <DataOverview
             mappingValue={selectedHeaders.coaHeaders.mappingValue}
             displayValue={selectedHeaders.coaHeaders.displayValue}
@@ -225,6 +241,7 @@ export function GeneralAnalysis() {
             basicTableData={tableData}
             basicTableHeader={tableHeader}
           />
+          )}
 
           {/* Unmapped Warning Modal */}
           <WarningModal

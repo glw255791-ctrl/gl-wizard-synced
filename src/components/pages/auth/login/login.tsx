@@ -5,15 +5,15 @@ import {
   ImageAndLogo,
   LogoImage,
   Label,
+  Subtitle,
   LoginButton,
   InputWrapper,
-  StyledInput,
   ErrorsBlock,
   ErrorText,
 } from "./style";
 import { useLoginModel } from "./login-model";
 import { useEffect } from "react";
-import { supabase } from "@/lib/supabase/supabase-client";
+import { supabaseBrowser } from "@/lib/supabase/browser-client";
 import { TextField } from "@mui/material";
 
 export function LoginPage() {
@@ -21,10 +21,12 @@ export function LoginPage() {
     useLoginModel();
 
   useEffect(() => {
+    if (!supabaseBrowser) return;
+
     const checkSession = async () => {
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await supabaseBrowser.auth.getSession();
 
       if (session) {
         router.push("/dashboard");
@@ -37,24 +39,24 @@ export function LoginPage() {
     <Root>
       <LoginBlock>
         <ImageAndLogo>
-          <LogoImage src={"/logo.png"} />
+          <LogoImage src={"/logo.png"} alt="GL Wizard" />
           <Label>GL Wizard</Label>
+          <Subtitle>Sign in to review a ledger.</Subtitle>
         </ImageAndLogo>
         <InputWrapper>
           <TextField
-            placeholder="Email"
+            label="Email"
             type="email"
             error={!!fieldErrors.email}
             value={loginData.email}
             onChange={(e) => onChangeField("email", e.target.value)}
             fullWidth
             variant="outlined"
-            slotProps={{ input: { style: StyledInput } }}
           />
         </InputWrapper>
         <InputWrapper>
           <TextField
-            placeholder="Password"
+            label="Password"
             type="password"
             error={!!fieldErrors.password}
             value={loginData.password}
@@ -64,10 +66,11 @@ export function LoginPage() {
             }}
             fullWidth
             variant="outlined"
-            slotProps={{ input: { style: StyledInput } }}
           />
         </InputWrapper>
-        <LoginButton onClick={onLogin}>Login</LoginButton>
+        <LoginButton fullWidth onClick={onLogin}>
+          Login
+        </LoginButton>
         <ErrorsBlock>
           {Object.values(fieldErrors).map((err, idx) => (
             <ErrorText key={idx}>{err}</ErrorText>

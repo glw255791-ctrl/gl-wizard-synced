@@ -43,12 +43,12 @@ export const gap = {
  * Font sizes (in pixels or rem)
  */
 export const fontSize = {
-  sm: "0.25rem",
-  md: "0.5rem",
-  cell: "0.75rem",
-  lg: "1rem",
-  xl: "1.5rem",
-  xxl: "2rem",
+  sm: "0.75rem",
+  md: "0.875rem",
+  cell: "0.8125rem",
+  lg: "0.95rem",
+  xl: "1.25rem",
+  xxl: "1.75rem",
   icon: "5rem",
 } as const;
 
@@ -146,16 +146,18 @@ export const workerTimeout = {
  * Color palette values
  */
 export const colors = {
-  darker: "#4F6367",
-  medium: "#7A9E9F",
-  lighter: "#E5F1F1",
+  darker: "#356F73",
+  medium: "#667274",
+  lighter: "#FFFFFF",
+  page: "#F8F9F6",
+  surface: "#E4F0F0",
 
-  action: "#204795",
-  red: "#961A1A",
-  green: "#008000",
+  action: "#B8C96B",
+  red: "#C62828",
+  green: "#356F73",
   white: "#FFFFFF",
-  black: "#000000",
-  gray: "#808080",
+  black: "#394243",
+  gray: "#A3ADAE",
 } as const;
 
 /**

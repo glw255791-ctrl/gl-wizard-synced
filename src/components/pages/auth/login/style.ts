@@ -1,79 +1,81 @@
 import { styled, Stack, Typography, Button, Box } from "@mui/material";
 import { theme } from "../../../../constants/theme";
 
-// Page root wrapper
 export const Root = styled(Stack)({
-  width: "calc(100vw - 6rem)",
-  minHeight: "calc(100vh - 4rem)",
+  width: "100%",
+  minHeight: "100vh",
   justifyContent: "center",
   alignItems: "center",
+  backgroundColor: "#E5E9E8",
+  padding: "2rem",
+  boxSizing: "border-box",
 });
 
-// Login block container
 export const LoginBlock = styled(Stack)({
-  width: 400,
+  width: "100%",
+  maxWidth: 420,
   backgroundColor: theme.colors.lighter,
+  border: "1px solid #E4F0F0",
   borderRadius: theme.borderRadius.lg,
-  padding: theme.padding.lg,
-  gap: theme.gap.lg,
+  padding: "2rem 2rem 1.5rem",
+  gap: "1rem",
   justifyContent: "center",
-  alignItems: "center",
+  alignItems: "stretch",
+  boxShadow: "none",
 });
 
-// Logo image style
 export const LogoImage = styled("img")({
-  height: "8rem",
-  width: "8rem",
-  marginBottom: "-0.5rem",
+  height: "4.5rem",
+  width: "4.5rem",
 });
 
-// Title label
 export const Label = styled(Typography)({
-  color: theme.colors.darker,
-  fontWeight: "bold",
-  fontSize: theme.fontSize.xl,
+  color: "#356F73",
+  fontWeight: 700,
+  fontSize: "1.5rem",
+  letterSpacing: "0.01em",
 });
 
-// Login button
+export const Subtitle = styled(Typography)({
+  color: theme.colors.medium,
+  fontSize: "0.95rem",
+  fontWeight: 400,
+});
+
 export const LoginButton = styled(Button)({
   backgroundColor: theme.colors.action,
-  color: theme.colors.white,
-  fontSize: theme.fontSize.lg,
+  color: theme.colors.black,
+  fontSize: "1rem",
+  fontWeight: 600,
   textTransform: "none",
-  borderRadius: theme.borderRadius.lg,
-  height: theme.height.input,
-  paddingLeft: theme.padding.lg,
-  paddingRight: theme.padding.lg,
-  marginTop: theme.padding.lg,
+  borderRadius: "999px",
+  height: 44,
+  marginTop: "0.25rem",
+  boxShadow: "none",
+
+  "&:hover": {
+    backgroundColor: "#D6E3A0",
+    boxShadow: "none",
+  },
 });
 
-// Logo+label stack
 export const ImageAndLogo = styled(Stack)({
-  paddingBottom: theme.padding.lg,
+  gap: "0.35rem",
+  paddingBottom: "0.5rem",
   justifyContent: "center",
   alignItems: "center",
 });
 
-// Text input style (for inputProps)
-export const StyledInput = {
-  height: theme.height.input,
-  borderRadius: theme.borderRadius.lg,
-};
-
-// Outer input wrapper (for Input/TextField)
 export const InputWrapper = styled(Box)({
-  width: "80%",
-  height: theme.height.input,
-  borderRadius: theme.borderRadius.lg,
+  width: "100%",
 });
 
-// Error block for all errors
 export const ErrorsBlock = styled(Stack)({
-  minHeight: "3rem",
+  minHeight: "1.25rem",
+  alignItems: "center",
 });
 
-// Single error text
 export const ErrorText = styled(Typography)({
-  fontSize: theme.fontSize.md,
+  fontSize: "0.875rem",
   color: theme.colors.red,
 });
