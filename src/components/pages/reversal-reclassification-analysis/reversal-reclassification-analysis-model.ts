@@ -1,8 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo, useState } from "react";
-import { Workbook } from "exceljs";
 import { formatDate } from "date-fns";
 import { saveAs } from "file-saver";
+import { createWorkbook, readFirstSheet } from "../../../utils/workbook";
+import {
+  readFileWithProgress,
+  type FileReadProgress,
+} from "../../../utils/read-file";
 import { TableHeader } from "../../composed/basic-table/basic-table";
 import {
   AnalysisStep,
@@ -31,6 +35,40 @@ export function useReversalReclassificationAnalysis() {
     coaHeaders: [],
   });
   const [loadingStatus, setLoadingStatus] = useState(false);
+  const [fileProgress, setFileProgress] = useState<FileReadProgress | null>(
+    null
+  );
+
+  const stopLoading = () => {
+    setLoadingStatus(false);
+    setFileProgress(null);
+  };
+
+  const readTracked = (file: File) => {
+    setLoadingStatus(true);
+    setFileProgress({
+      name: file.name,
+      loaded: 0,
+      total: file.size,
+      phase: "reading",
+    });
+    return readFileWithProgress(file, (loaded, total) => {
+      setFileProgress({
+        name: file.name,
+        loaded,
+        total,
+        phase: "reading",
+      });
+    }).then((buffer) => {
+      setFileProgress({
+        name: file.name,
+        loaded: file.size,
+        total: file.size,
+        phase: "workbook",
+      });
+      return buffer;
+    });
+  };
   const [error, setError] = useState<string | undefined>(undefined);
   const [tableData, setTableData] = useState<Record<string, any>[]>([]);
 
@@ -61,8 +99,10 @@ export function useReversalReclassificationAnalysis() {
         .filter(Boolean); // Avoid NaN
 
       if (timestamps.length) {
-        startDate = formatDate(new Date(Math.min(...timestamps)), "dd-MM-yyyy");
-        endDate = formatDate(new Date(Math.max(...timestamps)), "dd-MM-yyyy");
+        const start = timestamps.reduce((best, time) => Math.min(best, time));
+        const end = timestamps.reduce((best, time) => Math.max(best, time));
+        startDate = formatDate(new Date(start), "dd-MM-yyyy");
+        endDate = formatDate(new Date(end), "dd-MM-yyyy");
       }
     }
 
@@ -127,73 +167,61 @@ export function useReversalReclassificationAnalysis() {
       return;
     }
 
-    setLoadingStatus(true);
-    const buffer = await file.arrayBuffer();
-    const worker = new Worker(new URL("./gl-worker.js", import.meta.url), {
-      type: "module",
-    });
-    worker.postMessage({ buffer });
-
-    worker.onmessage = (e) => {
-      const { glData, glHeaders, error: workerError } = e.data;
-      if (workerError) {
-        setError(workerError);
-        setLoadingStatus(false);
-        worker.terminate();
-        return;
-      }
-      setRawData((prev) => ({ ...prev, glData, glHeaders }));
+    try {
+      const buffer = await readTracked(file);
+      const { rows, headers } = await readFirstSheet(buffer);
+      setRawData((prev) => ({ ...prev, glData: rows, glHeaders: headers }));
       setCurrentStep(AnalysisStep.UPLOADED_GL);
-      setLoadingStatus(false);
-      worker.terminate();
-    };
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Could not read the general ledger."
+      );
+    } finally {
+      stopLoading();
+    }
   };
 
   // Chart of Accounts (CoA) upload
   const onChartOfAccountsDrop = async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
-    if (!file) return;
+    if (!file) {
+      setError("Could not read that file. Drop an .xlsx chart of accounts.");
+      setTimeout(() => setError(undefined), 5000);
+      return;
+    }
 
-    const buffer = await file.arrayBuffer();
-    const workbook = new Workbook();
-    await workbook.xlsx.load(buffer);
-
-    const sheet = workbook.worksheets[0];
-    if (!sheet) return;
-
-    const columnNames: string[] = sheet.getRow(1).values as string[];
-
-    // Read data from rows
-    const rows = sheet
-      .getSheetValues()
-      .slice(2)
-      .map((row: any) =>
-        columnNames.reduce((acc, col, idx) => {
-          acc[col] = row[idx]?.result ?? row[idx] ?? "";
-          return acc;
-        }, {} as Record<string, any>)
+    try {
+      const buffer = await readTracked(file);
+      const { rows, headers } = await readFirstSheet(buffer);
+      setRawData((prev) => ({
+        ...prev,
+        coaData: rows,
+        coaHeaders: headers,
+      }));
+      setSelectedHeaders((prev) => ({
+        ...prev,
+        coaHeaders: {
+          mappingValue: headers[0],
+          displayValue: "",
+          groupingValue: "",
+          filters: { header: "", value: "" },
+        },
+      }));
+      setSelectedFilters((prev) => ({
+        ...prev,
+        header: headers[0],
+      }));
+      setCurrentStep(AnalysisStep.TO_UPLOAD_DICTIONARY);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Could not read the chart of accounts."
       );
-
-    const primaryCol = columnNames.filter(Boolean)[0];
-    setRawData((prev) => ({
-      ...prev,
-      coaData: rows,
-      coaHeaders: columnNames.filter(Boolean),
-    }));
-    setSelectedHeaders((prev) => ({
-      ...prev,
-      coaHeaders: {
-        mappingValue: primaryCol,
-        displayValue: "",
-        groupingValue: "",
-        filters: { header: "", value: "" },
-      },
-    }));
-    setSelectedFilters((prev) => ({
-      ...prev,
-      header: primaryCol,
-    }));
-    setCurrentStep(AnalysisStep.TO_UPLOAD_DICTIONARY);
+      setTimeout(() => setError(undefined), 6000);
+    } finally {
+      stopLoading();
+    }
   };
 
   // Header changes for GL
@@ -315,13 +343,13 @@ export function useReversalReclassificationAnalysis() {
         >[]
       );
       setCurrentStep(AnalysisStep.ANALYZED);
-      setLoadingStatus(false);
+      stopLoading();
       worker.terminate();
     };
 
     worker.onerror = (error) => {
       console.error("Worker error:", error);
-      setLoadingStatus(false);
+      stopLoading();
       worker.terminate();
     };
 
@@ -342,7 +370,7 @@ export function useReversalReclassificationAnalysis() {
       };
     });
 
-    const workbook = new Workbook();
+    const workbook = await createWorkbook();
     const worksheet = workbook.addWorksheet("Sheet 1");
 
     // Get all headers
@@ -404,6 +432,7 @@ export function useReversalReclassificationAnalysis() {
     onChangeCoaFilter,
     error,
     loadingStatus,
+    fileProgress,
     coaFilterOptions,
     selectedFilters,
     currentStep,

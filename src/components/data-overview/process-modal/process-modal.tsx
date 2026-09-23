@@ -27,12 +27,11 @@ import { ProcessDataTable } from "./process-table";
 import {
   buildTree,
   Node,
-  exportTreeToExcel,
   computeTableData,
   getColorForIndex,
   formatCurrency,
 } from "./process-modal-funcs";
-import { exportMultipleTablesToExcel, getElipsis } from "../table/functions";
+import { getElipsis } from "../table/ellipsis";
 import {
   SearchByObject,
   TableData,
@@ -448,7 +447,7 @@ export function ProcessModal(props: ProcessModalProps) {
               <ExcelDownloadButton
                 disabled={processName === ""}
                 variant="contained"
-                onClick={() => {
+                onClick={async () => {
                   const allRows = overallProcessObject
                     .map((item) =>
                       item.rows.map((row) => ({
@@ -460,9 +459,11 @@ export function ProcessModal(props: ProcessModalProps) {
 
                   const tableDataByRows = allRows.map((item) => {
                     return basicTableData.filter((tableItem) => {
+                      const result = Array.isArray(tableItem.result)
+                        ? tableItem.result.join("/")
+                        : String(tableItem.result ?? "");
                       return (
-                        (tableItem.result as unknown as string[]).join("/") ===
-                          item.sideHeader &&
+                        result === item.sideHeader &&
                         tableItem.coaData[
                           commonTableProps.groupingValue as keyof AnyType
                         ] ===
@@ -472,14 +473,18 @@ export function ProcessModal(props: ProcessModalProps) {
                   });
 
                   const rows = allRows.map((item) => String(item.sideHeader));
+                  const [{ exportMultipleTablesToExcel }, { exportTreeToExcel }] =
+                    await Promise.all([
+                      import("../table/functions"),
+                      import("./process-export"),
+                    ]);
 
-                  exportMultipleTablesToExcel(
+                  await exportMultipleTablesToExcel(
                     basicTableHeader,
                     tableDataByRows,
                     rows
                   );
-
-                  exportTreeToExcel(
+                  await exportTreeToExcel(
                     buildTree(overallProcessObject),
                     `${processName}.xlsx`
                   );
@@ -493,7 +498,7 @@ export function ProcessModal(props: ProcessModalProps) {
             </Stack>
           </ModalHeader>
 
-          <Stack style={{ height: "100%" }}>
+          <Stack sx={{ flex: 1, minHeight: 0, width: "100%" }}>
             <Stack
               style={{
                 flexDirection: "row",
@@ -538,6 +543,7 @@ export function ProcessModal(props: ProcessModalProps) {
             </Stack>
 
             <ModalContentWrapper>
+              {(isLoading || overallProcessObject.length > 0) && (
               <SelectedTableWrapper>
                 {isLoading ? (
                   <LoaderContentWrapper>
@@ -547,9 +553,10 @@ export function ProcessModal(props: ProcessModalProps) {
                     <StyledCircularProgress />
                   </LoaderContentWrapper>
                 ) : (
-                  overallProcessObject.length > 0 && renderProcessTree()
+                  renderProcessTree()
                 )}
               </SelectedTableWrapper>
+              )}
 
               <TablesWrapper>
                 {isLoading ? (

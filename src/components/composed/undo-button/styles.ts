@@ -12,9 +12,18 @@ export const ButtonsWrapper = styled(Stack)({
 export const StyledButton = styled(Button)({
   borderRadius: theme.borderRadius.lg,
   height: theme.height.input,
+  minHeight: theme.height.input,
+  boxSizing: "border-box",
   textTransform: "none",
-  paddingLeft: theme.padding.lg,
-  paddingRight: theme.padding.lg,
+  padding: "0 1rem",
+  boxShadow: "none",
+  border: "none",
   backgroundColor: theme.colors.action,
   color: theme.colors.black,
+  whiteSpace: "nowrap",
+
+  "&:hover": {
+    backgroundColor: theme.colors.action,
+    boxShadow: "none",
+  },
 });

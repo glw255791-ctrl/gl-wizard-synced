@@ -9,6 +9,7 @@ import { Stack, Checkbox, Tooltip, Typography } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import "react-virtualized/styles.css";
 import { AutoSizer, Index, MultiGrid } from "react-virtualized";
+import { buildMovementTable } from "./build-movement-table";
 import {
   exportBasicTableToExcel,
   exportMultipleTablesToExcel,
@@ -35,13 +36,14 @@ import {
 import { TotalText } from "./style";
 import { TableHeader } from "../../composed/basic-table/basic-table";
 import { ProcessValue } from "@/types";
-import { theme } from "../../../constants/theme";
+import { theme } from "@/constants/theme";
+import { DownloadProgress } from "../../composed/download-progress/download-progress";
 import { AnyType } from "../../../types";
 
 const COLUMN_WIDTH = 250;
 const ROW_HEIGHT = 24;
 const WIDTH_ADJUST = 2;
-const HEIGHT_ADJUST = 73;
+const MAX_GRID_HEIGHT = 560;
 const MAX_CHARS = 40;
 
 const TOTAL = "total";
@@ -98,33 +100,30 @@ export const DataTable: React.FC<Props> = ({
 }) => {
   const [tableRows, setTableRows] = useState<Record<string, AnyType>[]>([]);
   const [tableColumns, setTableColumns] = useState<string[]>([]);
+  const [exportProgress, setExportProgress] = useState<{
+    done: number;
+    total: number;
+  } | null>(null);
+  const [exportError, setExportError] = useState("");
   const multiGridRef = useRef<MultiGrid>(null);
 
-  // Generates table data using a Web Worker
-  const generateTableData = () => {
-    const worker = new Worker(
-      new URL("./generate-table-data.js", import.meta.url)
-    );
-    worker.onmessage = (e) => {
-      const { columns, rows } = e.data;
-      setTableColumns([...new Set(columns as string[])]);
-      setTableRows(rows);
-    };
-    worker.postMessage({
+  useEffect(() => {
+    const { columns, rows } = buildMovementTable({
       sortedDataDisplayHeader,
       overviewTableData,
-      mappingValue,
       groupingValue,
       valueKey,
       selectedFilter,
-      colors: theme.colors,
     });
-  };
-
-  useEffect(() => {
-    generateTableData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortedDataDisplayHeader, overviewTableData]);
+    setTableColumns([...new Set(columns)]);
+    setTableRows(rows);
+  }, [
+    sortedDataDisplayHeader,
+    overviewTableData,
+    groupingValue,
+    valueKey,
+    selectedFilter,
+  ]);
 
   // Calculate number of fixed header rows
   const fixedRowCount = useMemo(
@@ -163,10 +162,36 @@ export const DataTable: React.FC<Props> = ({
   }, [tableRows, fixedRowCount]);
 
   // Export table data to Excel
+  const runExport = useCallback(
+    async (
+      total: number,
+      task: (onProgress: (done: number, total: number) => void) => Promise<void>
+    ) => {
+      setExportError("");
+      setExportProgress({ done: 0, total });
+      try {
+        await task((done, all) => setExportProgress({ done, total: all }));
+      } catch (error) {
+        setExportError(
+          error instanceof Error ? error.message : "Could not prepare the file."
+        );
+      } finally {
+        setExportProgress(null);
+      }
+    },
+    []
+  );
+
   const onExportClick = useCallback(() => {
-    exportTableToExcel(viewableRows, sortedDataDisplayHeader, groupingValue);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewableRows, sortedDataDisplayHeader, mappingValue]);
+    void runExport(viewableRows.length, (onProgress) =>
+      exportTableToExcel(
+        viewableRows,
+        sortedDataDisplayHeader,
+        groupingValue,
+        onProgress
+      )
+    );
+  }, [runExport, viewableRows, sortedDataDisplayHeader, groupingValue]);
 
   // Force update of grid when data changes
   useEffect(() => {
@@ -216,7 +241,9 @@ export const DataTable: React.FC<Props> = ({
     const filteredValues = basicTableData.filter(
       (item) => (item.result as unknown as string[]).join("/") === value
     );
-    exportBasicTableToExcel(basicTableHeader, filteredValues, value);
+    void runExport(filteredValues.length, (onProgress) =>
+      exportBasicTableToExcel(basicTableHeader, filteredValues, value, onProgress)
+    );
   };
 
   const downloadGroupedByRow = () => {
@@ -225,12 +252,24 @@ export const DataTable: React.FC<Props> = ({
       .map((item) => String(item.sideHeader));
 
     const tableDataByRows = rows.map((row) =>
-      basicTableData.filter(
-        (item) => (item.result as unknown as string[]).join("/") === row
-      )
+      basicTableData.filter((item) => {
+        const result = Array.isArray(item.result)
+          ? item.result.join("/")
+          : String(item.result ?? "");
+        return result === row;
+      })
     );
 
-    exportMultipleTablesToExcel(basicTableHeader, tableDataByRows, rows);
+    const rowCount = tableDataByRows.reduce((sum, group) => sum + group.length, 0);
+    void runExport(rowCount, (onProgress) =>
+      exportMultipleTablesToExcel(
+        basicTableHeader,
+        tableDataByRows,
+        rows,
+        "multiple_tables.xlsx",
+        onProgress
+      )
+    );
   };
 
   // Renders the content of a cell, including pin & download icons when appropriate
@@ -280,6 +319,14 @@ export const DataTable: React.FC<Props> = ({
               Process Analysis
             </ExcelDownloadButton>
           )}
+          {exportProgress ? (
+            <DownloadProgress done={exportProgress.done} total={exportProgress.total} />
+          ) : null}
+          {exportError ? (
+            <Typography sx={{ color: theme.colors.white, fontSize: "0.85rem" }}>
+              {exportError}
+            </Typography>
+          ) : null}
           <ExcelDownloadButton
             onClick={onExportClick}
             variant="contained"
@@ -301,7 +348,10 @@ export const DataTable: React.FC<Props> = ({
       <AutoSizer
         style={{
           ...styles.autosizerWrapper,
-          height: viewableRows.length * 24 + 17,
+          height: Math.min(
+            Math.max(viewableRows.length * ROW_HEIGHT + 16, ROW_HEIGHT * 4),
+            MAX_GRID_HEIGHT
+          ),
         }}
       >
         {({ width, height }) => (
@@ -316,7 +366,7 @@ export const DataTable: React.FC<Props> = ({
             rowHeight={ROW_HEIGHT}
             rowCount={viewableRows.length}
             width={width - WIDTH_ADJUST}
-            height={height - HEIGHT_ADJUST}
+            height={height}
             cellRenderer={({ columnIndex, rowIndex, key, style }) => {
               const column = tableColumns[columnIndex];
               const row = viewableRows[rowIndex];

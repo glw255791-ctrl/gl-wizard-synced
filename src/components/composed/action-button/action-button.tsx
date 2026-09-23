@@ -15,7 +15,7 @@ export function ActionButton(props: Props) {
         variant="contained"
         endIcon={<TroubleshootIcon />}
       >
-        Generate
+        Analyze
       </StyledButton>
     </ButtonsWrapper>
   );

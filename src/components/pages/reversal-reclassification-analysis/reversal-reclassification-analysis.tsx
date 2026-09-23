@@ -14,6 +14,8 @@ import { Loader } from "../../ui-kit/loader-overlay/loader-overlay";
 import { ActionButton } from "../../composed/action-button/action-button";
 import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { UndoButton } from "../../composed/undo-button/undo-button";
+import { AnalysisSummary } from "../../composed/analysis-summary/analysis-summary";
+import { useState } from "react";
 import dynamic from "next/dynamic";
 
 const BasicDataOverview = dynamic(
@@ -37,6 +39,7 @@ export function ReversaReclassificationAnalysis() {
     selectedFilters,
     coaFilterOptions,
     loadingStatus,
+    fileProgress,
     onChangeCoaFilter,
     onChangeCoaHeader,
     onChangeGlHeader,
@@ -47,14 +50,27 @@ export function ReversaReclassificationAnalysis() {
     onPressBackBtn,
   } = useReversalReclassificationAnalysis();
 
+  const [glFileName, setGlFileName] = useState("");
+  const [coaFileName, setCoaFileName] = useState("");
+  const resetAnalysis = () => {
+    setGlFileName("");
+    setCoaFileName("");
+    onPressResetBtn();
+  };
+  const canUndo = currentStep !== AnalysisStep.TO_UPLOAD_GL;
+  const canAnalyze =
+    currentStep === AnalysisStep.TO_UPLOAD_DICTIONARY ||
+    currentStep === AnalysisStep.UPLOADED_DICTIONARY;
+
   return (
     <>
-      <Loader loadingStatus={loadingStatus} />
+      <Loader loadingStatus={loadingStatus} fileProgress={fileProgress} />
       <PageWrapper>
         <RootStack spacing={2}>
           <Header
-            title="Reversal/Reclassification analysis"
-            onPressResetBtn={onPressResetBtn}
+            title="Reversal/Reclassification"
+            onPressResetBtn={resetAnalysis}
+            step={currentStep}
           />
 
           {/* GL and CoA upload section */}
@@ -62,23 +78,33 @@ export function ReversaReclassificationAnalysis() {
             {/* General Ledger Upload */}
             <Grid2 size={6}>
               <FileDropzone
-                onDrop={onGeneralLedgerDrop}
+                onDrop={(files) => {
+                  setGlFileName(files[0]?.name ?? "");
+                  onGeneralLedgerDrop(files);
+                }}
                 text="Drop GL file here"
+                fileName={glFileName}
                 uploaded={currentStep !== AnalysisStep.TO_UPLOAD_GL}
               >
+                {glHeaderOptions.length > 0 ? (
                 <GLDropdowns
                   glHeaderOptions={glHeaderOptions}
                   selectedHeaders={selectedHeaders}
                   onChangeGlHeader={onChangeGlHeader}
                 />
+                ) : null}
               </FileDropzone>
             </Grid2>
 
             {/* Chart of Accounts Upload (with filters) */}
             <Grid2 size={6}>
               <FileDropzone
-                onDrop={onChartOfAccountsDrop}
+                onDrop={(files) => {
+                  setCoaFileName(files[0]?.name ?? "");
+                  onChartOfAccountsDrop(files);
+                }}
                 text="Drop CoA file here"
+                fileName={coaFileName}
                 uploaded={
                   currentStep === AnalysisStep.TO_UPLOAD_DICTIONARY ||
                   currentStep === AnalysisStep.UPLOADED_DICTIONARY
@@ -88,6 +114,7 @@ export function ReversaReclassificationAnalysis() {
                   currentStep === AnalysisStep.UPLOADED_GL
                 }
               >
+                {coaHeaderOptions.length > 0 ? (
                 <Stack spacing={1}>
                   <Dropdown
                     label="Mapping value"
@@ -118,32 +145,42 @@ export function ReversaReclassificationAnalysis() {
                     }
                   />
                 </Stack>
+                ) : null}
               </FileDropzone>
             </Grid2>
           </Grid2>
 
+          {currentStep !== AnalysisStep.TO_UPLOAD_GL && (
           <CardStyled>
-            {currentStep !== AnalysisStep.TO_UPLOAD_GL &&
-            currentStep !== AnalysisStep.UPLOADED_GL ? (
-              <DataValidityInfo reviewData={reviewData} error={error} />
+            {currentStep === AnalysisStep.UPLOADED_GL ? (
+              <span style={{ flex: "1 1 auto", minWidth: 0, paddingRight: "1rem" }}>
+                Choose the four columns.
+              </span>
             ) : (
-              <Stack />
+              <DataValidityInfo reviewData={reviewData} error={error} />
             )}
-            <Stack direction="row" spacing={1} alignItems="center">
-              <UndoButton
-                disabled={currentStep === AnalysisStep.TO_UPLOAD_GL}
-                onPressUndo={onPressBackBtn}
-              />
-              <ActionButton
-                disabled={
-                  currentStep !== AnalysisStep.TO_UPLOAD_DICTIONARY &&
-                  currentStep !== AnalysisStep.UPLOADED_DICTIONARY
-                }
-                onPressAnalyzeData={onPressAnalyzeData}
-              />
+            {(canUndo || canAnalyze) && (
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0, marginLeft: "auto" }}>
+              {canUndo && (
+                <UndoButton disabled={false} onPressUndo={onPressBackBtn} />
+              )}
+              {canAnalyze && (
+                <ActionButton
+                  disabled={false}
+                  onPressAnalyzeData={onPressAnalyzeData}
+                />
+              )}
             </Stack>
+            )}
           </CardStyled>
+          )}
           {/* GL Data Overview */}
+          {currentStep === AnalysisStep.ANALYZED && (
+            <AnalysisSummary
+              rows={tableData}
+              headers={selectedHeaders.glHeaders}
+            />
+          )}
           {currentStep === AnalysisStep.ANALYZED && (
           <BasicDataOverview
             title="GL Data With Transaction Types"

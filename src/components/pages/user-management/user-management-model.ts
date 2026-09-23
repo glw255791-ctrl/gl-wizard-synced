@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Column, UserData, ModalProps, SnackbarProps } from "../../../types";
-import { supabase } from "@/lib/supabase/supabase-client";
+import { supabaseBrowser } from "@/lib/supabase/browser-client";
 
 // Re-export types for backward compatibility
 export type { Column, UserData, ModalProps, SnackbarProps };
@@ -22,15 +22,23 @@ export function useUserManagementModel() {
   const router = useRouter();
 
   const loadData = async () => {
-    const res = await fetch("/api/users");
+    if (!supabaseBrowser) return;
+    const session = await supabaseBrowser.auth.getSession();
+    const res = await fetch("/api/users", {
+      headers: {
+        Authorization: `Bearer ${session.data.session?.access_token ?? ""}`,
+      },
+    });
+    if (!res.ok) return;
     const data = await res.json();
-    setUserData(data);
+    if (Array.isArray(data)) setUserData(data);
   };
 
   // ----- Licence Date Update -----
   const updateLicenceDate = async (id: string, date: Date) => {
+    if (!supabaseBrowser) return;
     try {
-      const session = await supabase.auth.getSession();
+      const session = await supabaseBrowser.auth.getSession();
 
       await fetch("/api/users/licence", {
         method: "PATCH",
@@ -58,8 +66,9 @@ export function useUserManagementModel() {
 
   // ----- Invite User -----
   const signUpUser = async (email: string) => {
+    if (!supabaseBrowser) return;
     try {
-      const session = await supabase.auth.getSession();
+      const session = await supabaseBrowser.auth.getSession();
 
       await fetch("/api/users/invite", {
         method: "POST",

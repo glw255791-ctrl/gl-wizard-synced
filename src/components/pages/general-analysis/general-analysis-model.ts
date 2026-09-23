@@ -1,9 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo, useState } from "react";
-import { Workbook } from "exceljs";
 import { formatDate } from "date-fns";
 import { TableHeader } from "../../composed/basic-table/basic-table";
 import { exportTableToExcel } from "../../composed/basic-table/functions";
+import {
+  readFileWithProgress,
+  type FileReadProgress,
+} from "../../../utils/read-file";
+import { readFirstSheet } from "../../../utils/workbook";
+import { dictionaryFromRows } from "../../../utils/dictionary";
+import { analyzeLedger } from "../../../utils/analyze-ledger";
+import { presentLedgerRows } from "../../../utils/present-ledger";
+import {
+  recallCoaHeaders,
+  recallGlHeaders,
+  rememberCoaHeaders,
+  rememberGlHeaders,
+} from "../../../utils/column-memory";
 import {
   RawData,
   GlHeaders,
@@ -49,12 +62,52 @@ export function useGeneralAnalysis() {
     []
   );
   const [tableData, setTableData] = useState<Record<string, any>[]>([]);
+  const [displayTableData, setDisplayTableData] = useState<Record<string, any>[]>(
+    []
+  );
 
   const [selectedHeaders, setSelectedHeaders] = useState<SelectedHeaders>({
     glHeaders: { account: "", jen: "", date: "", value: "" },
     coaHeaders: { displayValue: "", mappingValue: "", groupingValue: "" },
   });
   const [loadingStatus, setLoadingStatus] = useState(false);
+  const [fileProgress, setFileProgress] = useState<FileReadProgress | null>(
+    null
+  );
+
+  const stopLoading = () => {
+    setLoadingStatus(false);
+    setFileProgress(null);
+  };
+
+  const readTracked = (file: File) => {
+    setLoadingStatus(true);
+    setFileProgress({
+      name: file.name,
+      loaded: 0,
+      total: file.size,
+      phase: "reading",
+      unit: "bytes",
+    });
+    return readFileWithProgress(file, (loaded, total) => {
+      setFileProgress({
+        name: file.name,
+        loaded,
+        total,
+        phase: "reading",
+        unit: "bytes",
+      });
+    }).then((buffer) => {
+      setFileProgress({
+        name: file.name,
+        loaded: file.size,
+        total: file.size,
+        phase: "workbook",
+        unit: "bytes",
+      });
+      return buffer;
+    });
+  };
   const [isHierarchyModalVisible, setIsHierarchyModalVisible] = useState(false);
 
   const [hierarchyData, setHierarchyData] = useState<Record<string, any>[]>([]);
@@ -121,6 +174,7 @@ export function useGeneralAnalysis() {
 
         case AnalysisStep.ANALYZED:
           setTableData([]);
+          setDisplayTableData([]);
           setOverviewTableData({});
           setDataDisplayHeader([]);
           return dictionaryData.length > 0
@@ -157,7 +211,8 @@ export function useGeneralAnalysis() {
         .filter((date) => !isNaN(date.getTime()))
         .map((date) => date.getTime());
       if (!times.length) return "";
-      return formatDate(new Date(fn(...times)), "dd-MM-yyyy");
+      const bound = times.reduce((best, time) => fn(best, time));
+      return formatDate(new Date(bound), "dd-MM-yyyy");
     };
 
     return {
@@ -230,37 +285,26 @@ export function useGeneralAnalysis() {
       return;
     }
 
-    setLoadingStatus(true);
-    const buffer = await file.arrayBuffer();
-    const worker = new Worker(
-      new URL("../../../workers/dictionary-worker.js", import.meta.url),
-      { type: "module" }
-    );
-
-    worker.postMessage({ buffer });
-
-    worker.onmessage = (e) => {
-      const { data, error } = e.data;
-      if (error) {
-        setError(error);
-        setLoadingStatus(false);
+    try {
+      const buffer = await readTracked(file);
+      const { rows } = await readFirstSheet(buffer);
+      const data = dictionaryFromRows(rows);
+      if (!data.length) {
+        setError("No dictionary rows found in that file.");
+        setTimeout(() => setError(undefined), 5000);
         return;
       }
       setDictionaryData(data);
-
-      worker.onerror = (workerError) => {
-        setError(workerError.message);
-        console.error("Worker error:", workerError);
-        setLoadingStatus(false);
-        worker.terminate();
-      };
-
-      setLoadingStatus(false);
       setIsDictionaryUploaded(true);
-      worker.terminate();
-    };
-
-    setCurrentStep(AnalysisStep.UPLOADED_DICTIONARY);
+      setCurrentStep(AnalysisStep.UPLOADED_DICTIONARY);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Could not read the dictionary."
+      );
+      setTimeout(() => setError(undefined), 5000);
+    } finally {
+      stopLoading();
+    }
   };
 
   /**
@@ -282,35 +326,32 @@ export function useGeneralAnalysis() {
       return;
     }
 
-    setLoadingStatus(true);
-    const buffer = await file.arrayBuffer();
-    const worker = new Worker(new URL("./gl-worker.js", import.meta.url), {
-      type: "module",
-    });
-
-    worker.postMessage({ buffer });
-
-    worker.onmessage = (e) => {
-      const { glData, glHeaders, error } = e.data;
-      if (error) {
-        setError(error);
-        setLoadingStatus(false);
-        return;
-      }
-
-      setRawData((prev) => ({ ...prev, glData, glHeaders }));
-
-      worker.onerror = (workerError) => {
-        setError(workerError.message);
-        console.error("Worker error:", workerError);
-        setLoadingStatus(false);
-        worker.terminate();
-      };
-
-      setCurrentStep(AnalysisStep.UPLOADED_GL);
-      setLoadingStatus(false);
-      worker.terminate();
-    };
+    try {
+      const buffer = await readTracked(file);
+      const { rows, headers } = await readFirstSheet(buffer, (done, total) => {
+        setFileProgress({
+          name: file.name,
+          loaded: done,
+          total,
+          phase: "workbook",
+          unit: "rows",
+        });
+      });
+      setRawData((prev) => ({ ...prev, glData: rows, glHeaders: headers }));
+      const recalled = recallGlHeaders(headers);
+      setSelectedHeaders((prev) => ({ ...prev, glHeaders: recalled }));
+      setCurrentStep(
+        Object.values(recalled).every(Boolean)
+          ? AnalysisStep.TO_UPLOAD_COA
+          : AnalysisStep.UPLOADED_GL
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Could not read the general ledger."
+      );
+    } finally {
+      stopLoading();
+    }
   };
 
   /**
@@ -319,48 +360,63 @@ export function useGeneralAnalysis() {
    */
   const onChartOfAccountsDrop = async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
-    if (!file) return;
+    if (!file) {
+      setError("Could not read that file. Drop an .xlsx chart of accounts.");
+      setTimeout(() => setError(undefined), 5000);
+      return;
+    }
 
-    const buffer = await file.arrayBuffer();
-    const workbook = new Workbook();
-    await workbook.xlsx.load(buffer);
-    const sheet = workbook.worksheets[0];
-    if (!sheet) return;
-
-    const columnNames: string[] = sheet.getRow(1).values as string[];
-
-    const rows = sheet
-      .getSheetValues()
-      .slice(2)
-      .map((row: any) =>
-        columnNames.reduce((acc, col, index) => {
-          acc[col] = row[index]?.result ?? row[index] ?? "";
-          return acc;
-        }, {} as Record<string, any>)
+    try {
+      const buffer = await readTracked(file);
+      const { rows, headers } = await readFirstSheet(buffer, (done, total) => {
+        setFileProgress({
+          name: file.name,
+          loaded: done,
+          total,
+          phase: "workbook",
+          unit: "rows",
+        });
+      });
+      const sameAsLedger =
+        headers.length > 0 &&
+        headers.length === rawData.glHeaders.length &&
+        headers.every((header, index) => header === rawData.glHeaders[index]);
+      if (sameAsLedger) {
+        setError(
+          "That file is the general ledger. Drop the chart of accounts on the right."
+        );
+        setTimeout(() => setError(undefined), 6000);
+        return false;
+      }
+      setRawData((prev) => ({
+        ...prev,
+        coaData: rows,
+        coaHeaders: headers,
+      }));
+      const recalled = recallCoaHeaders(headers);
+      setSelectedHeaders((prev) => ({
+        ...prev,
+        coaHeaders: recalled,
+      }));
+      rememberCoaHeaders(recalled);
+      setHierarchyData(
+        headers.map((item, index) => ({
+          value: item,
+          level: index + 1,
+        }))
       );
-
-    setRawData((prev) => ({
-      ...prev,
-      coaData: rows,
-      coaHeaders: columnNames.filter(Boolean),
-    }));
-
-    setSelectedHeaders((prev) => ({
-      ...prev,
-      coaHeaders: {
-        displayValue: columnNames.filter(Boolean)[0],
-        mappingValue: columnNames.filter(Boolean)[0],
-        groupingValue: columnNames.filter(Boolean)[0],
-      },
-    }));
-
-    setIsHierarchyModalVisible(true);
-    setHierarchyData(
-      columnNames
-        .filter(Boolean)
-        .map((item, index) => ({ value: item, level: index + 1 }))
-    );
-    setCurrentStep(AnalysisStep.TO_UPLOAD_DICTIONARY);
+      setCurrentStep(AnalysisStep.TO_UPLOAD_DICTIONARY);
+      return true;
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Could not read the chart of accounts."
+      );
+      setTimeout(() => setError(undefined), 6000);
+    } finally {
+      stopLoading();
+    }
   };
 
   // --- Header Selection ---
@@ -373,6 +429,7 @@ export function useGeneralAnalysis() {
   const onChangeGlHeader = (key: keyof GlHeaders, value: string) => {
     const newGlHeaders = { ...selectedHeaders.glHeaders, [key]: value };
     setSelectedHeaders((prev) => ({ ...prev, glHeaders: newGlHeaders }));
+    if (Object.values(newGlHeaders).every(Boolean)) rememberGlHeaders(newGlHeaders);
 
     if (!Object.values(newGlHeaders).some((item) => item === "")) {
       setCurrentStep(AnalysisStep.TO_UPLOAD_COA);
@@ -385,10 +442,11 @@ export function useGeneralAnalysis() {
    * @param value - The selected header value
    */
   const onChangeCoaHeader = (key: keyof CoaHeaders, value: string) => {
-    setSelectedHeaders((prev) => ({
-      ...prev,
-      coaHeaders: { ...prev.coaHeaders, [key]: value },
-    }));
+    setSelectedHeaders((prev) => {
+      const coaHeaders = { ...prev.coaHeaders, [key]: value };
+      if (Object.values(coaHeaders).every(Boolean)) rememberCoaHeaders(coaHeaders);
+      return { ...prev, coaHeaders };
+    });
   };
 
   // --- Reset Button ---
@@ -399,6 +457,7 @@ export function useGeneralAnalysis() {
   const onPressResetBtn = () => {
     setCurrentStep(AnalysisStep.TO_UPLOAD_GL);
     setTableData([]);
+    setDisplayTableData([]);
     setError(undefined);
     setDictionaryData([]);
     setIsDictionaryUploaded(false);
@@ -425,48 +484,66 @@ export function useGeneralAnalysis() {
    * Initiates data analysis using Web Workers
    * Processes GL data, CoA mappings, and dictionary data
    */
-  const onPressAnalyzeData = () => {
+  const onPressAnalyzeData = async () => {
+    const totalRows = rawData.glData.length;
     setLoadingStatus(true);
+    setFileProgress({
+      name: "ledger",
+      loaded: 0,
+      total: totalRows,
+      phase: "workbook",
+      unit: "rows",
+    });
 
-    // Main general worker
-    const worker = new Worker(
-      new URL("../../../workers/general-worker.js", import.meta.url),
-      { type: "module" }
-    );
-
-    worker.onmessage = (event) => {
-      const notMappedRows = event.data.tableData.filter((item: any) =>
-        JSON.stringify(item).includes("not mapped")
+    try {
+      const result = await analyzeLedger(
+        rawData,
+        selectedHeaders,
+        dictionaryData,
+        (done, total) => {
+          setFileProgress({
+            name: "ledger",
+            loaded: done,
+            total,
+            phase: "workbook",
+            unit: "rows",
+          });
+        }
+      );
+      const accountKey = selectedHeaders.glHeaders.account;
+      const notMappedRows = result.tableData.filter(
+        (item) =>
+          item[accountKey] === "not mapped" ||
+          Object.values(item.coaData ?? {}).includes("not mapped")
       );
       if (notMappedRows.length > 0) {
         setUnmappedRows(notMappedRows);
         setIsWarningModalShown(true);
       }
-
-      setTableData(event.data.tableData);
-      setOverviewTableData(event.data.overviewTableData);
-      setDataDisplayHeader(event.data.displayHeaders);
+      setTableData(result.tableData);
+      const displayRows = await presentLedgerRows(
+        result.tableData,
+        selectedHeaders.glHeaders.value,
+        selectedHeaders.glHeaders.date,
+        (done, total) => {
+          setFileProgress({
+            name: "ledger",
+            loaded: done,
+            total,
+            phase: "workbook",
+            unit: "rows",
+          });
+        }
+      );
+      setDisplayTableData(displayRows);
+      setOverviewTableData(result.overviewTableData);
+      setDataDisplayHeader(result.displayHeaders);
       setCurrentStep(AnalysisStep.ANALYZED);
-
-      worker.terminate();
-
-      if (event.data.tableData.find((item: any) => !item.coaData)) {
-        setError("Some rows from GL do not have a CoA");
-        setTimeout(() => setError(undefined), 4000);
-      }
-    };
-
-    worker.onerror = (error) => {
-      setError(error.message);
-      console.error("Worker error:", error);
-      setLoadingStatus(false);
-      worker.terminate();
-    };
-    worker.postMessage({ rawData, selectedHeaders, dictionaryData });
-
-    setTimeout(() => {
-      setLoadingStatus(false);
-    }, 4000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not analyze the ledger.");
+    } finally {
+      stopLoading();
+    }
   };
 
   // --- Data Display ---
@@ -495,8 +572,16 @@ export function useGeneralAnalysis() {
   /**
    * Exports unmapped rows to Excel
    */
-  const onPressExportUnmappedRows = () => {
-    exportTableToExcel(tableHeader, unmappedRows);
+  const onPressExportUnmappedRows = async (
+    onProgress?: (done: number, total: number) => void
+  ) => {
+    await exportTableToExcel(
+      tableHeader,
+      unmappedRows,
+      onProgress,
+      "unmapped-rows.xlsx"
+    );
+    setIsWarningModalShown(false);
   };
 
   // --- Return ---
@@ -520,6 +605,7 @@ export function useGeneralAnalysis() {
     setIsHierarchyModalVisible,
     setHierarchyData,
     loadingStatus,
+    fileProgress,
     error,
     overviewTableData,
     sortedDataDisplayHeader,
@@ -527,6 +613,7 @@ export function useGeneralAnalysis() {
     tableHeader,
     reversalTableHeader,
     tableData,
+    displayTableData,
     rawData,
     glHeaderOptions,
     selectedHeaders,

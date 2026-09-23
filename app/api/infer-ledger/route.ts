@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
+import { requireUser } from "@/lib/auth/require-user";
 
 const HF_API_KEY = process.env.HF_API_KEY;
 const MODEL = "Qwen/Qwen2.5-72B-Instruct"; // Excellent, clean, concise
@@ -24,6 +25,9 @@ const examples = [
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireUser(request);
+    if (!auth.ok) return auth.response;
+
     const body = await request.json();
 
     if (!Array.isArray(body)) {

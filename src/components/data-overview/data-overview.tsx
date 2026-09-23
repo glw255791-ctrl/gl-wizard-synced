@@ -1,12 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+import dynamic from "next/dynamic";
 import React, {
   useEffect,
   useMemo,
+  useRef,
   useState,
   useTransition,
   useCallback,
 } from "react";
-import { AccordionDetails, AccordionSummary } from "@mui/material";
+import {
+  AccordionDetails,
+  AccordionSummary,
+  LinearProgress,
+  Modal,
+  Stack,
+  Typography,
+} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import {
@@ -20,12 +30,37 @@ import {
 } from "./style";
 
 import { Dropdown } from "../ui-kit/dropdown/dropdown";
-import { DataTable } from "./table/table";
-import { Loader } from "../ui-kit/loader-overlay/loader-overlay";
 import type { TableHeader } from "../../../types";
 import { AnyType, DropdownItem } from "../../types";
-import { ProcessValue } from "./process-modal/types";
-import { ProcessModal } from "./process-modal/process-modal";
+import type { ProcessValue } from "./process-modal/types";
+import { theme } from "@/constants/theme";
+
+const DataTable = dynamic(
+  () => import("./table/table").then((mod) => mod.DataTable),
+  { ssr: false }
+);
+
+const ProcessModal = dynamic(
+  () => import("./process-modal/process-modal").then((mod) => mod.ProcessModal),
+  {
+    ssr: false,
+    loading: () => (
+      <Modal open sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Stack
+          sx={{
+            backgroundColor: theme.colors.white,
+            borderRadius: theme.borderRadius.sm,
+            padding: "1rem 1.25rem",
+          }}
+        >
+          <Typography color={theme.colors.black}>
+            Opening process analysis. First open can take a minute in development.
+          </Typography>
+        </Stack>
+      </Modal>
+    ),
+  }
+);
 
 /* ------------------------------------------------------------------ */
 /* Types                                                              */
@@ -170,11 +205,15 @@ export function DataOverview({
   });
 
   const [selectedTable, setSelectedTable] = useState(ALL);
-  const [groupingValue, setGroupingValue] = useState(mappingValue);
+  const [groupingValue, setGroupingValue] = useState(
+    displayValue || mappingValue
+  );
+  const [panelOpen, setPanelOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [preparing, setPreparing] = useState(false);
   const [lazyTables, setLazyTables] = useState<React.ReactNode[]>([]);
-  const [loading, setLoading] = useState(false);
 
-  const [transition, transitionFunc] = useTransition();
+  const [, transitionFunc] = useTransition();
 
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [initialProcessObject, setInitialProcessObject] =
@@ -185,10 +224,12 @@ export function DataOverview({
   // Keep grouping value in sync with selected filter
   useEffect(() => {
     setGroupingValue(
-      selectedFilter.header !== ALL ? selectedFilter.value : mappingValue
+      selectedFilter.header !== ALL
+        ? selectedFilter.header
+        : displayValue || mappingValue
     );
     setSelectedTable(ALL);
-  }, [selectedFilter, mappingValue]);
+  }, [selectedFilter, mappingValue, displayValue]);
 
   /* ----------------------------- Memo ------------------------------ */
 
@@ -211,11 +252,11 @@ export function DataOverview({
     const filterLevel = getLevel(selectedFilter.header);
     const groupingLevel = getLevel(groupingValue);
 
+    const singleTable =
+      selectedFilter.header === ALL || selectedTable !== ALL;
     const hasInactiveHeader =
-      lazyTables.length === 1 &&
-      (lazyTables as any[])[0].props.sortedDataDisplayHeader.some(
-        (it: any) => it.active === false
-      );
+      singleTable &&
+      sortedDataDisplayHeader.some((item) => item.active === false);
 
     return (
       displayLevel <= filterLevel &&
@@ -225,8 +266,9 @@ export function DataOverview({
     hierarchyData,
     displayValue,
     selectedFilter.header,
+    selectedTable,
     groupingValue,
-    lazyTables,
+    sortedDataDisplayHeader,
   ]);
 
   const commonTableProps = useMemo(
@@ -258,9 +300,15 @@ export function DataOverview({
     ]
   );
 
+  const tooManyTables =
+    selectedFilter.header !== ALL &&
+    selectedTable === ALL &&
+    filterValueOptions.length > 12;
+
   const tablesFactory = useCallback(
-    () =>
-      generateTables({
+    () => {
+      if (tooManyTables) return [];
+      return generateTables({
         selectedFilterHeader: selectedFilter.header,
         selectedTable,
         overviewTableData,
@@ -268,8 +316,10 @@ export function DataOverview({
         filterValueOptions,
         mappingValue,
         commonTableProps,
-      }),
+      });
+    },
     [
+      tooManyTables,
       selectedFilter.header,
       selectedTable,
       overviewTableData,
@@ -283,25 +333,34 @@ export function DataOverview({
   /* ----------------------- Lazy table render ----------------------- */
 
   useEffect(() => {
-    setLoading(true);
+    if (!panelOpen || preparing) return;
+    panelRef.current?.scrollIntoView({ block: "nearest" });
+  }, [panelOpen, preparing, lazyTables]);
 
-    const rafId = requestAnimationFrame(() => {
-      const tables = tablesFactory();
-      setLazyTables(tables);
-
-      setTimeout(() => {
-        setLoading(false);
-      }, tables.length * 100);
-    });
-
-    return () => cancelAnimationFrame(rafId);
-  }, [tablesFactory]);
+  useEffect(() => {
+    if (!panelOpen) return;
+    setPreparing(true);
+    const timeoutId = window.setTimeout(() => {
+      setLazyTables(tablesFactory());
+      setPreparing(false);
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [panelOpen, tablesFactory]);
 
   /* ----------------------------- Render ---------------------------- */
 
   return (
     <>
-      <StyledAccordionWrapper disabled={disabled}>
+      <StyledAccordionWrapper
+        ref={panelRef}
+        disabled={disabled}
+        expanded={panelOpen}
+        onChange={(_, expanded) => {
+          setPanelOpen(expanded);
+          if (expanded) setPreparing(true);
+        }}
+        TransitionProps={{ unmountOnExit: true }}
+      >
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <SummaryWrapper>
             <Title>{title}</Title>
@@ -309,7 +368,24 @@ export function DataOverview({
         </AccordionSummary>
 
         <AccordionDetails>
-          <Loader loadingStatus={loading || transition} />
+          {preparing && (
+            <Stack gap={0.75} sx={{ padding: "0.5rem 0 1rem" }}>
+              <Typography color={theme.colors.medium}>
+                Building the movement table
+              </Typography>
+              <LinearProgress
+                sx={{
+                  height: 8,
+                  borderRadius: 999,
+                  backgroundColor: theme.colors.surface,
+                  "& .MuiLinearProgress-bar": {
+                    borderRadius: 999,
+                    backgroundColor: theme.colors.action,
+                  },
+                }}
+              />
+            </Stack>
+          )}
 
           <AccordionContent>
             <AccordionHeaderStack>
@@ -371,10 +447,19 @@ export function DataOverview({
             </AccordionHeaderStack>
           </AccordionContent>
 
-          <TablesStack>{lazyTables}</TablesStack>
+          <TablesStack>
+            {tooManyTables && (
+              <Typography color={theme.colors.medium}>
+                {filterValueOptions.length.toLocaleString("en-US")} groups.
+                Choose one in Display Table(s).
+              </Typography>
+            )}
+            {lazyTables}
+          </TablesStack>
         </AccordionDetails>
       </StyledAccordionWrapper>
 
+      {isProcessModalOpen && (
       <ProcessModal
         isOpen={isProcessModalOpen}
         overviewTableData={overviewTableData}
@@ -387,6 +472,7 @@ export function DataOverview({
         initialProcessObject={initialProcessObject}
         onClose={() => setIsProcessModalOpen(false)}
       />
+      )}
     </>
   );
 }

@@ -17,4 +17,5 @@ export const StyledButton = styled(Button)({
   paddingRight: theme.padding.lg,
   backgroundColor: theme.colors.action,
   color: theme.colors.black,
+  whiteSpace: "nowrap",
 });

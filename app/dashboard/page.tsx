@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Dashboard - GL Wizard",
+  title: "Main Menu - GL Wizard",
 };
 
 import { MainMenuClient } from "./client";

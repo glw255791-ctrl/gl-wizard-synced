@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { Header } from "../../composed/header/header";
+import { supabaseBrowser } from "@/lib/supabase/browser-client";
 import {
   RootStack,
   ContentWrapper,
@@ -11,37 +13,70 @@ import {
 } from "./style";
 
 export function AboutPage() {
+  const [licence, setLicence] = useState("Checking your licence…");
+
+  useEffect(() => {
+    if (!supabaseBrowser) return;
+
+    const loadLicence = async () => {
+      const {
+        data: { session },
+      } = await supabaseBrowser.auth.getSession();
+      if (!session) return;
+
+      const { data: profile } = await supabaseBrowser
+        .from("profiles")
+        .select("licence_valid_until, role")
+        .eq("id", session.user.id)
+        .single();
+
+      if (!profile) return;
+
+      if (profile.role === "admin") {
+        setLicence("Administrator accounts do not expire.");
+        return;
+      }
+
+      const date = profile.licence_valid_until
+        ? new Date(profile.licence_valid_until).toLocaleDateString("de-DE")
+        : "";
+      setLicence(
+        date
+          ? `Your licence is valid until ${date}.`
+          : "No licence date is set."
+      );
+    };
+
+    loadLicence();
+  }, []);
+
   return (
     <PageWrapper>
       <RootStack>
-        <Header title="User Manual" />
+        <Header title="About GL Wizard" />
         <ContentWrapper>
           <TextWrapper>
-            <StyledTitle>About GL Wizard</StyledTitle>
             <StyledList>
               <li>
-                GL Wizard is a modern tool for financial data analysis, designed
-                to streamline the review and mapping of general ledger and chart
-                of accounts files.
+                Upload a general ledger and a chart of accounts, map the
+                columns, and review journals, reversals, and reclassifications.
               </li>
               <li>
-                The application enables users to upload, validate, and analyze
-                accounting data in a simple, user-friendly interface.
+                The ledger stays in the browser. Accounts and licences are the
+                only data stored for sign-in.
               </li>
               <li>
-                GL Wizard supports advanced features such as automatic data
-                mapping, filtering, and error detection to enhance data quality
-                and transparency.
+                It is meant for finance teams, auditors, and consultants who
+                prepare and reconcile GL data.
               </li>
-              <li>
-                It is intended for finance teams, auditors, and consultants
-                looking for an efficient way to prepare, inspect, and reconcile
-                GL data.
-              </li>
-              <li>
-                The project is developed with reliability and usability in mind,
-                with continuous updates for improved capabilities.
-              </li>
+            </StyledList>
+          </TextWrapper>
+          <TextWrapper>
+            <StyledTitle>Version and support</StyledTitle>
+            <StyledList>
+              <li>GL Wizard 0.0.0</li>
+              <li>{licence}</li>
+              <li>For help with sign-in or a licence, ask your administrator.</li>
             </StyledList>
           </TextWrapper>
         </ContentWrapper>

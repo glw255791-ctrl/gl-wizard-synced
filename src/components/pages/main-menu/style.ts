@@ -5,6 +5,7 @@ export const Root = styled(Stack)({
   flex: 1,
   width: "100%",
   minWidth: 0,
+  minHeight: 0,
   height: "100%",
   justifyContent: "flex-start",
   gap: theme.gap.lg,
@@ -14,15 +15,16 @@ export const MenuPanel = styled(Stack)({
   flex: 1,
   minHeight: 0,
   backgroundColor: theme.colors.lighter,
-  border: "1px solid #E4F0F0",
+  border: `1px solid ${theme.colors.surface}`,
   borderRadius: theme.borderRadius.md,
   padding: "1.25rem",
   gap: theme.gap.md,
   boxShadow: "none",
+  overflow: "hidden",
 });
 
 export const PanelIntro = styled(Stack)({
-  backgroundColor: "#E8EFCB",
+  backgroundColor: theme.colors.limeLight,
   borderRadius: theme.borderRadius.sm,
   padding: "0.85rem 1rem",
   gap: "0.2rem",
@@ -44,15 +46,21 @@ export const PanelText = styled(Typography)({
 
 export const ButtonsWrapper = styled(Grid2)({
   flex: 1,
+  minHeight: 0,
   alignContent: "stretch",
+
+  "& > .MuiGrid2-root": {
+    display: "flex",
+    minHeight: 0,
+  },
 });
 
 export const StyledMenuButton = styled(Button, {
-  shouldForwardProp: (prop) => prop !== "bgImage" && prop !== "accent",
-})(({ bgImage, accent = "#B8C96B" }: { bgImage: string; accent?: string }) => ({
+  shouldForwardProp: (prop) => prop !== "accent",
+})(({ accent = theme.colors.action }: { accent?: string }) => ({
   width: "100%",
-  height: "calc((100vh - 18rem) / 2)",
-  minHeight: "12rem",
+  height: "100%",
+  minHeight: 0,
   padding: 0,
   borderRadius: theme.borderRadius.md,
   display: "flex",
@@ -62,7 +70,7 @@ export const StyledMenuButton = styled(Button, {
   textTransform: "none",
   overflow: "hidden",
   backgroundColor: theme.colors.lighter,
-  border: "1px solid #E4F0F0",
+  border: `1px solid ${theme.colors.surface}`,
   borderBottom: `4px solid ${accent}`,
   boxShadow: "none",
   color: theme.colors.black,
@@ -74,13 +82,19 @@ export const StyledMenuButton = styled(Button, {
     backgroundColor: theme.colors.lighter,
   },
 
-  "& .card-photo": {
+  "& .card-mark": {
     flex: 1,
     width: "100%",
     minHeight: "8rem",
-    backgroundImage: `url(${bgImage})`,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.colors.surface,
+    color: theme.colors.darker,
+  },
+
+  "& .card-mark .MuiSvgIcon-root": {
+    fontSize: "4.5rem",
   },
 }));
 

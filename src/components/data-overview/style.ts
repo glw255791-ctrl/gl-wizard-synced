@@ -42,6 +42,11 @@ export const StyledAccordionWrapper = styled(Accordion, {
 })<{ disabled?: boolean }>(({ disabled }) => ({
   backgroundColor: theme.colors.lighter,
   borderRadius: theme.borderRadius.sm,
+  border: `1px solid ${theme.colors.surface}`,
+  boxShadow: "none",
+  "&:before": {
+    display: "none",
+  },
   opacity: disabled ? theme.opacity.disabled : 1,
   pointerEvents: disabled ? "none" : "auto",
 }));

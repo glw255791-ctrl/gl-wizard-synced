@@ -1,7 +1,7 @@
 "use client";
 
 import { Typography } from "@mui/material";
-import DownloadIcon from "@mui/icons-material/Download";
+import { useState } from "react";
 
 import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { Header } from "../../composed/header/header";
@@ -10,8 +10,6 @@ import {
   ContentWrapper,
   StyledButtonStack,
   TextWrapper,
-  StyledIconButton,
-  StyledDownloadIcon,
   StyledTitle,
   StyledList,
   ButtonsWrapper,
@@ -34,13 +32,22 @@ async function fetchAndDownloadFile(url: string, downloadName: string) {
     tempLink.click();
     document.body.removeChild(tempLink);
     window.URL.revokeObjectURL(blobUrl);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (e) {
-    alert("Could not download file. Please try again or contact support.");
+    return true;
+  } catch {
+    return false;
   }
 }
 
 export function UserManualPage() {
+  const [downloadError, setDownloadError] = useState("");
+
+  const download = async (url: string, name: string) => {
+    setDownloadError("");
+    const ok = await fetchAndDownloadFile(url, name);
+    if (!ok) {
+      setDownloadError("Could not download that file. Try again in a moment.");
+    }
+  };
   return (
     <PageWrapper>
       <RootStack>
@@ -50,26 +57,12 @@ export function UserManualPage() {
             <StyledTitle>General Usage</StyledTitle>
             <StyledList>
               <li>
-                The General User Manual is a guide for users of the GL Wizard
-                software.
+                Upload a general ledger, a chart of accounts, and an optional
+                dictionary. Then map the columns and review the validity bar.
               </li>
               <li>
-                Upload your General Ledger (GL), Chart of Accounts (CoA) and
-                Dictionary files in the supported formats to get started with
-                data analysis.
-              </li>
-              <li>
-                Use the filtering and mapping features on the platform to
-                categorize and analyze your financial data more effectively.
-              </li>
-              <li>
-                After uploading your files, review the data validity section for
-                any errors or missing information.
-              </li>
-              <li>
-                Download template files and sample dictionaries from the Content
-                Download section below to assist with data preparation and
-                mapping.
+                Download the template files beside this text when you need a
+                starting chart of accounts or dictionary.
               </li>
             </StyledList>
           </TextWrapper>
@@ -77,45 +70,34 @@ export function UserManualPage() {
           <TextWrapper>
             <ButtonsWrapper>
               <StyledTitle>Content Download</StyledTitle>
-              <StyledButtonStack>
-                <Typography>Serbia CoA</Typography>
-                <StyledIconButton
-                  onClick={() =>
-                    fetchAndDownloadFile(
-                      "/assets/files/serbia-coa.xlsx",
-                      "Serbia_CoA.xlsx"
-                    )
-                  }
-                >
-                  <DownloadIcon sx={StyledDownloadIcon} />
-                </StyledIconButton>
+              <StyledButtonStack
+                onClick={() =>
+                  download("/assets/files/serbia-coa.xlsx", "Serbia_CoA.xlsx")
+                }
+              >
+                <span>Serbia CoA</span>
+                <span>Download</span>
               </StyledButtonStack>
-              <StyledButtonStack>
-                <Typography>International CoA</Typography>
-                <StyledIconButton
-                  onClick={() =>
-                    fetchAndDownloadFile(
-                      "/assets/files/international-coa.xlsx",
-                      "International_CoA.xlsx"
-                    )
-                  }
-                >
-                  <DownloadIcon sx={StyledDownloadIcon} />
-                </StyledIconButton>
+              <StyledButtonStack
+                onClick={() =>
+                  download(
+                    "/assets/files/international-coa.xlsx",
+                    "International_CoA.xlsx"
+                  )
+                }
+              >
+                <span>International CoA</span>
+                <span>Download</span>
               </StyledButtonStack>
-              <StyledButtonStack>
-                <Typography>Mapping Dictionary</Typography>
-                <StyledIconButton
-                  onClick={() =>
-                    fetchAndDownloadFile(
-                      "/assets/files/dictionary.xlsx",
-                      "Dictionary.xlsx"
-                    )
-                  }
-                >
-                  <DownloadIcon sx={StyledDownloadIcon} />
-                </StyledIconButton>
+              <StyledButtonStack
+                onClick={() =>
+                  download("/assets/files/dictionary.xlsx", "Dictionary.xlsx")
+                }
+              >
+                <span>Mapping Dictionary</span>
+                <span>Download</span>
               </StyledButtonStack>
+              {downloadError ? <Typography>{downloadError}</Typography> : null}
             </ButtonsWrapper>
           </TextWrapper>
         </ContentWrapper>
@@ -158,24 +140,25 @@ export function UserManualPage() {
             </StyledList>
           </TextWrapper>
           <TextWrapper>
-            <StyledTitle>Importing the Chart of Accounts (COA)</StyledTitle>
+            <StyledTitle>Importing the Chart of Accounts (CoA)</StyledTitle>
             <StyledList>
               <li>
-                The COA must provide a value for every account code present in
+                The CoA must provide a value for every account code present in
                 the imported GL in the column mapped as “account code”. Accounts
-                without corresponding values in the COA will be identified as
+                without corresponding values in the CoA will be identified as
                 not matched.
               </li>
               <li>
-                Ensure that the GL and COA contain a matching column with
+                Ensure that the GL and CoA contain a matching column with
                 identical values, so the software can correctly establish a
                 connection between the two.
               </li>
               <li>
-                For AI-generated results, use the GL Wizard standardized COA (FS
-                sub-group column). Download the standardized COA and ensure that
-                every GL account is allocated to a corresponding mapping from
-                the FS sub-group column.
+                For the standard groups, use the GL Wizard CoA and its FS
+                sub-group column. Download that file and map every GL account
+                to a value from that column. A chart of accounts you bring
+                yourself can still match accounts, but those standard groups
+                will be missing.
               </li>
               <li>
                 Ensure that the Excel import file contains only one sheet, with

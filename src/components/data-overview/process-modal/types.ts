@@ -1,4 +1,4 @@
-import { TableHeader } from "@/components/composed/basic-table/basic-table";
+import type { TableHeader } from "@/components/composed/basic-table/basic-table";
 import { AnyType } from "@/types";
 
 export interface TableData {

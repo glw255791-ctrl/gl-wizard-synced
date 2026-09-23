@@ -38,13 +38,17 @@ export const Wrapper = styled(Stack)({
   borderRadius: theme.borderRadius.sm,
   borderWidth: theme.borderWidth.sm,
   borderStyle: "solid",
-  borderColor: theme.colors.medium,
+  borderColor: theme.colors.softBlue,
 });
 
 export const TableHeaderStyled = styled(Stack)({
-  width: "calc(100vw - 28rem + 1px)",
+  position: "relative",
+  zIndex: 2,
+  width: "100%",
+  boxSizing: "border-box",
   padding: theme.padding.lg,
-  backgroundColor: theme.colors.medium,
+  backgroundColor: theme.colors.darker,
+  color: theme.colors.white,
   flexDirection: "row",
   justifyContent: "space-between",
   alignItems: "center",
@@ -55,6 +59,7 @@ export const TableHeaderStyled = styled(Stack)({
 export const TableTitle = styled(Typography)({
   fontSize: theme.fontSize.xl,
   fontWeight: "bold",
+  color: theme.colors.white,
 });
 
 export const ExcelDownloadButton = styled(Button)({
@@ -70,6 +75,8 @@ export const ExcelDownloadButton = styled(Button)({
 // Styles used in table rendering
 export const styles: Record<string, CommonProps["style"]> = {
   cellBaseStyle: {
+    boxSizing: "border-box",
+    width: "100%",
     padding: theme.padding.sm,
     borderRightStyle: "solid",
     wordWrap: "break-word",
@@ -87,36 +94,45 @@ export const styles: Record<string, CommonProps["style"]> = {
     height: theme.height.cell,
   },
   headerCell: {
+    boxSizing: "border-box",
+    width: "100%",
+    height: "100%",
     borderRightStyle: "solid",
     borderBottomStyle: "solid",
-    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
     textAlign: "left",
     padding: theme.padding.sm,
     borderRightWidth: theme.borderWidth.sm,
     borderRightColor: theme.colors.lighter,
     fontWeight: "bold",
-    justifyContent: "center",
-    backgroundColor: theme.colors.medium,
+    justifyContent: "flex-start",
+    backgroundColor: theme.colors.darker,
+    color: theme.colors.white,
     borderTopWidth: theme.borderWidth.sm,
     borderTopStyle: "solid",
     borderTopColor: theme.colors.lighter,
-    height: theme.height.header,
   },
   autoSizer: {
     width: "100%",
     height: theme.height.table,
-    backgroundColor: theme.colors.medium,
+    backgroundColor: theme.colors.white,
     borderBottomLeftRadius: theme.borderRadius.sm,
     borderBottomRightRadius: theme.borderRadius.sm,
   },
   headerWrapper: {
     margin: 0,
+    padding: 0,
     height: theme.height.headerWrapper,
-    marginRight: 0.5,
+    display: "flex",
+    alignItems: "stretch",
+    boxSizing: "border-box",
   },
   columnStyle: {
     margin: 0,
+    padding: 0,
     backgroundColor: theme.colors.white,
+    boxSizing: "border-box",
   },
 };
 

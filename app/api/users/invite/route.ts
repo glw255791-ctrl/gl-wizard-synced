@@ -1,39 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase/supabase-client"; // anon client
-import { supabaseAdmin } from "app/api/_supabase-admin"; // service role
+import { supabaseAdmin } from "app/api/_supabase-admin";
+import { requireAdmin } from "@/lib/auth/require-user";
 
 export async function POST(req: NextRequest) {
   try {
-    // 1️⃣ Get token
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await requireAdmin(req);
+    if (!auth.ok) return auth.response;
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: "Supabase is not configured" },
+        { status: 500 }
+      );
     }
 
-    const token = authHeader.replace("Bearer ", "");
-
-    // 2️⃣ Validate session (WHO is calling)
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser(token);
-
-    if (!user || userError) {
-      return NextResponse.json({ error: "Invalid session" }, { status: 401 });
-    }
-
-    // 3️⃣ Check role (ARE they admin)
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (profileError || profile?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    // 4️⃣ Admin action
     const { email } = await req.json();
 
     const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {

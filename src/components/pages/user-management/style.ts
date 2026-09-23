@@ -10,7 +10,7 @@ import { theme } from "../../../constants/theme";
 // Root wrapper for the page
 export const RootStack = styled(Stack)({
   width: "100%",
-  minHeight: "calc(100vh - 4rem)",
+  minHeight: 0,
   justifyContent: "flex-start",
   gap: theme.gap.lg,
 });

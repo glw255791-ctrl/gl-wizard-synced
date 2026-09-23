@@ -1,26 +1,35 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "app/api/_supabase-admin";
+import { requireUser } from "@/lib/auth/require-user";
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, password, name } = await req.json();
+    const auth = await requireUser(req);
+    if (!auth.ok) return auth.response;
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: "Supabase admin is not configured" },
+        { status: 500 }
+      );
+    }
 
-    if (!userId || !password || !name) {
+    const { password, name } = await req.json();
+
+    if (!password || !name) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // 1. set password
+    const userId = auth.user.id;
+
     const { error: pwError } = await supabaseAdmin.auth.admin.updateUserById(
       userId,
       { password }
     );
     if (pwError) throw pwError;
 
-    // 2. update profile
     const { error: profileError } = await supabaseAdmin
       .from("profiles")
       .update({ full_name: name })
@@ -29,10 +38,8 @@ export async function POST(req: NextRequest) {
     if (profileError) throw profileError;
 
     return NextResponse.json({ success: true });
-  } catch (err: any) {
-    return NextResponse.json(
-      { error: err.message ?? "Registration failed" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Registration failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

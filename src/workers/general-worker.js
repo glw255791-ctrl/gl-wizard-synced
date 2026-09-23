@@ -3,48 +3,58 @@ self.onmessage = (event) => {
   const { glData, coaData } = rawData;
   const { glHeaders, coaHeaders } = selectedHeaders;
 
-  // ===== 1. Pre-process COA Data =====
-  const validCoaItems = coaData
-    .filter((item) => item[coaHeaders.mappingValue] !== "")
-    .sort(
-      (a, b) =>
-        b[coaHeaders.mappingValue].length - a[coaHeaders.mappingValue].length
-    );
+  // ===== 1. Longest account-code prefix =====
+  const emptyCoa = {};
+  if (coaData[0]) {
+    for (const key in coaData[0]) emptyCoa[key] = "not mapped";
+  }
+  const coaRoot = { item: null, children: new Map() };
+  for (const item of coaData) {
+    const code = String(item[coaHeaders.mappingValue] ?? "");
+    if (!code) continue;
+    let node = coaRoot;
+    for (let i = 0; i < code.length; i += 1) {
+      const char = code[i];
+      let next = node.children.get(char);
+      if (!next) {
+        next = { item: null, children: new Map() };
+        node.children.set(char, next);
+      }
+      node = next;
+    }
+    node.item = item;
+  }
 
   // ===== 2. Process GL Data in Chunks =====
-  const CHUNK_SIZE = 500;
+  const CHUNK_SIZE = 2000;
   const output = [];
   const totalRows = glData.length;
   let processedRows = 0;
 
-  const createEmptyCoaItem = () => {
-    const empty = {};
-    for (const key in coaData[0]) empty[key] = "not mapped";
-    return empty;
-  };
-
   while (processedRows < totalRows) {
     const chunkEnd = Math.min(processedRows + CHUNK_SIZE, totalRows);
-    const chunk = glData.slice(processedRows, chunkEnd);
 
-    for (const item of chunk) {
-      const account = String(item[glHeaders.account]);
+    for (let index = processedRows; index < chunkEnd; index += 1) {
+      const item = glData[index];
+      const account = String(item[glHeaders.account] ?? "");
+      let node = coaRoot;
       let bestMatch = null;
-
-      for (const coaItem of validCoaItems) {
-        if (account.startsWith(coaItem[coaHeaders.mappingValue])) {
-          bestMatch = coaItem;
-          break;
-        }
+      for (let i = 0; i < account.length; i += 1) {
+        node = node.children.get(account[i]);
+        if (!node) break;
+        if (node.item) bestMatch = node.item;
       }
       output.push({
         ...item,
         ...(!bestMatch ? { [glHeaders.account]: "not mapped" } : {}),
-        coaData: bestMatch || createEmptyCoaItem(),
+        coaData: bestMatch || emptyCoa,
       });
     }
 
     processedRows = chunkEnd;
+    self.postMessage({
+      progress: { done: processedRows, total: totalRows },
+    });
   }
 
   // ===== 3. Group by JEN and Date =====
@@ -82,7 +92,7 @@ self.onmessage = (event) => {
             // Check if every value is in item.inputs, and vice versa (set equality)
             const inputsSorted = [...item.inputs].sort();
             const valuesSorted = [...sortedValues].sort();
-            return inputsSorted?.find((v, i) => v === valuesSorted[i]);
+            return inputsSorted.every((v, i) => v === valuesSorted[i]);
           });
           for (const row of chunk)
             row.result = dictionaryItem?.result

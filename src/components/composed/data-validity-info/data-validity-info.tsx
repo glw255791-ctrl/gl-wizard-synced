@@ -38,21 +38,21 @@ export const DataValidityInfo = ({ reviewData, error }: Props) => {
           {startDate}
         </Typography>
       </ReviewLabel>
-      <Divider />
+      <Divider orientation="vertical" flexItem />
       <ReviewLabel>
         <Typography variant="body2">End date:</Typography>
         <Typography variant="body2" fontWeight="bold">
           {endDate}
         </Typography>
       </ReviewLabel>
-      <Divider />
+      <Divider orientation="vertical" flexItem />
       <ReviewLabel>
         <Typography variant="body2">Rows:</Typography>
         <Typography variant="body2" fontWeight="bold">
           {rows}
         </Typography>
       </ReviewLabel>
-      <Divider />
+      <Divider orientation="vertical" flexItem />
       <ReviewLabel>
         <Typography variant="body2">Total:</Typography>
         <Typography variant="body2" fontWeight="bold">

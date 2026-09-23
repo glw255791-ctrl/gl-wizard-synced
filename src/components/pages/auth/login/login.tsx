@@ -14,10 +14,10 @@ import {
 import { useLoginModel } from "./login-model";
 import { useEffect } from "react";
 import { supabaseBrowser } from "@/lib/supabase/browser-client";
-import { TextField } from "@mui/material";
+import { TextField, CircularProgress } from "@mui/material";
 
 export function LoginPage() {
-  const { loginData, onChangeField, router, fieldErrors, onLogin } =
+  const { router, fieldErrors, onLogin, submitting, onChangeField } =
     useLoginModel();
 
   useEffect(() => {
@@ -37,7 +37,17 @@ export function LoginPage() {
 
   return (
     <Root>
-      <LoginBlock>
+      <LoginBlock
+        component="form"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const data = new FormData(event.currentTarget);
+          onLogin({
+            email: String(data.get("email") ?? ""),
+            password: String(data.get("password") ?? ""),
+          });
+        }}
+      >
         <ImageAndLogo>
           <LogoImage src={"/logo.png"} alt="GL Wizard" />
           <Label>GL Wizard</Label>
@@ -45,31 +55,39 @@ export function LoginPage() {
         </ImageAndLogo>
         <InputWrapper>
           <TextField
+            name="email"
             label="Email"
             type="email"
+            autoComplete="email"
             error={!!fieldErrors.email}
-            value={loginData.email}
             onChange={(e) => onChangeField("email", e.target.value)}
             fullWidth
             variant="outlined"
+            slotProps={{ inputLabel: { shrink: true } }}
           />
         </InputWrapper>
         <InputWrapper>
           <TextField
+            name="password"
             label="Password"
             type="password"
+            autoComplete="current-password"
             error={!!fieldErrors.password}
-            value={loginData.password}
             onChange={(e) => onChangeField("password", e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") onLogin();
-            }}
             fullWidth
             variant="outlined"
+            slotProps={{ inputLabel: { shrink: true } }}
           />
         </InputWrapper>
-        <LoginButton fullWidth onClick={onLogin}>
-          Login
+        <LoginButton
+          type="submit"
+          fullWidth
+          disabled={submitting}
+          startIcon={
+            submitting ? <CircularProgress size={18} color="inherit" /> : undefined
+          }
+        >
+          {submitting ? "Signing in..." : "Login"}
         </LoginButton>
         <ErrorsBlock>
           {Object.values(fieldErrors).map((err, idx) => (

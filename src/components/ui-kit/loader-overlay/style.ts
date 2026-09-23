@@ -1,10 +1,4 @@
-import {
-  styled,
-  Backdrop,
-  Stack,
-  Typography,
-  CircularProgress,
-} from "@mui/material";
+import { styled, Backdrop, Stack, Typography, LinearProgress } from "@mui/material";
 import { theme } from "../../../constants/theme";
 
 // Styled backdrop for the loader overlay
@@ -16,19 +10,33 @@ export const StyledBackdrop = styled(Backdrop)(({ theme }) => ({
 // Styled stack container for the loader content
 export const LoaderContent = styled(Stack)({
   backgroundColor: theme.colors.white,
-  borderRadius: 36,
-  flexDirection: "row",
-  alignItems: "center",
-  gap: theme.gap.lg,
-  padding: theme.padding.lg,
+  borderRadius: theme.borderRadius.md,
+  alignItems: "stretch",
+  gap: "0.35rem",
+  padding: "1rem 1.15rem",
+  width: "min(420px, calc(100vw - 3rem))",
+  boxSizing: "border-box",
 });
 
-// Styled typography for the loader text
 export const LoaderText = styled(Typography)({
-  color: theme.colors.medium,
+  color: theme.colors.black,
+  fontWeight: 600,
+  fontSize: "0.95rem",
 });
 
-// Styled circular progress indicator
-export const StyledCircularProgress = styled(CircularProgress)({
+export const LoaderMeta = styled(Typography)({
   color: theme.colors.medium,
+  fontSize: "0.85rem",
+});
+
+export const StyledLinearProgress = styled(LinearProgress)({
+  marginTop: "0.45rem",
+  height: 8,
+  borderRadius: 999,
+  backgroundColor: theme.colors.surface,
+
+  "& .MuiLinearProgress-bar": {
+    borderRadius: 999,
+    backgroundColor: theme.colors.action,
+  },
 });

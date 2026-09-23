@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "General Analysis - GL Wizard",
+  title: "GL Transactions Analysis - GL Wizard",
 };
 
 import { GeneralAnalysisClient } from "./client";
