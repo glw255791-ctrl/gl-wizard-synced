@@ -174,7 +174,7 @@ export function GeneralAnalysis() {
               "& > .MuiGrid2-root": { display: "flex" },
             }}
           >
-            <Grid2 size={7}>
+            <Grid2 size={{ xs: 12, md: 7 }}>
               <FileDropzone
                 onDrop={(files) => {
                   setGlFileName(files[0]?.name ?? "");
@@ -206,7 +206,7 @@ export function GeneralAnalysis() {
               </FileDropzone>
             </Grid2>
 
-            <Grid2 size={5} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Grid2 size={{ xs: 12, md: 5 }} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <FileDropzone
                 fieldsBelow
                 onDrop={async (files) => {

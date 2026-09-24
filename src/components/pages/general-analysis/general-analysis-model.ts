@@ -427,13 +427,14 @@ export function useGeneralAnalysis() {
    * @param value - The selected header value
    */
   const onChangeGlHeader = (key: keyof GlHeaders, value: string) => {
-    const newGlHeaders = { ...selectedHeaders.glHeaders, [key]: value };
-    setSelectedHeaders((prev) => ({ ...prev, glHeaders: newGlHeaders }));
-    if (Object.values(newGlHeaders).every(Boolean)) rememberGlHeaders(newGlHeaders);
-
-    if (!Object.values(newGlHeaders).some((item) => item === "")) {
-      setCurrentStep(AnalysisStep.TO_UPLOAD_COA);
-    }
+    setSelectedHeaders((prev) => {
+      const glHeaders = { ...prev.glHeaders, [key]: value };
+      if (Object.values(glHeaders).every(Boolean)) rememberGlHeaders(glHeaders);
+      if (!Object.values(glHeaders).some((item) => item === "")) {
+        setCurrentStep(AnalysisStep.TO_UPLOAD_COA);
+      }
+      return { ...prev, glHeaders };
+    });
   };
 
   /**

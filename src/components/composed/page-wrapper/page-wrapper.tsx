@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { Alert, Snackbar, Tooltip } from "@mui/material";
+import { Alert, Snackbar, Tooltip, useMediaQuery } from "@mui/material";
 import {
   Root,
   Row,
@@ -16,6 +16,7 @@ import {
   TopBtns,
   BottomBtns,
   Content,
+  MobileBackdrop,
   MenuBtn,
 } from "./style";
 import { JSX, useEffect, useState } from "react";
@@ -76,6 +77,8 @@ export function PageWrapper({ children }: Props) {
     open: false,
   });
   const [navCollapsed, setNavCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 900px)");
   const [userRole, setUserRole] = useState<"user" | "admin" | undefined>(
     undefined
   );
@@ -86,6 +89,15 @@ export function PageWrapper({ children }: Props) {
     const stored = window.localStorage.getItem("gl-wizard-nav-collapsed");
     if (stored === "true") setNavCollapsed(true);
   }, []);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  const go = (path: string) => {
+    setMobileOpen(false);
+    router.push(path);
+  };
 
   const toggleNav = () => {
     setNavCollapsed((current) => {
@@ -153,6 +165,14 @@ export function PageWrapper({ children }: Props) {
   return (
     <Root>
       <Banner>
+        {isMobile ? (
+          <BannerAccountButton
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            onClick={() => setMobileOpen((open) => !open)}
+          >
+            {mobileOpen ? <MenuOpenIcon /> : <MenuIcon />}
+          </BannerAccountButton>
+        ) : null}
         <BannerLogo src="/logo-white.png" alt="GL Wizard" />
         <BannerTitle>GL Wizard</BannerTitle>
         <BannerAccount>
@@ -169,63 +189,67 @@ export function PageWrapper({ children }: Props) {
         </BannerAccount>
       </Banner>
       <Row>
-        <Left collapsed={navCollapsed}>
+        <Left
+          collapsed={isMobile ? false : navCollapsed}
+          overlay={isMobile}
+          mobileOpen={mobileOpen}
+        >
+          {!isMobile ? (
           <BannerButton
             onClick={toggleNav}
             aria-label={navCollapsed ? "Show menu" : "Hide menu"}
           >
             {navCollapsed ? <MenuIcon /> : <MenuOpenIcon />}
           </BannerButton>
+          ) : null}
           <BtnGroupsWrapper>
             <TopBtns>
               <NavLink
                 menuPath="/dashboard"
                 pathname={pathname}
-                collapsed={navCollapsed}
+                collapsed={isMobile ? false : navCollapsed}
                 label="Dashboard"
                 startIcon={<WidgetsIcon />}
                 variant="contained"
-                onClick={() => router.push("/dashboard")}
+                onClick={() => go("/dashboard")}
               />
               <NavLink
                 menuPath="/general-analysis"
                 pathname={pathname}
-                collapsed={navCollapsed}
+                collapsed={isMobile ? false : navCollapsed}
                 label="GL Transactions Analysis"
                 startIcon={<TableChartIcon />}
                 variant="contained"
-                onClick={() => router.push("/general-analysis")}
+                onClick={() => go("/general-analysis")}
               />
               <NavLink
                 menuPath="/reversal-analysis"
                 pathname={pathname}
-                collapsed={navCollapsed}
+                collapsed={isMobile ? false : navCollapsed}
                 label="Reversal"
                 startIcon={<RepeatOnIcon />}
                 variant="contained"
-                onClick={() => router.push("/reversal-analysis")}
+                onClick={() => go("/reversal-analysis")}
               />
               <NavLink
                 menuPath="/reversal-reclassification-analysis"
                 pathname={pathname}
-                collapsed={navCollapsed}
+                collapsed={isMobile ? false : navCollapsed}
                 label="Reversal/Reclassification"
                 startIcon={<ShuffleOnIcon />}
                 variant="contained"
-                onClick={() =>
-                  router.push("/reversal-reclassification-analysis")
-                }
+                onClick={() => go("/reversal-reclassification-analysis")}
               />
               {userRole !== "user" && (
                 <NavLink
                   menuPath="/user-management"
                   pathname={pathname}
-                  collapsed={navCollapsed}
+                  collapsed={isMobile ? false : navCollapsed}
                   label="User Management"
                   startIcon={<GroupIcon />}
                   variant="contained"
                   disabled={userRole !== "admin"}
-                  onClick={() => router.push("/user-management")}
+                  onClick={() => go("/user-management")}
                   sx={
                     userRole === "admin"
                       ? undefined
@@ -240,24 +264,30 @@ export function PageWrapper({ children }: Props) {
               <NavLink
                 menuPath="/user-manual"
                 pathname={pathname}
-                collapsed={navCollapsed}
+                collapsed={isMobile ? false : navCollapsed}
                 label="User Manual"
                 startIcon={<HelpCenterIcon />}
                 variant="contained"
-                onClick={() => router.push("/user-manual")}
+                onClick={() => go("/user-manual")}
               />
               <NavLink
                 menuPath="/about"
                 pathname={pathname}
-                collapsed={navCollapsed}
+                collapsed={isMobile ? false : navCollapsed}
                 label="About"
                 startIcon={<PrivacyTipIcon />}
                 variant="contained"
-                onClick={() => router.push("/about")}
+                onClick={() => go("/about")}
               />
             </BottomBtns>
           </BtnGroupsWrapper>
         </Left>
+        {isMobile && mobileOpen ? (
+          <MobileBackdrop
+            aria-label="Close menu"
+            onClick={() => setMobileOpen(false)}
+          />
+        ) : null}
         <Content data-app-content>{children}</Content>
       </Row>
       <Snackbar

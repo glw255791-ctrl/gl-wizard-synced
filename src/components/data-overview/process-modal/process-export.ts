@@ -122,3 +122,129 @@ export const exportTreeToExcel = async (root: Node, fileName = "tree.xlsx") => {
   const buf = await workbook.xlsx.writeBuffer();
   saveAs(new Blob([buf], { type: "application/octet-stream" }), fileName);
 };
+
+function parseAmount(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  const text = String(value ?? "").trim();
+  if (!text) return null;
+  const normalized = text.replace(/\./g, "").replace(",", ".");
+  const amount = Number(normalized);
+  return Number.isFinite(amount) ? amount : null;
+}
+
+function sheetName(raw: string, used: Set<string>, index: number) {
+  const cleaned = raw.replace(/[*?:\\/[\]]/g, " ").replace(/\s+/g, " ").trim();
+  const base = (cleaned || `Sheet ${index + 1}`).slice(0, 31);
+  let candidate = base;
+  let attempt = 2;
+  while (used.has(candidate.toLowerCase())) {
+    const suffix = ` ${attempt}`;
+    candidate = `${base.slice(0, 31 - suffix.length)}${suffix}`;
+    attempt += 1;
+  }
+  used.add(candidate.toLowerCase());
+  return candidate;
+}
+
+function collectLines(node: Node, lines: { process: string; path: string; amount: number }[]) {
+  for (const row of node.rows) {
+    const label = String(row.sideHeader ?? "");
+    if (!label || label === "Total") continue;
+    const amount = parseAmount(row.total);
+    if (amount == null) continue;
+    lines.push({ process: node.title, path: label, amount });
+  }
+  node.children.forEach((child) => collectLines(child, lines));
+}
+
+export async function exportProcessWorkbook({
+  root,
+  fileName,
+  detailHeader,
+  details,
+}: {
+  root: Node;
+  fileName: string;
+  detailHeader: { key: string; title: string }[];
+  details: { title: string; rows: Record<string, unknown>[] }[];
+}) {
+  const workbook = await createWorkbook();
+  const used = new Set<string>();
+  const lines: { process: string; path: string; amount: number }[] = [];
+  collectLines(root, lines);
+
+  const pathWidth = Math.max(1, ...lines.map((line) => line.path.split("/").length));
+  const pathHeaders = Array.from({ length: pathWidth }, (_, index) =>
+    pathWidth === 1 ? "Account" : `Account ${index + 1}`
+  );
+  const summary = workbook.addWorksheet(sheetName(root.title || "Process", used, 0));
+  const header = summary.addRow(["Process", ...pathHeaders, "Amount"]);
+  header.font = { bold: true, color: { argb: "FFFFFFFF" } };
+  header.eachCell((cell) => {
+    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF356F73" } };
+  });
+
+  lines.forEach((line) => {
+    const parts = line.path.split("/");
+    const padded = Array.from({ length: pathWidth }, (_, index) => parts[index] ?? "");
+    summary.addRow([line.process, ...padded, line.amount]);
+  });
+
+  const amountCol = 2 + pathWidth;
+  const firstData = 2;
+  const lastData = Math.max(firstData, lines.length + 1);
+  for (let row = firstData; row <= lastData; row += 1) {
+    summary.getCell(row, amountCol).numFmt = "#,##0.00";
+  }
+  const totalRow = summary.addRow([
+    "Total",
+    ...Array(pathWidth).fill(""),
+    lines.length ? { formula: `SUM(${summary.getColumn(amountCol).letter}${firstData}:${summary.getColumn(amountCol).letter}${lastData})` } : 0,
+  ]);
+  totalRow.font = { bold: true };
+  summary.getCell(totalRow.number, amountCol).numFmt = "#,##0.00";
+  summary.getColumn(1).width = 28;
+  for (let col = 2; col < amountCol; col += 1) summary.getColumn(col).width = 36;
+  summary.getColumn(amountCol).width = 18;
+  summary.views = [{ state: "frozen", ySplit: 1 }];
+
+  details.forEach((detail, index) => {
+    if (!detail.rows.length) return;
+    const worksheet = workbook.addWorksheet(
+      sheetName(detail.title.split("/").at(-1) || detail.title, used, index + 1)
+    );
+    const sample = detail.rows[0];
+    const keys = Object.keys(sample).filter((key) => key !== "coaData");
+    const coaKeys = Object.keys((sample.coaData as Record<string, unknown>) ?? {});
+    const head = worksheet.addRow([...keys, ...coaKeys]);
+    head.font = { bold: true, color: { argb: "FFFFFFFF" } };
+    head.eachCell((cell) => {
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF356F73" } };
+    });
+    const valueTitle = detailHeader.find((item) => item.key === "value")?.title;
+    detail.rows.forEach((row) => {
+      const values = keys.map((key) => {
+        const value = row[key];
+        if (key === "result" && Array.isArray(value)) return value.join("/");
+        if (valueTitle && key === valueTitle) return parseAmount(value) ?? value;
+        if (value instanceof Date) return value;
+        return typeof value === "object" && value != null ? "" : value;
+      });
+      const coa = coaKeys.map(
+        (key) => (row.coaData as Record<string, unknown> | undefined)?.[key] ?? ""
+      );
+      worksheet.addRow([...values, ...coa]);
+    });
+    worksheet.columns.forEach((column) => {
+      column.width = 22;
+    });
+  });
+
+  const buf = await workbook.xlsx.writeBuffer();
+  saveAs(
+    new Blob([buf], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    }),
+    fileName
+  );
+}

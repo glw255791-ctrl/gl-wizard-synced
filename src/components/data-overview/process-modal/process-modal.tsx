@@ -580,38 +580,33 @@ export function ProcessModal(props: ProcessModalProps) {
                       )
                       .flat();
 
-                    const tableDataByRows = allRows.map((item) => {
-                      return basicTableData.filter((tableItem) => {
-                        return (
-                          toResultPath(tableItem.result) === item.sideHeader &&
-                          tableItem.coaData[
-                            commonTableProps.groupingValue as keyof AnyType
-                          ] ===
-                            item[
+                    const rows = allRows
+                      .filter((item) => String(item.sideHeader) !== "Total")
+                      .map((item) => ({
+                        title: String(item.sideHeader),
+                        rows: basicTableData.filter((tableItem) => {
+                          return (
+                            toResultPath(tableItem.result) === item.sideHeader &&
+                            tableItem.coaData[
                               commonTableProps.groupingValue as keyof AnyType
-                            ]
-                        );
-                      });
+                            ] ===
+                              item[
+                                commonTableProps.groupingValue as keyof AnyType
+                              ]
+                          );
+                        }),
+                      }));
+                    const { exportProcessWorkbook } = await import("./process-export");
+                    const tree = buildTree(overallProcessObject);
+                    if (!tree) {
+                      throw new Error("Nothing selected to export.");
+                    }
+                    await exportProcessWorkbook({
+                      root: tree,
+                      fileName: `${fileName}.xlsx`,
+                      detailHeader: basicTableHeader,
+                      details: rows,
                     });
-
-                    const rows = allRows.map((item) => String(item.sideHeader));
-                    const [
-                      { exportMultipleTablesToExcel },
-                      { exportTreeToExcel },
-                    ] = await Promise.all([
-                      import("../table/functions"),
-                      import("./process-export"),
-                    ]);
-
-                    await exportMultipleTablesToExcel(
-                      basicTableHeader,
-                      tableDataByRows,
-                      rows
-                    );
-                    await exportTreeToExcel(
-                      buildTree(overallProcessObject),
-                      `${fileName}.xlsx`
-                    );
 
                     setExportStatus("done");
                     setExportMessage(`Saved ${fileName}.xlsx`);

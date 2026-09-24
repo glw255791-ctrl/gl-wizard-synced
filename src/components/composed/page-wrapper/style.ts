@@ -48,6 +48,10 @@ export const BannerAccountName = styled(Stack)({
     fontWeight: 500,
     color: "rgba(255, 255, 255, 0.78)",
   },
+
+  "@media (max-width: 700px)": {
+    display: "none",
+  },
 });
 
 export const BannerAccountButton = styled(Button)({
@@ -106,53 +110,65 @@ export const Row = styled(Stack)({
 });
 
 export const Left = styled(Stack, {
-  shouldForwardProp: (prop) => prop !== "collapsed",
-})<{ collapsed?: boolean }>(({ collapsed }) => ({
-  width: collapsed ? 84 : 280,
-  flexShrink: 0,
-  backgroundImage: `linear-gradient(180deg, ${theme.colors.deepTeal} 0%, ${theme.colors.deepTeal} 55%, ${theme.colors.freshBlue} 100%)`,
-  borderRight: "none",
-  height: "100%",
-  boxSizing: "border-box",
-  alignItems: collapsed ? "center" : "stretch",
-  padding: "1rem 0 4.5rem",
-  overflow: "hidden",
-  transition: "width 0.2s ease",
-
-  ...(collapsed
-    ? {
-        "& .MuiButton-root": {
-          width: 52,
-          minWidth: 52,
-          height: 52,
-          margin: "0 auto",
-          padding: 0,
-          justifyContent: "center",
-        },
-        "& .nav-active": {
-          width: "calc(100% - 0.35rem)",
-          minWidth: 0,
-          marginLeft: "0.35rem",
-          marginRight: 0,
-          padding: 0,
-          borderRadius: "999px 0 0 999px",
-          backgroundColor: theme.colors.warmWhite,
-          color: theme.colors.graphite,
-          borderTop: `3px solid ${theme.colors.freshLime}`,
-          borderBottom: `3px solid ${theme.colors.freshLime}`,
-          borderLeft: `3px solid ${theme.colors.freshLime}`,
-          borderRight: "none",
-          justifyContent: "center",
-        },
-        "& .MuiButton-startIcon": {
-          margin: 0,
-        },
-        "& .MuiSvgIcon-root": {
-          fontSize: 26,
-        },
-      }
-    : {}),
-}));
+  shouldForwardProp: (prop) =>
+    prop !== "collapsed" && prop !== "overlay" && prop !== "mobileOpen",
+})<{ collapsed?: boolean; overlay?: boolean; mobileOpen?: boolean }>(
+  ({ collapsed, overlay, mobileOpen }) => ({
+    width: collapsed && !overlay ? 84 : 280,
+    flexShrink: 0,
+    backgroundImage: `linear-gradient(180deg, ${theme.colors.deepTeal} 0%, ${theme.colors.deepTeal} 55%, ${theme.colors.freshBlue} 100%)`,
+    borderRight: "none",
+    height: overlay ? "calc(100vh - 68px)" : "100%",
+    boxSizing: "border-box",
+    alignItems: collapsed && !overlay ? "center" : "stretch",
+    padding: "1rem 0 4.5rem",
+    overflow: "auto",
+    transition: "transform 0.2s ease, width 0.2s ease",
+    ...(overlay
+      ? {
+          position: "fixed",
+          zIndex: 30,
+          top: 68,
+          left: 0,
+          transform: mobileOpen ? "none" : "translateX(-105%)",
+          boxShadow: mobileOpen ? "12px 0 32px rgba(57, 66, 67, 0.28)" : "none",
+        }
+      : {}),
+    ...(collapsed && !overlay
+      ? {
+          "& .MuiButton-root": {
+            width: 52,
+            minWidth: 52,
+            height: 52,
+            margin: "0 auto",
+            padding: 0,
+            justifyContent: "center",
+          },
+          "& .nav-active": {
+            width: "calc(100% - 0.35rem)",
+            minWidth: 0,
+            marginLeft: "0.35rem",
+            marginRight: 0,
+            padding: 0,
+            borderRadius: "999px 0 0 999px",
+            backgroundColor: theme.colors.warmWhite,
+            color: theme.colors.graphite,
+            borderTop: `3px solid ${theme.colors.freshLime}`,
+            borderBottom: `3px solid ${theme.colors.freshLime}`,
+            borderLeft: `3px solid ${theme.colors.freshLime}`,
+            borderRight: "none",
+            justifyContent: "center",
+          },
+          "& .MuiButton-startIcon": {
+            margin: 0,
+          },
+          "& .MuiSvgIcon-root": {
+            fontSize: 26,
+          },
+        }
+      : {}),
+  })
+);
 
 export const Content = styled(Stack)({
   flex: 1,
@@ -164,6 +180,19 @@ export const Content = styled(Stack)({
   boxSizing: "border-box",
   overflow: "auto",
   backgroundColor: theme.colors.warmWhite,
+
+  "@media (max-width: 900px)": {
+    padding: "0.75rem",
+  },
+});
+
+export const MobileBackdrop = styled("button")({
+  position: "fixed",
+  inset: "68px 0 0 0",
+  zIndex: 25,
+  border: "none",
+  padding: 0,
+  backgroundColor: "rgba(57, 66, 67, 0.45)",
 });
 
 export const MenuBtn = styled(Button)({

@@ -134,7 +134,7 @@ export function ReversaReclassificationAnalysis() {
 
           {currentStep !== AnalysisStep.ANALYZED && (
             <Grid2 container spacing={2}>
-              <Grid2 size={6}>
+              <Grid2 size={{ xs: 12, md: 6 }}>
                 <FileDropzone
                   onDrop={(files) => {
                     setGlFileName(files[0]?.name ?? "");
@@ -165,7 +165,7 @@ export function ReversaReclassificationAnalysis() {
                 </FileDropzone>
               </Grid2>
 
-              <Grid2 size={6}>
+              <Grid2 size={{ xs: 12, md: 6 }}>
                 <FileDropzone
                   onDrop={(files) => {
                     setCoaFileName(files[0]?.name ?? "");

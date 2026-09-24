@@ -143,7 +143,7 @@ export function ReversalAnalysis() {
               "& > .MuiGrid2-root": { display: "flex" },
             }}
           >
-            <Grid2 size={glHeaderOptions.length > 0 ? 6 : 4}>
+            <Grid2 size={{ xs: 12, md: glHeaderOptions.length > 0 ? 6 : 4 }}>
               <FileDropzone
                 onDrop={(files) => {
                   setGlFileName(files[0]?.name ?? "");
@@ -175,7 +175,7 @@ export function ReversalAnalysis() {
               </FileDropzone>
             </Grid2>
 
-            <Grid2 size={glHeaderOptions.length > 0 ? 3 : 4}>
+            <Grid2 size={{ xs: 12, md: glHeaderOptions.length > 0 ? 3 : 4 }}>
               <FileDropzone
                 onDrop={(files) => {
                   setCoaFileName(files[0]?.name ?? "");
@@ -221,7 +221,7 @@ export function ReversalAnalysis() {
               </FileDropzone>
             </Grid2>
 
-            <Grid2 size={glHeaderOptions.length > 0 ? 3 : 4}>
+            <Grid2 size={{ xs: 12, md: glHeaderOptions.length > 0 ? 3 : 4 }}>
               <FileDropzone
                 optional
                 onDrop={(files) => {

@@ -261,15 +261,13 @@ export function useReversalAnalysis() {
   };
 
   const onChangeGlHeader = (key: keyof GlHeaders, value: string) => {
-    const updatedGlHeaders = { ...selectedHeaders.glHeaders, [key]: value };
-    setSelectedHeaders((prev) => ({
-      ...prev,
-      glHeaders: updatedGlHeaders,
-    }));
-
-    if (Object.values(updatedGlHeaders).every((val) => val !== "")) {
-      setCurrentStep(AnalysisStep.TO_UPLOAD_COA);
-    }
+    setSelectedHeaders((prev) => {
+      const glHeaders = { ...prev.glHeaders, [key]: value };
+      if (!Object.values(glHeaders).some((item) => item === "")) {
+        setCurrentStep(AnalysisStep.TO_UPLOAD_COA);
+      }
+      return { ...prev, glHeaders };
+    });
   };
 
   const onChangeCoaHeader = (key: keyof CoaHeaders, value: string) => {
