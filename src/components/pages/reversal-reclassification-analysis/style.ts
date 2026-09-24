@@ -10,11 +10,14 @@ export const RootStack = styled(Stack)(() => ({
 }));
 
 export const CardStyled = styled(Card)(() => ({
-  backgroundColor: theme.colors.lighter,
-  border: `1px solid ${theme.colors.surface}`,
+  backgroundColor: theme.colors.surface,
+  border: `1px solid ${theme.colors.softBlue}`,
   boxShadow: "none",
-  borderRadius: theme.borderRadius.sm,
-  padding: theme.padding.lg,
+  borderRadius: theme.borderRadius.md,
+  "&&": {
+    padding: "0.75rem 1rem",
+    overflow: "visible",
+  },
   flexDirection: "row",
   display: "flex",
   justifyContent: "space-between",

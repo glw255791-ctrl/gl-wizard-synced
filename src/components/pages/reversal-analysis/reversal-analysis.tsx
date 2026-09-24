@@ -125,6 +125,7 @@ export function ReversalAnalysis() {
         <RootStack spacing={2}>
           <Header
             title="Reversal"
+            description="Find entries that cancel each other."
             onPressResetBtn={resetAnalysis}
             step={currentStep}
           />

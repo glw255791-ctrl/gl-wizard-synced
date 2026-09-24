@@ -122,6 +122,7 @@ export function ReversaReclassificationAnalysis() {
         <RootStack spacing={2}>
           <Header
             title="Reversal/Reclassification"
+            description="Group moves on the same account."
             onPressResetBtn={resetAnalysis}
             step={currentStep}
           />

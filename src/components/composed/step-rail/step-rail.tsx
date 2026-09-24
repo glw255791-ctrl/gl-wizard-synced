@@ -2,7 +2,6 @@
 
 import { styled } from "@mui/material/styles";
 import { Stack, Typography } from "@mui/material";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { AnalysisStep } from "@/types";
 import { theme } from "@/constants/theme";
 
@@ -11,7 +10,7 @@ const jobs = [
   "Upload the general ledger.",
   "Choose the four columns, then add the chart of accounts.",
   "Check the files, then analyze.",
-  "Review the results.",
+  "Review Movement Tables and Process Analysis.",
 ];
 
 function activeIndex(step: AnalysisStep) {
@@ -29,75 +28,84 @@ function activeIndex(step: AnalysisStep) {
 }
 
 const Column = styled(Stack)({
-  alignItems: "center",
-  gap: "0.35rem",
+  gap: "0.55rem",
 });
 
 const Rail = styled(Stack)({
   flexDirection: "row",
   flexWrap: "wrap",
   alignItems: "center",
-  justifyContent: "center",
-  gap: "0.35rem",
-});
-
-const Join = styled(ChevronRightIcon)({
-  fontSize: "1.15rem",
-  color: theme.colors.medium,
-});
-
-const Job = styled(Typography)({
-  fontSize: "0.9rem",
-  color: theme.colors.medium,
-  textAlign: "center",
+  gap: "0.45rem",
+  padding: "0.7rem 0.85rem",
+  borderRadius: theme.borderRadius.md,
+  backgroundColor: theme.colors.surface,
+  border: `1px solid ${theme.colors.softBlue}`,
 });
 
 const Step = styled(Stack)({
   flexDirection: "row",
   alignItems: "center",
-  gap: "0.4rem",
-  padding: "0.35rem 0.7rem",
-  borderRadius: "999px",
-  backgroundColor: theme.colors.white,
-  border: `1px solid ${theme.colors.surface}`,
-  color: theme.colors.medium,
-  fontSize: "0.9rem",
+  gap: "0.45rem",
+  padding: "0.3rem 0.65rem 0.3rem 0.3rem",
+  borderRadius: 999,
+  backgroundColor: theme.colors.cleanWhite,
+  border: `1px solid ${theme.colors.softBlue}`,
+  color: theme.colors.slateGray,
+  fontSize: "0.85rem",
   fontWeight: 600,
 
   '&[data-state="current"]': {
-    backgroundColor: theme.colors.action,
-    color: theme.colors.black,
-    borderColor: theme.colors.darker,
+    backgroundColor: theme.colors.freshLime,
+    color: theme.colors.graphite,
+    borderColor: theme.colors.deepTeal,
   },
 
   '&[data-state="current"] .step-num': {
-    backgroundColor: theme.colors.darker,
-    color: theme.colors.white,
+    backgroundColor: theme.colors.deepTeal,
+    color: theme.colors.cleanWhite,
   },
 
   '&[data-state="done"]': {
-    backgroundColor: theme.colors.gray,
-    color: theme.colors.black,
-    borderColor: theme.colors.gray,
+    backgroundColor: theme.colors.paleBlue,
+    color: theme.colors.deepTeal,
+    borderColor: theme.colors.softBlue,
   },
 
   '&[data-state="done"] .step-num': {
-    backgroundColor: theme.colors.darker,
-    color: theme.colors.white,
+    backgroundColor: theme.colors.deepTeal,
+    color: theme.colors.cleanWhite,
   },
 });
 
 const Num = styled(Typography)({
   width: 24,
   height: 24,
-  borderRadius: "999px",
+  borderRadius: 999,
   display: "grid",
   placeItems: "center",
-  fontSize: "0.85rem",
+  fontSize: "0.8rem",
   fontWeight: 700,
   lineHeight: 1,
-  backgroundColor: theme.colors.surface,
-  color: theme.colors.darker,
+  backgroundColor: theme.colors.lightGray,
+  color: theme.colors.deepTeal,
+});
+
+const Join = styled("span")({
+  width: 14,
+  height: 2,
+  borderRadius: 999,
+  backgroundColor: theme.colors.softBlue,
+  flexShrink: 0,
+
+  "@media (max-width: 700px)": {
+    display: "none",
+  },
+});
+
+const Job = styled(Typography)({
+  fontSize: "0.88rem",
+  color: theme.colors.slateGray,
+  paddingLeft: "0.15rem",
 });
 
 export function StepRail({ step }: { step: AnalysisStep }) {
@@ -107,7 +115,7 @@ export function StepRail({ step }: { step: AnalysisStep }) {
     <Column>
       <Rail>
         {labels.map((label, index) => (
-          <Stack key={label} direction="row" alignItems="center">
+          <Stack key={label} direction="row" alignItems="center" gap="0.45rem">
             <Step
               data-state={
                 index === current ? "current" : index < current ? "done" : "todo"

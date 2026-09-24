@@ -5,10 +5,7 @@ import { useMemo } from "react";
 import { theme } from "@/constants/theme";
 import { GlHeaders } from "@/types";
 
-function summarize(
-  rows: Record<string, unknown>[],
-  headers: GlHeaders
-) {
+function summarize(rows: Record<string, unknown>[], headers: GlHeaders) {
   let unmapped = 0;
   const journals = new Map<string, number>();
 
@@ -36,11 +33,36 @@ function summarize(
 
 function Figure({ label, value }: { label: string; value: number }) {
   return (
-    <Stack gap={0.25}>
-      <Typography variant="body2" color={theme.colors.medium}>
+    <Stack
+      gap={0.25}
+      sx={{
+        flex: "1 1 120px",
+        minWidth: 0,
+        padding: "0.65rem 0.85rem",
+        borderRadius: theme.borderRadius.sm,
+        backgroundColor: theme.colors.cleanWhite,
+        border: `1px solid ${theme.colors.softBlue}`,
+      }}
+    >
+      <Typography
+        sx={{
+          fontSize: "0.75rem",
+          fontWeight: 700,
+          letterSpacing: "0.05em",
+          textTransform: "uppercase",
+          color: theme.colors.freshBlue,
+        }}
+      >
         {label}
       </Typography>
-      <Typography fontWeight={700} color={theme.colors.black}>
+      <Typography
+        sx={{
+          fontSize: "1.25rem",
+          fontWeight: 700,
+          color: theme.colors.deepTeal,
+          lineHeight: 1.2,
+        }}
+      >
         {value.toLocaleString("en-US")}
       </Typography>
     </Stack>
@@ -57,19 +79,33 @@ export function AnalysisSummary({
   const summary = useMemo(() => summarize(rows, headers), [rows, headers]);
 
   return (
-    <Stack
-      direction="row"
-      gap={4}
-      sx={{
-        backgroundColor: theme.colors.lighter,
-        border: `1px solid ${theme.colors.surface}`,
-        borderRadius: theme.borderRadius.sm,
-        padding: "0.85rem 1.15rem",
-      }}
-    >
-      <Figure label="Rows" value={summary.rows} />
-      <Figure label="Unmapped rows" value={summary.unmapped} />
-      <Figure label="Journals not at zero" value={summary.openJournals} />
+    <Stack gap={1}>
+      <Typography
+        sx={{
+          fontSize: "0.8rem",
+          fontWeight: 700,
+          letterSpacing: "0.06em",
+          textTransform: "uppercase",
+          color: theme.colors.freshBlue,
+        }}
+      >
+        Results overview
+      </Typography>
+      <Stack
+        direction="row"
+        flexWrap="wrap"
+        gap={1.25}
+        sx={{
+          backgroundColor: theme.colors.surface,
+          border: `1px solid ${theme.colors.softBlue}`,
+          borderRadius: theme.borderRadius.md,
+          padding: "0.85rem 1rem",
+        }}
+      >
+        <Figure label="Rows" value={summary.rows} />
+        <Figure label="Unmapped rows" value={summary.unmapped} />
+        <Figure label="Journals not at zero" value={summary.openJournals} />
+      </Stack>
     </Stack>
   );
 }

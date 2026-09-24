@@ -1,23 +1,37 @@
 "use client";
 
-import { Grid2, Stack, Typography } from "@mui/material";
+import { Grid2, Stack } from "@mui/material";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import RepeatOnIcon from "@mui/icons-material/RepeatOn";
 import ShuffleOnIcon from "@mui/icons-material/ShuffleOn";
 import GroupIcon from "@mui/icons-material/Group";
+import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
+import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
+import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
 import { useRouter } from "next/navigation";
 import {
   ButtonsWrapper,
   CardCopy,
   CardHint,
   CardTitle,
+  FlowDivider,
+  FlowNum,
+  FlowStep,
+  FlowStrip,
+  FlowText,
   MenuPanel,
+  MetaChip,
   Root,
+  SectionHeader,
+  SectionHint,
+  SectionLabel,
   StyledMenuButton,
-  WelcomeBlock,
+  WelcomeChips,
+  WelcomeCopy,
+  WelcomeEyebrow,
+  WelcomeHero,
   WelcomeMeta,
   WelcomeTitle,
-  SectionLabel,
 } from "./style";
 
 import { useEffect, useMemo, useState } from "react";
@@ -82,22 +96,58 @@ export function MainMenu() {
       <Root>
         <Header />
         <MenuPanel>
-          <WelcomeBlock>
-            <WelcomeTitle>
-              {displayName ? `Welcome, ${displayName}` : "Welcome"}
-            </WelcomeTitle>
-            <WelcomeMeta>
-              {[roleLabel, licenceLabel].filter(Boolean).join(" · ") ||
-                "Choose a workspace to continue."}
-            </WelcomeMeta>
-          </WelcomeBlock>
+          <WelcomeHero>
+            <WelcomeCopy>
+              <WelcomeEyebrow>Dashboard</WelcomeEyebrow>
+              <WelcomeTitle>
+                {displayName ? `Welcome, ${displayName}` : "Welcome"}
+              </WelcomeTitle>
+              <WelcomeMeta>
+                Choose a workspace to upload a ledger and run an analysis.
+              </WelcomeMeta>
+            </WelcomeCopy>
+            <WelcomeChips>
+              {roleLabel ? (
+                <MetaChip>
+                  <BadgeOutlinedIcon />
+                  {roleLabel}
+                </MetaChip>
+              ) : null}
+              {licenceLabel ? (
+                <MetaChip>
+                  <EventAvailableOutlinedIcon />
+                  {licenceLabel}
+                </MetaChip>
+              ) : null}
+            </WelcomeChips>
+          </WelcomeHero>
 
-          <Stack gap={1} sx={{ flex: 1, minHeight: 0 }}>
-            <SectionLabel>Workspaces</SectionLabel>
+          <FlowStrip>
+            <FlowStep>
+              <FlowNum>1</FlowNum>
+              <FlowText>Upload the general ledger</FlowText>
+            </FlowStep>
+            <FlowDivider />
+            <FlowStep>
+              <FlowNum>2</FlowNum>
+              <FlowText>Map columns and chart of accounts</FlowText>
+            </FlowStep>
+            <FlowDivider />
+            <FlowStep>
+              <FlowNum>3</FlowNum>
+              <FlowText>Review Movement Tables and Process Analysis</FlowText>
+            </FlowStep>
+          </FlowStrip>
+
+          <Stack gap={1.1}>
+            <SectionHeader>
+              <SectionLabel>Workspaces</SectionLabel>
+              <SectionHint>Three analysis flows, same upload path</SectionHint>
+            </SectionHeader>
             <ButtonsWrapper container spacing={2}>
-              <Grid2 size={isAdmin ? 6 : 4}>
+              <Grid2 size={{ xs: 12, md: 4 }}>
                 <StyledMenuButton
-                  accent={theme.colors.darker}
+                  accent={theme.colors.deepTeal}
                   onClick={() => router.push("/general-analysis")}
                 >
                   <span className="card-mark">
@@ -107,9 +157,10 @@ export function MainMenu() {
                     <CardTitle>GL Transactions Analysis</CardTitle>
                     <CardHint>Map the ledger and name each journal.</CardHint>
                   </CardCopy>
+                  <ArrowForwardRoundedIcon className="card-arrow" />
                 </StyledMenuButton>
               </Grid2>
-              <Grid2 size={isAdmin ? 6 : 4}>
+              <Grid2 size={{ xs: 12, md: 4 }}>
                 <StyledMenuButton
                   accent={theme.colors.freshBlue}
                   onClick={() => router.push("/reversal-analysis")}
@@ -121,11 +172,12 @@ export function MainMenu() {
                     <CardTitle>Reversal</CardTitle>
                     <CardHint>Find entries that cancel each other.</CardHint>
                   </CardCopy>
+                  <ArrowForwardRoundedIcon className="card-arrow" />
                 </StyledMenuButton>
               </Grid2>
-              <Grid2 size={isAdmin ? 6 : 4}>
+              <Grid2 size={{ xs: 12, md: 4 }}>
                 <StyledMenuButton
-                  accent={theme.colors.softBlue}
+                  accent={theme.colors.medium}
                   onClick={() =>
                     router.push("/reversal-reclassification-analysis")
                   }
@@ -137,18 +189,22 @@ export function MainMenu() {
                     <CardTitle>Reversal/Reclassification</CardTitle>
                     <CardHint>Group moves on the same account.</CardHint>
                   </CardCopy>
+                  <ArrowForwardRoundedIcon className="card-arrow" />
                 </StyledMenuButton>
               </Grid2>
             </ButtonsWrapper>
           </Stack>
 
           {isAdmin && (
-            <Stack gap={1}>
-              <SectionLabel>Administration</SectionLabel>
-              <ButtonsWrapper container spacing={2} sx={{ flex: "0 0 auto" }}>
-                <Grid2 size={6}>
+            <Stack gap={1.1}>
+              <SectionHeader>
+                <SectionLabel>Administration</SectionLabel>
+                <SectionHint>Account access and licences</SectionHint>
+              </SectionHeader>
+              <ButtonsWrapper container spacing={2}>
+                <Grid2 size={{ xs: 12, md: 6 }}>
                   <StyledMenuButton
-                    accent={theme.colors.medium}
+                    accent={theme.colors.graphite}
                     compact
                     onClick={() => router.push("/user-management")}
                   >
@@ -159,6 +215,7 @@ export function MainMenu() {
                       <CardTitle>User Management</CardTitle>
                       <CardHint>Invite people and extend licences.</CardHint>
                     </CardCopy>
+                    <ArrowForwardRoundedIcon className="card-arrow" />
                   </StyledMenuButton>
                 </Grid2>
               </ButtonsWrapper>

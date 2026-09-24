@@ -27,27 +27,116 @@ export const MenuPanel = styled(Stack)({
   backgroundColor: theme.colors.page,
   border: `1px solid ${theme.colors.softBlue}`,
   borderRadius: theme.borderRadius.md,
-  padding: "1.25rem",
-  gap: theme.gap.lg,
+  padding: "1.25rem 1.35rem 1.5rem",
+  gap: "1.35rem",
   boxShadow: "none",
-  overflow: "hidden",
+  overflow: "auto",
 });
 
-export const WelcomeBlock = styled(Stack)({
-  gap: "0.15rem",
+export const WelcomeHero = styled(Stack)({
+  position: "relative",
+  overflow: "hidden",
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "1.25rem",
+  flexWrap: "wrap",
+  padding: "1.35rem 1.5rem",
+  borderRadius: theme.borderRadius.md,
+  backgroundImage: `linear-gradient(135deg, ${theme.colors.deepTeal} 0%, ${theme.colors.freshBlue} 100%)`,
+  color: theme.colors.cleanWhite,
+  border: "none",
+
+  "&::after": {
+    content: '""',
+    position: "absolute",
+    right: "-2.5rem",
+    top: "-2.5rem",
+    width: "11rem",
+    height: "11rem",
+    borderRadius: "50%",
+    background: "rgba(184, 201, 107, 0.22)",
+    pointerEvents: "none",
+  },
+
+  "&::before": {
+    content: '""',
+    position: "absolute",
+    right: "4rem",
+    bottom: "-3.5rem",
+    width: "8rem",
+    height: "8rem",
+    borderRadius: "50%",
+    background: "rgba(255, 255, 255, 0.08)",
+    pointerEvents: "none",
+  },
+});
+
+export const WelcomeCopy = styled(Stack)({
+  position: "relative",
+  zIndex: 1,
+  gap: "0.35rem",
+  minWidth: 0,
+  flex: "1 1 240px",
+});
+
+export const WelcomeEyebrow = styled(Typography)({
+  fontSize: "0.75rem",
+  fontWeight: 700,
+  letterSpacing: "0.08em",
+  textTransform: "uppercase",
+  color: theme.colors.freshLime,
 });
 
 export const WelcomeTitle = styled(Typography)({
-  fontSize: "1.35rem",
+  fontSize: "1.55rem",
   fontWeight: 700,
   letterSpacing: "0.01em",
-  color: theme.colors.darker,
+  lineHeight: 1.2,
+  color: theme.colors.cleanWhite,
 });
 
 export const WelcomeMeta = styled(Typography)({
   fontSize: "0.95rem",
   fontWeight: 400,
-  color: theme.colors.medium,
+  color: "rgba(255, 255, 255, 0.82)",
+  maxWidth: 420,
+});
+
+export const WelcomeChips = styled(Stack)({
+  position: "relative",
+  zIndex: 1,
+  flexDirection: "row",
+  flexWrap: "wrap",
+  gap: "0.5rem",
+  alignItems: "center",
+});
+
+export const MetaChip = styled(Stack)({
+  flexDirection: "row",
+  alignItems: "center",
+  gap: "0.4rem",
+  padding: "0.4rem 0.75rem",
+  borderRadius: 999,
+  backgroundColor: "rgba(255, 255, 255, 0.14)",
+  border: "1px solid rgba(255, 255, 255, 0.22)",
+  color: theme.colors.cleanWhite,
+  fontSize: "0.8rem",
+  fontWeight: 600,
+  whiteSpace: "nowrap",
+
+  "& .MuiSvgIcon-root": {
+    fontSize: "1rem",
+    color: theme.colors.freshLime,
+  },
+});
+
+export const SectionHeader = styled(Stack)({
+  flexDirection: "row",
+  alignItems: "baseline",
+  justifyContent: "space-between",
+  gap: "0.75rem",
+  flexWrap: "wrap",
 });
 
 export const SectionLabel = styled(Typography)({
@@ -58,14 +147,16 @@ export const SectionLabel = styled(Typography)({
   color: theme.colors.freshBlue,
 });
 
+export const SectionHint = styled(Typography)({
+  fontSize: "0.85rem",
+  color: theme.colors.medium,
+});
+
 export const ButtonsWrapper = styled(Grid2)({
-  flex: 1,
-  minHeight: 0,
   alignContent: "stretch",
 
   "& > .MuiGrid2-root": {
     display: "flex",
-    minHeight: 0,
   },
 });
 
@@ -73,7 +164,7 @@ export const StyledMenuButton = styled(Button, {
   shouldForwardProp: (prop) => prop !== "accent" && prop !== "compact",
 })(
   ({
-    accent = theme.colors.darker,
+    accent = theme.colors.deepTeal,
     compact = false,
   }: {
     accent?: string;
@@ -81,65 +172,145 @@ export const StyledMenuButton = styled(Button, {
   }) => ({
     width: "100%",
     height: "100%",
-    minHeight: compact ? 120 : 0,
-    padding: 0,
+    minHeight: compact ? 88 : 132,
+    padding: compact ? "0.85rem 1rem" : "1.1rem 1.15rem",
     borderRadius: theme.borderRadius.md,
     display: "flex",
-    flexDirection: "column",
-    alignItems: "stretch",
+    flexDirection: "row",
+    alignItems: "center",
     justifyContent: "flex-start",
+    gap: "1rem",
     textTransform: "none",
     overflow: "hidden",
-    backgroundColor: theme.colors.white,
+    backgroundColor: theme.colors.cleanWhite,
     border: `1px solid ${theme.colors.softBlue}`,
-    borderBottom: `4px solid ${accent}`,
     boxShadow: "none",
-    color: theme.colors.black,
+    color: theme.colors.graphite,
+    textAlign: "left",
+    transition: "border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease",
 
     "&:hover": {
       borderColor: accent,
-      borderBottomColor: accent,
-      boxShadow: "none",
-      backgroundColor: theme.colors.white,
+      boxShadow: `0 10px 28px rgba(53, 111, 115, 0.12)`,
+      backgroundColor: theme.colors.cleanWhite,
+      transform: "translateY(-2px)",
+
+      "& .card-mark": {
+        backgroundColor: accent,
+        color: theme.colors.cleanWhite,
+      },
+
+      "& .card-arrow": {
+        color: accent,
+        transform: "translateX(3px)",
+      },
     },
 
     "& .card-mark": {
-      flex: compact ? "0 0 auto" : 1,
-      width: "100%",
-      minHeight: compact ? "3.5rem" : "7.5rem",
+      flex: "0 0 auto",
+      width: compact ? 48 : 56,
+      height: compact ? 48 : 56,
+      borderRadius: 16,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      backgroundColor: theme.colors.surface,
-      color: theme.colors.darker,
+      backgroundColor: theme.colors.paleBlue,
+      color: accent,
+      transition: "background-color 0.15s ease, color 0.15s ease",
     },
 
     "& .card-mark .MuiSvgIcon-root": {
-      fontSize: compact ? "2.25rem" : "4rem",
+      fontSize: compact ? "1.55rem" : "1.85rem",
+    },
+
+    "& .card-arrow": {
+      marginLeft: "auto",
+      color: theme.colors.coolGray,
+      fontSize: "1.35rem",
+      transition: "color 0.15s ease, transform 0.15s ease",
+      flexShrink: 0,
     },
   })
 );
 
 export const CardCopy = styled(Stack)({
   alignItems: "flex-start",
-  gap: "0.15rem",
-  padding: "0.75rem 1rem 0.85rem",
-  backgroundColor: theme.colors.white,
+  gap: "0.2rem",
+  minWidth: 0,
+  flex: 1,
 });
 
 export const CardTitle = styled(Typography)({
-  fontSize: "1.1rem",
-  fontWeight: 600,
+  fontSize: "1.05rem",
+  fontWeight: 700,
   letterSpacing: "0.01em",
-  color: theme.colors.darker,
+  color: theme.colors.deepTeal,
   textAlign: "left",
+  lineHeight: 1.25,
 });
 
 export const CardHint = styled(Typography)({
-  fontSize: "0.9rem",
+  fontSize: "0.86rem",
   fontWeight: 400,
   color: theme.colors.medium,
   textAlign: "left",
+  lineHeight: 1.35,
+});
+
+export const FlowStrip = styled(Stack)({
+  flexDirection: "row",
+  flexWrap: "wrap",
+  gap: "0.65rem",
+  padding: "0.85rem 1rem",
+  borderRadius: theme.borderRadius.md,
+  backgroundColor: theme.colors.surface,
+  border: `1px solid ${theme.colors.softBlue}`,
+});
+
+export const FlowStep = styled(Stack)({
+  flexDirection: "row",
+  alignItems: "center",
+  gap: "0.55rem",
+  flex: "1 1 160px",
+  minWidth: 0,
+});
+
+export const FlowNum = styled(Typography)({
+  width: 26,
+  height: 26,
+  borderRadius: 999,
+  display: "grid",
+  placeItems: "center",
+  flexShrink: 0,
+  fontSize: "0.8rem",
+  fontWeight: 700,
+  backgroundColor: theme.colors.deepTeal,
+  color: theme.colors.cleanWhite,
+});
+
+export const FlowText = styled(Typography)({
+  fontSize: "0.85rem",
+  fontWeight: 600,
+  color: theme.colors.graphite,
+  lineHeight: 1.3,
+});
+
+export const FlowDivider = styled("span")({
+  display: "none",
+  width: 18,
+  height: 2,
+  borderRadius: 999,
+  backgroundColor: theme.colors.softBlue,
+  flexShrink: 0,
+
+  "@media (min-width: 900px)": {
+    display: "block",
+  },
+});
+
+// Kept for any leftover imports / dialogs
+export const WelcomeBlock = styled(Stack)({
+  gap: "0.15rem",
 });
 
 export const QuickLinksRow = styled(Stack)({

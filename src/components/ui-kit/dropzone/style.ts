@@ -4,13 +4,12 @@ import { theme } from "../../../constants/theme";
 
 const DISABLED_OPACITY = 0.55;
 
-// Styled card container
 export const StyledCard = styled(Card)({
   backgroundColor: theme.colors.cleanWhite,
-  border: `1px solid ${theme.colors.paleBlue}`,
+  border: `1px solid ${theme.colors.softBlue}`,
   boxShadow: "none",
-  borderRadius: theme.borderRadius.sm,
-  padding: theme.padding.lg,
+  borderRadius: theme.borderRadius.md,
+  padding: "1rem",
   width: "100%",
   height: "100%",
   minHeight: "14rem",
@@ -18,16 +17,14 @@ export const StyledCard = styled(Card)({
   boxSizing: "border-box",
 });
 
-// Disabled card variant
 export const StyledCardDisabled = styled(StyledCard)({
   opacity: DISABLED_OPACITY,
   pointerEvents: "none",
 });
 
-// Styled dropzone root (Stack)
 export const StyledDropzoneRoot = styled(Stack)({
-  border: `${theme.borderWidth.md} dashed ${theme.colors.freshBlue}`,
-  borderRadius: theme.borderRadius.sm,
+  border: `1.5px dashed ${theme.colors.freshBlue}`,
+  borderRadius: theme.borderRadius.md,
   width: "100%",
   flex: 1,
   minHeight: "11rem",
@@ -37,14 +34,19 @@ export const StyledDropzoneRoot = styled(Stack)({
   alignItems: "center",
   color: theme.colors.deepTeal,
   backgroundColor: theme.colors.paleBlue,
+  transition: "border-color 0.15s ease, background-color 0.15s ease",
+
+  "&:hover": {
+    borderColor: theme.colors.deepTeal,
+    backgroundColor: theme.colors.surface,
+  },
 });
 
-// Styled dropzone root (Stack)
 export const StyledAdditionalDropzoneRoot = styled(Stack, {
   shouldForwardProp: (prop) => prop !== "isDisabled",
 })(({ isDisabled }: { isDisabled?: boolean }) => ({
-  border: `${theme.borderWidth.md} dashed ${theme.colors.freshBlue}`,
-  borderRadius: theme.borderRadius.sm,
+  border: `1.5px dashed ${theme.colors.freshBlue}`,
+  borderRadius: theme.borderRadius.md,
   width: "100%",
   flex: 1,
   minHeight: "11rem",
@@ -59,7 +61,6 @@ export const StyledAdditionalDropzoneRoot = styled(Stack, {
   pointerEvents: isDisabled ? "none" : "auto",
 }));
 
-// Styled download done icon
 export const StyledDownloadDoneIcon = styled(DownloadDoneIcon)({
   fontSize: theme.fontSize.icon,
   color: theme.colors.deepTeal,
@@ -72,9 +73,9 @@ export const ZoneLabel = styled(Typography)({
 });
 
 export const ZoneHint = styled(Typography)({
-  fontSize: "0.8rem",
+  fontSize: "0.75rem",
   fontWeight: 700,
-  letterSpacing: "0.04em",
+  letterSpacing: "0.05em",
   textTransform: "uppercase",
-  color: theme.colors.slateGray,
+  color: theme.colors.freshBlue,
 });

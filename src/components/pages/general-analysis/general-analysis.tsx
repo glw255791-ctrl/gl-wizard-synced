@@ -153,6 +153,7 @@ export function GeneralAnalysis() {
         <RootStack spacing={2}>
           <Header
             title="GL Transactions Analysis"
+            description="Map the ledger and name each journal."
             onPressResetBtn={resetAnalysis}
             step={currentStep}
           />

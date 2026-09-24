@@ -63,7 +63,7 @@ export function LoginPage() {
         <ImageAndLogo>
           <LogoImage src={"/logo.png"} alt="GL Wizard" />
           <Label>GL Wizard</Label>
-          <Subtitle>Sign in to review a ledger.</Subtitle>
+          <Subtitle>Sign in to continue.</Subtitle>
         </ImageAndLogo>
         <InputWrapper>
           <TextField
