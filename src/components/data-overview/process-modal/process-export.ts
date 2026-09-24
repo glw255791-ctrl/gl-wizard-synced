@@ -222,11 +222,15 @@ export async function exportProcessWorkbook({
   const firstData = 2;
   const lastData = Math.max(firstData, lines.length + 1);
   const amountLetter = columnLetter(amountCol);
+  const total = lines.reduce((sum, line) => sum + line.amount, 0);
   const totalRow = summary.addRow([
     "Total",
     ...Array(pathWidth).fill(""),
     lines.length
-      ? { formula: `SUM(${amountLetter}${firstData}:${amountLetter}${lastData})` }
+      ? {
+          formula: `SUM(${amountLetter}${firstData}:${amountLetter}${lastData})`,
+          result: total,
+        }
       : 0,
   ]);
   totalRow.font = { bold: true };
