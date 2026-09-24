@@ -3,11 +3,11 @@ import dynamic from "next/dynamic";
 import { Grid2, LinearProgress, Stack, Typography } from "@mui/material";
 import { FileDropzone } from "../../ui-kit/dropzone/dropzone";
 import { Dropdown } from "../../ui-kit/dropdown/dropdown";
-import { Header } from "../../composed/header/header";
+import { AnalysisScreen } from "../../composed/analysis-screen/analysis-screen";
 import { GLDropdowns } from "../../composed/gl-dropdowns/gl-dropdowns";
 import { DataValidityInfo } from "../../composed/data-validity-info/data-validity-info";
 import { AnalysisStep, useGeneralAnalysis } from "./general-analysis-model";
-import { CardStyled, RootStack } from "./style";
+import { CardStyled } from "./style";
 import { supabaseBrowser } from "@/lib/supabase/browser-client";
 import { useState, useEffect, useMemo } from "react";
 import { UndoButton } from "../../composed/undo-button/undo-button";
@@ -15,7 +15,6 @@ import { HierarchyModal } from "../../composed/hierarchy-modal/hierarchy-modal";
 import { HierarchyButton } from "../../composed/hierarchy-button/hierarchy-button";
 import { Loader } from "../../ui-kit/loader-overlay/loader-overlay";
 import { ActionButton } from "../../composed/action-button/action-button";
-import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { WarningModal } from "../../composed/warning-modal/warning-modal";
 import { AnalysisSummary } from "../../composed/analysis-summary/analysis-summary";
 import { TrialBalanceCheck } from "../../composed/trial-balance-check/trial-balance-check";
@@ -156,14 +155,12 @@ export function GeneralAnalysis() {
   return (
     <>
       <Loader loadingStatus={loadingStatus} fileProgress={fileProgress} />
-      <PageWrapper>
-        <RootStack spacing={2}>
-          <Header
-            title="GL Transactions Analysis"
-            description="Map the ledger and name each journal."
-            onPressResetBtn={resetAnalysis}
-            step={currentStep}
-          />
+      <AnalysisScreen
+        title="GL Transactions Analysis"
+        description="Map the ledger and name each journal."
+        onReset={resetAnalysis}
+        step={currentStep}
+      >
 
           {/* GL and CoA Upload — hidden on Results; Undo brings them back */}
           {currentStep === AnalysisStep.TO_UPLOAD_GL && <AnalysisStartHint />}
@@ -395,8 +392,7 @@ export function GeneralAnalysis() {
             onPressExportUnmappedRows={onPressExportUnmappedRows}
             onClose={() => setIsWarningModalShown(false)}
           />
-        </RootStack>
-      </PageWrapper>
+      </AnalysisScreen>
     </>
   );
 }

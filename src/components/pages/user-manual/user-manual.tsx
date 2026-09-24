@@ -8,6 +8,7 @@ import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { Header } from "../../composed/header/header";
 import {
   RootStack,
+  PagePanel,
   ContentWrapper,
   Panel,
   StyledTitle,
@@ -74,6 +75,7 @@ export function UserManualPage() {
     <PageWrapper>
       <RootStack>
         <Header title="User Manual" />
+        <PagePanel>
         <Intro>
           Prepare clean Excel files, choose the right analysis, then map columns
           and review the results.
@@ -213,6 +215,7 @@ export function UserManualPage() {
             </Panel>
           </ContentWrapper>
         </Stack>
+        </PagePanel>
       </RootStack>
     </PageWrapper>
   );

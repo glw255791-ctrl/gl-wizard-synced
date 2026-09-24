@@ -7,12 +7,24 @@ import Paper from "@mui/material/Paper";
 import TableContainer from "@mui/material/TableContainer";
 import { PickersTextField } from "@mui/x-date-pickers";
 import { theme } from "../../../constants/theme";
+import { primaryActionButtonStyles } from "../../ui-kit/button-styles";
 
 export const RootStack = styled(Stack)({
   width: "100%",
   minWidth: 0,
   minHeight: 0,
   gap: theme.gap.lg,
+});
+
+export const PagePanel = styled(Stack)({
+  flex: 1,
+  minHeight: 0,
+  gap: theme.gap.lg,
+  padding: "1.25rem",
+  backgroundColor: theme.colors.page,
+  border: `1px solid ${theme.colors.softBlue}`,
+  borderRadius: theme.borderRadius.md,
+  overflow: "auto",
 });
 
 export const Toolbar = styled(Stack)({
@@ -51,20 +63,10 @@ export const SearchInput = styled(TextField)({
 });
 
 export const InviteButton = styled(Button)({
+  ...primaryActionButtonStyles,
   marginLeft: "auto",
   height: 40,
-  borderRadius: 16,
-  backgroundColor: theme.colors.darker,
-  color: theme.colors.white,
-  paddingLeft: "1.1rem",
-  paddingRight: "1.1rem",
-  textTransform: "none",
-  fontWeight: 600,
-  boxShadow: "none",
-  "&:hover": {
-    backgroundColor: theme.colors.freshBlue,
-    boxShadow: "none",
-  },
+  minHeight: 40,
 });
 
 export const TablePanel = styled(TableContainer)({

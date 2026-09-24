@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import {
   RootStack,
+  PagePanel,
   ValidDateStack,
   RedText,
   GreenText,
@@ -276,6 +277,7 @@ export function UserManagementPage() {
       <PageWrapper>
         <RootStack>
           <Header title="User Management" />
+          <PagePanel>
           <Toolbar>
             <SearchField>
               <SearchInput
@@ -342,6 +344,7 @@ export function UserManagementPage() {
               <TableBody>{renderTableBody()}</TableBody>
             </Table>
           </TablePanel>
+          </PagePanel>
         </RootStack>
       </PageWrapper>
 

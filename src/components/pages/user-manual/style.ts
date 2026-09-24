@@ -1,10 +1,21 @@
 import { styled, Stack, Typography, Button } from "@mui/material";
 import { theme } from "../../../constants/theme";
+import { secondaryActionButtonStyles } from "../../ui-kit/button-styles";
 
 export const RootStack = styled(Stack)({
   gap: theme.gap.lg,
   width: "100%",
   minWidth: 0,
+});
+
+export const PagePanel = styled(Stack)({
+  gap: theme.gap.lg,
+  width: "100%",
+  minWidth: 0,
+  padding: "1.25rem",
+  backgroundColor: theme.colors.page,
+  border: `1px solid ${theme.colors.softBlue}`,
+  borderRadius: theme.borderRadius.md,
 });
 
 export const Intro = styled(Typography)({
@@ -99,23 +110,11 @@ export const StyledList = styled("ul")({
 });
 
 export const DownloadButton = styled(Button)({
+  ...secondaryActionButtonStyles,
   height: 44,
-  borderRadius: 16,
-  border: `1px solid ${theme.colors.softBlue}`,
-  backgroundColor: theme.colors.surface,
-  color: theme.colors.darker,
-  textTransform: "none",
-  fontWeight: 600,
+  minHeight: 44,
+  width: "100%",
   justifyContent: "space-between",
-  padding: "0 1rem",
-  boxShadow: "none",
-
-  "&:hover": {
-    backgroundColor: theme.colors.darker,
-    borderColor: theme.colors.darker,
-    color: theme.colors.white,
-    boxShadow: "none",
-  },
 });
 
 export const DownloadError = styled(Typography)({

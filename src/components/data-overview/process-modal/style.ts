@@ -113,7 +113,12 @@ export const TableTitle = styled(Typography)({
   fontSize: "0.95rem",
   fontWeight: 700,
   color: theme.colors.white,
-  lineHeight: 1.2,
+  lineHeight: 1.3,
+  whiteSpace: "normal",
+  overflow: "hidden",
+  display: "-webkit-box",
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: "vertical",
 });
 
 export const SectionLabel = styled(Typography)({

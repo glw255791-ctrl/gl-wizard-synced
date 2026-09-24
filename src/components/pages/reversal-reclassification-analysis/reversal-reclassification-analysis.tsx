@@ -4,16 +4,15 @@ import dynamic from "next/dynamic";
 import { Grid2, LinearProgress, Stack, Typography } from "@mui/material";
 import { FileDropzone } from "../../ui-kit/dropzone/dropzone";
 import { Dropdown } from "../../ui-kit/dropdown/dropdown";
-import { CardStyled, RootStack } from "./style";
+import { CardStyled } from "./style";
 import { useReversalReclassificationAnalysis } from "./reversal-reclassification-analysis-model";
 
 import { AnalysisStep } from "../general-analysis/general-analysis-model";
 import { GLDropdowns } from "../../composed/gl-dropdowns/gl-dropdowns";
-import { Header } from "../../composed/header/header";
+import { AnalysisScreen } from "../../composed/analysis-screen/analysis-screen";
 import { DataValidityInfo } from "../../composed/data-validity-info/data-validity-info";
 import { Loader } from "../../ui-kit/loader-overlay/loader-overlay";
 import { ActionButton } from "../../composed/action-button/action-button";
-import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { UndoButton } from "../../composed/undo-button/undo-button";
 import { AnalysisSummary } from "../../composed/analysis-summary/analysis-summary";
 import { TrialBalanceCheck } from "../../composed/trial-balance-check/trial-balance-check";
@@ -122,14 +121,12 @@ export function ReversaReclassificationAnalysis() {
   return (
     <>
       <Loader loadingStatus={loadingStatus} fileProgress={fileProgress} />
-      <PageWrapper>
-        <RootStack spacing={2}>
-          <Header
-            title="Reversal/Reclassification"
-            description="Group moves on the same account."
-            onPressResetBtn={resetAnalysis}
-            step={currentStep}
-          />
+      <AnalysisScreen
+        title="Reversal/Reclassification"
+        description="Group moves on the same account."
+        onReset={resetAnalysis}
+        step={currentStep}
+      >
 
           {currentStep === AnalysisStep.TO_UPLOAD_GL && (
             <AnalysisStartHint body="Drop an Excel GL, map the four columns, then add the chart of accounts to find reversing entries." />
@@ -337,8 +334,7 @@ export function ReversaReclassificationAnalysis() {
           {currentStep === AnalysisStep.ANALYZED && (
             <ResultsDoneBar onStartOver={resetAnalysis} />
           )}
-        </RootStack>
-      </PageWrapper>
+      </AnalysisScreen>
     </>
   );
 }

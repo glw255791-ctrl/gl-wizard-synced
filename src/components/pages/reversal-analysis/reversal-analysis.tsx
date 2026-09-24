@@ -4,16 +4,15 @@ import dynamic from "next/dynamic";
 import { Grid2, LinearProgress, Stack, Typography } from "@mui/material";
 import { FileDropzone } from "../../ui-kit/dropzone/dropzone";
 import { Dropdown } from "../../ui-kit/dropdown/dropdown";
-import { CardStyled, RootStack } from "./style";
+import { CardStyled } from "./style";
 import { AnalysisStep, useReversalAnalysis } from "./reversal-analysis-model";
 import { GLDropdowns } from "../../composed/gl-dropdowns/gl-dropdowns";
 import { DataValidityInfo } from "../../composed/data-validity-info/data-validity-info";
-import { Header } from "../../composed/header/header";
+import { AnalysisScreen } from "../../composed/analysis-screen/analysis-screen";
 import { Loader } from "../../ui-kit/loader-overlay/loader-overlay";
 import { ActionButton } from "../../composed/action-button/action-button";
-import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
-import { WarningModal } from "../../composed/warning-modal/warning-modal";
 import { UndoButton } from "../../composed/undo-button/undo-button";
+import { WarningModal } from "../../composed/warning-modal/warning-modal";
 import { AnalysisSummary } from "../../composed/analysis-summary/analysis-summary";
 import { TrialBalanceCheck } from "../../composed/trial-balance-check/trial-balance-check";
 import { HierarchyModal } from "../../composed/hierarchy-modal/hierarchy-modal";
@@ -125,14 +124,12 @@ export function ReversalAnalysis() {
   return (
     <>
       <Loader loadingStatus={loadingStatus} fileProgress={fileProgress} />
-      <PageWrapper>
-        <RootStack spacing={2}>
-          <Header
-            title="Reversal"
-            description="Find entries that cancel each other."
-            onPressResetBtn={resetAnalysis}
-            step={currentStep}
-          />
+      <AnalysisScreen
+        title="Reversal"
+        description="Find entries that cancel each other."
+        onReset={resetAnalysis}
+        step={currentStep}
+      >
 
           {/* GL and CoA Upload — hidden on Results; Undo brings them back */}
           {currentStep === AnalysisStep.TO_UPLOAD_GL && <AnalysisStartHint />}
@@ -342,8 +339,7 @@ export function ReversalAnalysis() {
             onPressExportUnmappedRows={onPressExportUnmappedRows}
             onClose={() => setIsWarningModalShown(false)}
           />
-        </RootStack>
-      </PageWrapper>
+      </AnalysisScreen>
     </>
   );
 }

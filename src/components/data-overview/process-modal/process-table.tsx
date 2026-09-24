@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Stack, Tooltip, Typography } from "@mui/material";
 
-import { getElipsis } from "../table/ellipsis";
 import { buildMovementTable } from "../table/build-movement-table";
 import { AnyType } from "../../../types";
 import { theme } from "../../../constants/theme";
@@ -199,9 +198,9 @@ export const ProcessDataTable: React.FC<Props> = ({
     <ProcessTableShell compact={Boolean(isTopTable)}>
       <TableScrollableWrapper id={id}>
         <TableHeaderStyled>
-          <TableTitle>
+          <TableTitle sx={{ whiteSpace: "normal" }}>
             <Tooltip title={title}>
-              <Stack>{getElipsis(title, isTopTable ? 40 : 64)}</Stack>
+              <span>{title}</span>
             </Tooltip>
           </TableTitle>
         </TableHeaderStyled>
