@@ -1,11 +1,55 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/browser-client";
 import { RegisterData } from "@/types";
 
 // Re-export type for backward compatibility
 export type { RegisterData };
+
+async function ensureInviteSession() {
+  if (!supabaseBrowser) return false;
+
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const accessToken = hash.get("access_token");
+  const refreshToken = hash.get("refresh_token");
+  if (accessToken && refreshToken) {
+    const { error } = await supabaseBrowser.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+    if (error) throw error;
+    window.history.replaceState(null, "", "/register");
+    return true;
+  }
+
+  const search = new URLSearchParams(window.location.search);
+  const code = search.get("code");
+  if (code) {
+    const { error } = await supabaseBrowser.auth.exchangeCodeForSession(code);
+    if (error) throw error;
+    window.history.replaceState(null, "", "/register");
+    return true;
+  }
+
+  const tokenHash = search.get("token_hash") || search.get("token");
+  if (tokenHash) {
+    const type = search.get("type") === "signup" ? "signup" : "invite";
+    const { error } = await supabaseBrowser.auth.verifyOtp({
+      token_hash: tokenHash,
+      type,
+    });
+    if (error) throw error;
+    window.history.replaceState(null, "", "/register");
+    return true;
+  }
+
+  const {
+    data: { session },
+  } = await supabaseBrowser.auth.getSession();
+  return Boolean(session);
+}
+
 export function useRegisterModel() {
   const router = useRouter();
   const [registerData, setRegisterData] = useState<
@@ -21,6 +65,26 @@ export function useRegisterModel() {
     password: "",
   });
   const [submitting, setSubmitting] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    ensureInviteSession()
+      .then((ok) => {
+        setReady(ok);
+        if (!ok) {
+          setFieldErrors((prev) => ({
+            ...prev,
+            rest: "Open the invite link again. This page has no sign-in session.",
+          }));
+        }
+      })
+      .catch((err: unknown) => {
+        setFieldErrors((prev) => ({
+          ...prev,
+          rest: err instanceof Error ? err.message : "Could not open the invite link.",
+        }));
+      });
+  }, []);
 
   const onChangeField = (key: keyof RegisterData, value: string) => {
     setFieldErrors((prev) => ({ ...prev, [key]: "" }));
@@ -42,6 +106,9 @@ export function useRegisterModel() {
       setSubmitting(true);
 
       if (!supabaseBrowser) throw new Error("Supabase is not configured");
+
+      const signedIn = ready || (await ensureInviteSession());
+      if (!signedIn) throw new Error("No authenticated user");
 
       const {
         data: { session },
@@ -79,5 +146,6 @@ export function useRegisterModel() {
     registerData,
     onChangeField,
     submitting,
+    ready,
   };
 }

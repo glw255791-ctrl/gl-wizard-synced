@@ -16,7 +16,7 @@ import { useRegisterModel } from "./register-model";
 import { CircularProgress, TextField } from "@mui/material";
 
 export function RegisterPage() {
-  const { onRegister, onChangeField, fieldErrors, registerData, submitting } =
+  const { onRegister, onChangeField, fieldErrors, registerData, submitting, ready } =
     useRegisterModel();
 
   return (
@@ -53,7 +53,7 @@ export function RegisterPage() {
         </InputWrapper>
         <StyledButton
           fullWidth
-          disabled={submitting}
+          disabled={submitting || !ready}
           onClick={onRegister}
           startIcon={
             submitting ? <CircularProgress size={18} color="inherit" /> : undefined
