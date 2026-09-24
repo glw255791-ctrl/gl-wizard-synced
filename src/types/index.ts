@@ -116,7 +116,7 @@ export interface UserData {
 /**
  * Modal action types
  */
-export type ModalAction = "EXTEND" | "DEACTIVATE" | "INVITE";
+export type ModalAction = "EXTEND" | "DEACTIVATE" | "INVITE" | "PASSWORD" | "DELETE";
 
 /**
  * Modal props structure

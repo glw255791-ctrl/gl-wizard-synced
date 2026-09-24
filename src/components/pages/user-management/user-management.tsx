@@ -37,7 +37,10 @@ import {
 import { UserData, useUserManagementModel } from "./user-management-model";
 import EventRepeatIcon from "@mui/icons-material/EventRepeat";
 import EventBusyIcon from "@mui/icons-material/EventBusy";
-import { useEffect } from "react";
+import ForwardToInboxIcon from "@mui/icons-material/ForwardToInbox";
+import KeyIcon from "@mui/icons-material/Key";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { useEffect, useState } from "react";
 import { Header } from "../../composed/header/header";
 import CloseIcon from "@mui/icons-material/Close";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -59,7 +62,10 @@ export function UserManagementPage() {
     onConfirm,
     snackbarProps,
     setSnackbarProps,
+    resendAccess,
+    setTemporaryPassword,
   } = useUserManagementModel();
+  const [issuedPassword, setIssuedPassword] = useState("");
 
   useEffect(() => {
     loadData();
@@ -127,6 +133,65 @@ export function UserManagementPage() {
       );
     }
 
+    if (key === "access") {
+      return (
+        <Stack direction="row" justifyContent="flex-end" gap={0.5}>
+          <Tooltip title="Resend password reset email">
+            <IconButton
+              size="small"
+              aria-label="Resend password reset email"
+              sx={{ color: theme.colors.freshBlue }}
+              onClick={() => void resendAccess(item.email)}
+            >
+              <ForwardToInboxIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Delete user">
+            <span>
+              <IconButton
+                size="small"
+                aria-label="Delete user"
+                disabled={item.role === "admin"}
+                sx={{ color: theme.colors.red }}
+                onClick={() =>
+                  setModalProps({
+                    modalAction: "DELETE",
+                    id: item.id,
+                    email: item.email,
+                    date: new Date(),
+                  })
+                }
+              >
+                <DeleteOutlineIcon fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Set a temporary password">
+            <span>
+            <IconButton
+              size="small"
+              aria-label="Set a temporary password"
+              disabled={item.role === "admin"}
+              sx={{ color: theme.colors.deepTeal }}
+              onClick={() => {
+                setIssuedPassword("");
+                setModalProps({
+                  modalAction: "PASSWORD",
+                  id: item.id,
+                  email: item.email,
+                  date: new Date(),
+                });
+              }}
+            >
+              <KeyIcon fontSize="small" />
+            </IconButton>
+            </span>
+          </Tooltip>
+          </Tooltip>
+        </Stack>
+      );
+    }
+
     return item[key as keyof UserData];
   };
 
@@ -136,6 +201,10 @@ export function UserManagementPage() {
         return "Extend Licence";
       case "DEACTIVATE":
         return "Deactivate Licence";
+      case "PASSWORD":
+        return issuedPassword ? "Close" : "Set password";
+      case "DELETE":
+        return "Delete user";
       default:
         return "Invite User";
     }
@@ -366,6 +435,32 @@ export function UserManagementPage() {
               {modalProps?.modalAction === "EXTEND" && renderExtendShortcuts()}
               {renderDatePicker()}
               {renderInviteEmailInput()}
+              {modalProps?.modalAction === "DELETE" && (
+                <Typography sx={{ color: theme.colors.graphite, fontSize: "0.95rem" }}>
+                  Delete {modalProps.email} permanently? They will not be able to sign in again.
+                </Typography>
+              )}
+              {modalProps?.modalAction === "PASSWORD" && (
+                <Stack gap={1}>
+                  <Typography sx={{ color: theme.colors.graphite, fontSize: "0.95rem" }}>
+                    The current password cannot be read. This sets a new one for{" "}
+                    {modalProps.email}. Copy it now — it is not stored in the app.
+                  </Typography>
+                  {issuedPassword ? (
+                    <Typography
+                      sx={{
+                        fontFamily: "ui-monospace, monospace",
+                        fontWeight: 700,
+                        fontSize: "1.15rem",
+                        color: theme.colors.deepTeal,
+                        letterSpacing: "0.04em",
+                      }}
+                    >
+                      {issuedPassword}
+                    </Typography>
+                  ) : null}
+                </Stack>
+              )}
               <ModalActionButton
                 variant="contained"
                 disabled={
@@ -373,7 +468,30 @@ export function UserManagementPage() {
                   (modalProps.email === "" ||
                     !emailRegex.test(modalProps.email))
                 }
-                onClick={onConfirm}
+                onClick={async () => {
+                  if (modalProps?.modalAction === "PASSWORD") {
+                    if (issuedPassword) {
+                      setModalProps(undefined);
+                      setIssuedPassword("");
+                      return;
+                    }
+                    try {
+                      const password = await setTemporaryPassword(modalProps.id);
+                      setIssuedPassword(password);
+                    } catch (error) {
+                      setSnackbarProps({
+                        message:
+                          error instanceof Error
+                            ? error.message
+                            : "Failed to set password.",
+                        severity: "error",
+                        open: true,
+                      });
+                    }
+                    return;
+                  }
+                  onConfirm();
+                }}
               >
                 {getModalButtonText()}
               </ModalActionButton>

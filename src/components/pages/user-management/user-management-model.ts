@@ -94,6 +94,74 @@ export function useUserManagementModel() {
     }
   };
 
+  const authHeaders = async () => {
+    const session = await supabaseBrowser!.auth.getSession();
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.data.session?.access_token ?? ""}`,
+    };
+  };
+
+  const resendAccess = async (email: string) => {
+    if (!supabaseBrowser) return;
+    try {
+      const res = await fetch("/api/users/resend", {
+        method: "POST",
+        headers: await authHeaders(),
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Failed to resend");
+      setSnackbarProps({
+        message: `Password reset email sent to ${email}.`,
+        severity: "success",
+        open: true,
+      });
+    } catch (error) {
+      setSnackbarProps({
+        message: error instanceof Error ? error.message : "Failed to resend.",
+        severity: "error",
+        open: true,
+      });
+    }
+  };
+
+  const setTemporaryPassword = async (id: string) => {
+    if (!supabaseBrowser) return "";
+    const res = await fetch("/api/users/password", {
+      method: "POST",
+      headers: await authHeaders(),
+      body: JSON.stringify({ id }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Failed to set password");
+    return String(data.password ?? "");
+  };
+
+  const deleteUser = async (id: string, email: string) => {
+    if (!supabaseBrowser) return;
+    try {
+      const res = await fetch("/api/users", {
+        method: "DELETE",
+        headers: await authHeaders(),
+        body: JSON.stringify({ id }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Failed to delete user");
+      setSnackbarProps({
+        message: `Deleted ${email}.`,
+        severity: "success",
+        open: true,
+      });
+    } catch (error) {
+      setSnackbarProps({
+        message: error instanceof Error ? error.message : "Failed to delete user.",
+        severity: "error",
+        open: true,
+      });
+    }
+  };
+
   // ----- Table Columns -----
   const columns: Column[] = [
     { key: "name", label: "Name", flex: 1.2 },
@@ -105,6 +173,7 @@ export function useUserManagementModel() {
       align: "right",
       flex: 1.4,
     },
+    { key: "access", label: "Access", width: 150, align: "right", flex: 0.9 },
   ];
 
   // ----- User Data Filtering -----
@@ -123,6 +192,8 @@ export function useUserManagementModel() {
   const onConfirm = async () => {
     if (modalProps?.modalAction === "INVITE") {
       await signUpUser(modalProps.email);
+    } else if (modalProps?.modalAction === "DELETE" && modalProps.id) {
+      await deleteUser(modalProps.id, modalProps.email);
     } else {
       if (modalProps?.id && modalProps?.date) {
         await updateLicenceDate(modalProps.id, modalProps.date);
@@ -146,5 +217,8 @@ export function useUserManagementModel() {
     onConfirm,
     snackbarProps,
     setSnackbarProps,
+    resendAccess,
+    setTemporaryPassword,
+    deleteUser,
   };
 }
