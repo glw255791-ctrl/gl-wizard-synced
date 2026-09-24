@@ -32,10 +32,14 @@ export function JournalNames({
   rows,
   busy,
   onApply,
+  onApplyMany,
 }: {
   rows: Record<string, unknown>[];
   busy?: boolean;
   onApply: (inputs: string[], narrative: string) => Promise<void> | void;
+  onApplyMany?: (
+    entries: { inputs: string[]; result: string }[]
+  ) => Promise<void> | void;
 }) {
   const groups = useMemo(() => unnamedGroups(rows), [rows]);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
@@ -85,6 +89,28 @@ export function JournalNames({
         >
           {loading ? "Suggesting…" : "Suggest names"}
         </Button>
+        {onApplyMany && Object.keys(drafts).length > 0 ? (
+          <Button
+            disabled={
+              loading ||
+              busy ||
+              Object.values(drafts).every((value) => !value?.trim())
+            }
+            sx={secondaryActionButtonStyles}
+            onClick={() => {
+              const entries = groups
+                .map((group) => ({
+                  inputs: group.accounts,
+                  result: drafts[group.path]?.trim() ?? "",
+                }))
+                .filter((entry) => entry.result);
+              if (entries.length === 0) return;
+              void onApplyMany(entries);
+            }}
+          >
+            Accept all
+          </Button>
+        ) : null}
       </Stack>
       <Typography sx={{ fontSize: "0.84rem", color: theme.colors.slateGray }}>
         Groups still labeled only by their accounts. A suggestion is a short description of the journal.

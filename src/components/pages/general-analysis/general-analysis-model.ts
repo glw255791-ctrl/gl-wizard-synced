@@ -546,11 +546,11 @@ export function useGeneralAnalysis() {
     }
   };
 
-  const applySuggestedName = async (inputs: string[], narrative: string) => {
-    const nextDictionary = [
-      ...dictionaryData,
-      { inputs, result: narrative },
-    ];
+  const applySuggestedNames = async (
+    entries: { inputs: string[]; result: string }[]
+  ) => {
+    if (entries.length === 0) return;
+    const nextDictionary = [...dictionaryData, ...entries];
     setDictionaryData(nextDictionary);
     setLoadingStatus(true);
     try {
@@ -572,6 +572,9 @@ export function useGeneralAnalysis() {
       stopLoading();
     }
   };
+
+  const applySuggestedName = (inputs: string[], narrative: string) =>
+    applySuggestedNames([{ inputs, result: narrative }]);
 
   // --- Data Display ---
 
@@ -619,6 +622,7 @@ export function useGeneralAnalysis() {
     onGeneralLedgerDrop,
     onPressAnalyzeData,
     applySuggestedName,
+    applySuggestedNames,
     onChartOfAccountsDrop,
     onPressResetBtn,
     setDataDisplayHeader,

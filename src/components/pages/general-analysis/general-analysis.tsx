@@ -106,6 +106,7 @@ export function GeneralAnalysis() {
     onGeneralLedgerDrop,
     onPressAnalyzeData,
     applySuggestedName,
+    applySuggestedNames,
     onChartOfAccountsDrop,
     onPressBackBtn,
     onPressResetBtn,
@@ -340,6 +341,7 @@ export function GeneralAnalysis() {
               rows={tableData}
               busy={loadingStatus}
               onApply={applySuggestedName}
+              onApplyMany={applySuggestedNames}
             />
           )}
           {currentStep === AnalysisStep.ANALYZED && (
