@@ -12,6 +12,11 @@ import { AnyType } from "../../../types";
 import { theme } from "../../../constants/theme";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import {
+  primaryActionButtonStyles,
+  secondaryActionButtonStyles,
+  tableHeaderBarStyles,
+} from "../../ui-kit/button-styles";
 // Modal content container (positioning the modal, centering, etc.)
 export const ModalContent = styled(Stack)(() => ({
   width: "min(1280px, calc(100vw - 2rem))",
@@ -68,8 +73,8 @@ export const ModalHeader = styled(Stack)(() => ({
   justifyContent: "space-between",
   alignItems: "center",
   padding: "0.85rem 1.1rem",
-  backgroundColor: theme.colors.darker,
-  color: theme.colors.white,
+  backgroundColor: theme.colors.deepTeal,
+  color: theme.colors.cleanWhite,
   borderBottom: `${theme.borderWidth.sm} solid ${theme.colors.freshBlue}`,
 }));
 
@@ -255,16 +260,8 @@ export const TableScrollableWrapper = styled(Stack)({
 });
 
 export const TableHeaderStyled = styled(Stack)({
-  width: "100%",
-  boxSizing: "border-box",
-  padding: "0.45rem 1.25rem 0.45rem 0.75rem",
-  backgroundColor: theme.colors.freshBlue,
-  color: theme.colors.white,
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
+  ...tableHeaderBarStyles,
   borderRadius: `${theme.borderRadius.sm} ${theme.borderRadius.sm} 0 0`,
-  minHeight: 36,
   flexShrink: 0,
 });
 
@@ -331,67 +328,30 @@ export const TablesWrapper = styled(Stack)({
 });
 
 export const AddButton = styled(Button)({
+  ...primaryActionButtonStyles,
+  height: 30,
+  minHeight: 30,
   paddingLeft: theme.padding.md,
   paddingRight: theme.padding.md,
-  borderRadius: theme.borderRadius.sm,
-  height: 30,
-  backgroundColor: theme.colors.darker,
-  color: theme.colors.white,
-  textTransform: "none",
-  "&:hover": {
-    backgroundColor: theme.colors.freshBlue,
-  },
 });
 
 export const ExcelDownloadButton = styled(Button)({
-  paddingLeft: 16,
-  paddingRight: 16,
-  borderRadius: 16,
-  height: theme.height.input,
-  backgroundColor: theme.colors.darker,
-  color: theme.colors.white,
-  textTransform: "none",
-  boxShadow: "none",
-  "&:hover": {
-    backgroundColor: theme.colors.freshBlue,
-    boxShadow: "none",
-  },
-  "&.Mui-disabled": {
-    backgroundColor: theme.colors.softBlue,
-    color: theme.colors.white,
-    opacity: 0.7,
-  },
+  ...primaryActionButtonStyles,
 });
 
 export const SecondaryButton = styled(Button)({
-  paddingLeft: 16,
-  paddingRight: 16,
-  borderRadius: 16,
-  height: theme.height.input,
-  backgroundColor: theme.colors.surface,
-  color: theme.colors.darker,
-  border: `${theme.borderWidth.sm} solid ${theme.colors.softBlue}`,
-  textTransform: "none",
-  boxShadow: "none",
-  "&:hover": {
-    backgroundColor: theme.colors.canvas,
-    borderColor: theme.colors.freshBlue,
-    boxShadow: "none",
-  },
-  "&.Mui-disabled": {
-    backgroundColor: theme.colors.canvas,
-    color: theme.colors.gray,
-    borderColor: theme.colors.gray,
-  },
+  ...secondaryActionButtonStyles,
 });
 
 export const RemoveButton = styled(Button)({
   paddingLeft: theme.padding.md,
   paddingRight: theme.padding.md,
-  borderRadius: theme.borderRadius.sm,
+  borderRadius: 999,
   height: theme.height.input,
   backgroundColor: theme.colors.red,
+  color: theme.colors.cleanWhite,
   textTransform: "none",
+  fontWeight: 600,
 });
 // Miscellaneous, reusable style objects
 export const styles: Record<string, CommonProps["style"]> = {

@@ -3,6 +3,10 @@ import { theme } from "../../../constants/theme";
 import { Button, Stack, styled, Typography } from "@mui/material";
 import CancelRounded from "@mui/icons-material/CancelRounded";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import {
+  primaryActionButtonStyles,
+  tableHeaderBarStyles,
+} from "../../ui-kit/button-styles";
 
 // Column keys for consistent use throughout
 const VALUE = "value";
@@ -60,16 +64,7 @@ export const ExportStatusOverlay = styled(Stack)({
 });
 
 export const TableHeaderStyled = styled(Stack)({
-  position: "relative",
-  zIndex: 2,
-  width: "100%",
-  boxSizing: "border-box",
-  padding: theme.padding.lg,
-  backgroundColor: theme.colors.darker,
-  color: theme.colors.white,
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
+  ...tableHeaderBarStyles,
   borderTopLeftRadius: theme.borderRadius.sm,
   borderTopRightRadius: theme.borderRadius.sm,
 });
@@ -77,17 +72,11 @@ export const TableHeaderStyled = styled(Stack)({
 export const TableTitle = styled(Typography)({
   fontSize: theme.fontSize.xl,
   fontWeight: "bold",
-  color: theme.colors.white,
+  color: theme.colors.cleanWhite,
 });
 
 export const ExcelDownloadButton = styled(Button)({
-  paddingLeft: theme.padding.lg,
-  paddingRight: theme.padding.lg,
-  borderRadius: theme.borderRadius.lg,
-  height: theme.height.input,
-  backgroundColor: theme.colors.action,
-  color: theme.colors.black,
-  textTransform: "none",
+  ...primaryActionButtonStyles,
 });
 
 // Styles used in table rendering

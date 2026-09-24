@@ -8,6 +8,10 @@ import DownloadIcon from "@mui/icons-material/Download";
 import QueryStatsIcon from "@mui/icons-material/QueryStats";
 import { theme } from "../../../constants/theme";
 import { AnyType } from "../../../types";
+import {
+  primaryActionButtonStyles,
+  tableHeaderBarStyles,
+} from "../../ui-kit/button-styles";
 
 // Typography styles
 export const TotalText = styled(Typography)({
@@ -18,7 +22,7 @@ export const TotalText = styled(Typography)({
 export const TableTitle = styled(Typography)({
   fontSize: theme.fontSize.lg,
   fontWeight: "bold",
-  color: theme.colors.white,
+  color: theme.colors.cleanWhite,
 });
 
 // Icon styles
@@ -71,32 +75,12 @@ export const TableScrollableWrapper = styled(Stack)({
 });
 
 export const TableHeaderStyled = styled(Stack)({
-  position: "relative",
-  zIndex: 2,
-  width: "auto",
-  padding: theme.padding.lg,
-  backgroundColor: theme.colors.darker,
-  color: theme.colors.white,
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  height: 36.5,
+  ...tableHeaderBarStyles,
   borderRadius: `${theme.borderRadius.sm} ${theme.borderRadius.sm} 0 0`,
 });
 
 export const ExcelDownloadButton = styled(Button)({
-  paddingLeft: theme.padding.lg,
-  paddingRight: theme.padding.lg,
-  borderRadius: theme.borderRadius.lg,
-  height: theme.height.input,
-  backgroundColor: theme.colors.darker,
-  color: theme.colors.white,
-  textTransform: "none",
-  boxShadow: "none",
-  "&:hover": {
-    backgroundColor: theme.colors.freshBlue,
-    boxShadow: "none",
-  },
+  ...primaryActionButtonStyles,
 });
 
 // Miscellaneous, reusable style objects
