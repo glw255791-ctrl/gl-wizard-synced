@@ -70,7 +70,7 @@ export function useUserManagementModel() {
     try {
       const session = await supabaseBrowser.auth.getSession();
 
-      await fetch("/api/users/invite", {
+      const res = await fetch("/api/users/invite", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -78,9 +78,13 @@ export function useUserManagementModel() {
         },
         body: JSON.stringify({ email }),
       });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to invite user.");
+      }
 
       setSnackbarProps({
-        message: `User ${email} invited.`,
+        message: `Invite email sent to ${email}.`,
         severity: "success",
         open: true,
       });
