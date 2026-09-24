@@ -22,6 +22,7 @@ import { TrialBalanceCheck } from "../../composed/trial-balance-check/trial-bala
 import { theme } from "@/constants/theme";
 import { AnalysisStartHint } from "../../composed/workflow-hints/analysis-start-hint";
 import { ResultsNextSteps } from "../../composed/workflow-hints/results-next-steps";
+import { ResultsDoneBar } from "../../composed/workflow-hints/results-done-bar";
 
 function ResultsPlaceholder({ label }: { label: string }) {
   return (
@@ -348,6 +349,10 @@ export function GeneralAnalysis() {
             basicTableData={tableData}
             basicTableHeader={tableHeader}
           />
+          )}
+
+          {currentStep === AnalysisStep.ANALYZED && (
+            <ResultsDoneBar onStartOver={resetAnalysis} />
           )}
 
           {/* Unmapped Warning Modal */}
