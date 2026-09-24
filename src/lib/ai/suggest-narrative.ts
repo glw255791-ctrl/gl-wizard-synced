@@ -3,6 +3,7 @@ import { supabaseBrowser } from "@/lib/supabase/browser-client";
 export type NarrativeGroup = {
   items: string[];
   result: string;
+  error?: string;
 };
 
 /**
@@ -59,6 +60,9 @@ export async function suggestNarrative(accounts: string[]): Promise<string> {
   }
 
   const [first] = await suggestNarratives([unique]);
+  if (first && typeof (first as { error?: string }).error === "string") {
+    throw new Error((first as { error: string }).error);
+  }
   const narrative = first?.result?.trim() ?? "";
   if (!narrative || narrative.startsWith("Error")) {
     throw new Error(narrative || "No suggestion returned.");

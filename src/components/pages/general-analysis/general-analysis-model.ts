@@ -546,6 +546,33 @@ export function useGeneralAnalysis() {
     }
   };
 
+  const applySuggestedName = async (inputs: string[], narrative: string) => {
+    const nextDictionary = [
+      ...dictionaryData,
+      { inputs, result: narrative },
+    ];
+    setDictionaryData(nextDictionary);
+    setLoadingStatus(true);
+    try {
+      const result = await analyzeLedger(
+        rawData,
+        selectedHeaders,
+        nextDictionary
+      );
+      setTableData(result.tableData);
+      const displayRows = await presentLedgerRows(
+        result.tableData,
+        selectedHeaders.glHeaders.value,
+        selectedHeaders.glHeaders.date
+      );
+      setDisplayTableData(displayRows);
+      setOverviewTableData(result.overviewTableData);
+      setDataDisplayHeader(result.displayHeaders);
+    } finally {
+      stopLoading();
+    }
+  };
+
   // --- Data Display ---
 
   const sortedDataDisplayHeader = useMemo(() => {
@@ -591,6 +618,7 @@ export function useGeneralAnalysis() {
     onChangeCoaHeader,
     onGeneralLedgerDrop,
     onPressAnalyzeData,
+    applySuggestedName,
     onChartOfAccountsDrop,
     onPressResetBtn,
     setDataDisplayHeader,

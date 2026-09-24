@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth/require-user";
 
 const HF_API_KEY = process.env.HF_API_KEY;
-const MODEL = "Qwen/Qwen2.5-72B-Instruct"; // Excellent, clean, concise
-// Alternatives if rate-limited: 'Qwen/Qwen2.5-32B-Instruct' or 'Qwen/Qwen2.5-7B-Instruct'
+/** Prefer a small routed model; `:fastest` picks an available Inference Provider. */
+const MODEL =
+  process.env.HF_MODEL?.trim() || "Qwen/Qwen2.5-7B-Instruct:fastest";
 const ROUTER_URL = "https://router.huggingface.co/v1/chat/completions";
 
 const systemPrompt = `You are an expert accounting AI that infers business transactions from GL accounts. 
@@ -22,6 +23,25 @@ const examples = [
     narrative: "Proceeds from sale of long-term financial investments",
   },
 ];
+
+function extractHfError(status: number, body: string): string {
+  try {
+    const parsed = JSON.parse(body) as {
+      error?: { message?: string } | string;
+      message?: string;
+    };
+    const nested =
+      typeof parsed.error === "string"
+        ? parsed.error
+        : parsed.error?.message || parsed.message;
+    if (nested) return nested;
+  } catch {
+    /* ignore */
+  }
+  const trimmed = body.trim().slice(0, 240);
+  if (trimmed) return trimmed;
+  return `Hugging Face request failed (${status})`;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -83,31 +103,45 @@ Narrative:`;
               { role: "system", content: systemPrompt },
               { role: "user", content: userPrompt },
             ],
-            max_tokens: 100,
+            max_tokens: 80,
             temperature: 0.2,
-            stop: ["\n", ".", "Accounts:", "Examples:", "Narrative:"],
           }),
         });
+
         if (!response.ok) {
-          const err = await response.text();
-          console.error("HF API error:", err);
-          return { items: group.items, result: "Error generating narrative" };
+          const errText = await response.text();
+          console.error("HF API error:", response.status, errText);
+          const message = extractHfError(response.status, errText);
+          return {
+            items: group.items,
+            result: "",
+            error: message,
+          };
         }
 
         const data = await response.json();
         let narrative: string =
           data.choices?.[0]?.message?.content?.trim() || "";
 
-        // Cleanup
         if (narrative.startsWith("Narrative:")) {
           narrative = narrative.slice(10).trim();
         }
         narrative = narrative.split("\n")[0].trim();
-        narrative = narrative.replace(/[.!?]$/, ""); // Remove trailing punctuation
+        narrative = narrative.replace(/[.!?]$/, "");
 
         return { items: group.items, result: narrative };
       })
     );
+
+    const firstError = results.find(
+      (item) => typeof item.error === "string" && item.error
+    );
+    if (firstError?.error && results.every((item) => !item.result)) {
+      return NextResponse.json(
+        { error: firstError.error },
+        { status: 502 }
+      );
+    }
 
     return NextResponse.json(results, {
       headers: { "Content-Type": "application/json" },

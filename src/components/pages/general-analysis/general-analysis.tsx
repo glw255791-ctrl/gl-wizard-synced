@@ -23,6 +23,8 @@ import { theme } from "@/constants/theme";
 import { AnalysisStartHint } from "../../composed/workflow-hints/analysis-start-hint";
 import { ResultsNextSteps } from "../../composed/workflow-hints/results-next-steps";
 import { ResultsDoneBar } from "../../composed/workflow-hints/results-done-bar";
+import { SuggestColumns } from "../../composed/suggest-columns/suggest-columns";
+import { JournalNames } from "../../composed/journal-names/journal-names";
 
 function ResultsPlaceholder({ label }: { label: string }) {
   return (
@@ -103,6 +105,7 @@ export function GeneralAnalysis() {
     onChangeGlHeader,
     onGeneralLedgerDrop,
     onPressAnalyzeData,
+    applySuggestedName,
     onChartOfAccountsDrop,
     onPressBackBtn,
     onPressResetBtn,
@@ -185,11 +188,22 @@ export function GeneralAnalysis() {
                 uploaded={currentStep !== AnalysisStep.TO_UPLOAD_GL}
               >
                 {glHeaderOptions.length > 0 ? (
+                <Stack spacing={1}>
                 <GLDropdowns
                   glHeaderOptions={glHeaderOptions}
                   selectedHeaders={selectedHeaders}
                   onChangeGlHeader={onChangeGlHeader}
                 />
+                <SuggestColumns
+                  kind="gl"
+                  headers={glHeaderOptions.map((item) => String(item.value))}
+                  onApply={(mapping) => {
+                    (["account", "jen", "date", "value"] as const).forEach((key) => {
+                      if (mapping[key]) onChangeGlHeader(key, mapping[key]);
+                    });
+                  }}
+                />
+                </Stack>
                 ) : null}
               </FileDropzone>
             </Grid2>
@@ -236,6 +250,17 @@ export function GeneralAnalysis() {
                         e.target.value as string
                       )
                     }
+                  />
+                  <SuggestColumns
+                    kind="coa"
+                    headers={coaHeaderOptions.map((item) => String(item.value))}
+                    onApply={(mapping) => {
+                      (["mappingValue", "displayValue", "groupingValue"] as const).forEach(
+                        (key) => {
+                          if (mapping[key]) onChangeCoaHeader(key, mapping[key]);
+                        }
+                      );
+                    }}
                   />
                 </Stack>
                 ) : null}
@@ -310,6 +335,13 @@ export function GeneralAnalysis() {
 
           {/* Overviews */}
           {currentStep === AnalysisStep.ANALYZED && <ResultsNextSteps />}
+          {currentStep === AnalysisStep.ANALYZED && (
+            <JournalNames
+              rows={tableData}
+              busy={loadingStatus}
+              onApply={applySuggestedName}
+            />
+          )}
           {currentStep === AnalysisStep.ANALYZED && (
             <AnalysisSummary
               rows={tableData}

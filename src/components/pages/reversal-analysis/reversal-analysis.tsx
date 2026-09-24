@@ -23,6 +23,7 @@ import { useState } from "react";
 import { AnalysisStartHint } from "../../composed/workflow-hints/analysis-start-hint";
 import { ResultsNextSteps } from "../../composed/workflow-hints/results-next-steps";
 import { ResultsDoneBar } from "../../composed/workflow-hints/results-done-bar";
+import { SuggestColumns } from "../../composed/suggest-columns/suggest-columns";
 
 function ResultsPlaceholder({ label }: { label: string }) {
   return (
@@ -157,11 +158,22 @@ export function ReversalAnalysis() {
                 isDisabled={false}
               >
                 {glHeaderOptions.length > 0 ? (
+                <Stack spacing={1}>
                 <GLDropdowns
                   glHeaderOptions={glHeaderOptions}
                   selectedHeaders={selectedHeaders}
                   onChangeGlHeader={onChangeGlHeader}
                 />
+                <SuggestColumns
+                  kind="gl"
+                  headers={glHeaderOptions.map((item) => String(item.value))}
+                  onApply={(mapping) => {
+                    (["account", "jen", "date", "value"] as const).forEach((key) => {
+                      if (mapping[key]) onChangeGlHeader(key, mapping[key]);
+                    });
+                  }}
+                />
+                </Stack>
                 ) : null}
               </FileDropzone>
             </Grid2>
