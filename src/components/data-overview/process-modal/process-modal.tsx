@@ -12,6 +12,7 @@ import {
   TablesWrapper,
   LoaderContentWrapper,
   ExcelDownloadButton,
+  SecondaryButton,
   ProcessTreeBranch,
   ProcessTreeChildren,
   SectionLabel,
@@ -25,6 +26,7 @@ import {
 } from "./style";
 import CloseIcon from "@mui/icons-material/Close";
 import ClearIcon from "@mui/icons-material/Clear";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { theme } from "@/constants/theme";
 import {
   useCallback,
@@ -45,6 +47,7 @@ import {
 } from "./process-modal-funcs";
 import { getElipsis } from "../table/ellipsis";
 import { toResultPath } from "../table/functions";
+import { suggestNarrative } from "@/lib/ai/suggest-narrative";
 import {
   SearchByObject,
   TableData,
@@ -85,6 +88,11 @@ export function ProcessModal(props: ProcessModalProps) {
     "idle" | "loading" | "done" | "error"
   >("idle");
   const [exportMessage, setExportMessage] = useState("");
+  const [suggestStatus, setSuggestStatus] = useState<
+    "idle" | "loading" | "done" | "error"
+  >("idle");
+  const [suggestMessage, setSuggestMessage] = useState("");
+  const [aiSuggestion, setAiSuggestion] = useState("");
 
   /* ===========================================================================
    * Refs & transitions
@@ -256,6 +264,41 @@ export function ProcessModal(props: ProcessModalProps) {
     });
   }, []);
 
+  const collectAccountLabels = useCallback((): string[] => {
+    const toLabel = (sideHeader: unknown) => {
+      const raw = String(sideHeader ?? "").trim();
+      if (!raw || raw === "Total") return "";
+      const parts = raw.split("/").map((p) => p.trim()).filter(Boolean);
+      return parts[parts.length - 1] || raw;
+    };
+
+    const fromSelected = overallProcessObject.flatMap((item) =>
+      item.rows.map((row) => toLabel(row.sideHeader))
+    );
+    const fromBottom = lazyTablesData.flatMap((table) =>
+      table.rows.map((row) => toLabel(row.sideHeader))
+    );
+    return [...new Set([...fromSelected, ...fromBottom].filter(Boolean))];
+  }, [overallProcessObject, lazyTablesData]);
+
+  const handleSuggestName = useCallback(async () => {
+    setSuggestStatus("loading");
+    setSuggestMessage("Asking the model…");
+    setAiSuggestion("");
+    try {
+      const accounts = collectAccountLabels();
+      const narrative = await suggestNarrative(accounts);
+      setAiSuggestion(narrative);
+      setSuggestStatus("done");
+      setSuggestMessage("Suggestion ready — edit or apply as file name.");
+    } catch (err) {
+      setSuggestStatus("error");
+      setSuggestMessage(
+        err instanceof Error ? err.message : "Could not suggest a name."
+      );
+    }
+  }, [collectAccountLabels]);
+
   const handleClearSelected = useCallback(() => {
     setOverallProcessObject([]);
     setSearchByObjectInternal(undefined);
@@ -364,6 +407,9 @@ export function ProcessModal(props: ProcessModalProps) {
       setExportFileName("");
       setExportStatus("idle");
       setExportMessage("");
+      setSuggestStatus("idle");
+      setSuggestMessage("");
+      setAiSuggestion("");
       sideHeaderColorMapRef.current.clear();
       return;
     }
@@ -581,6 +627,16 @@ export function ProcessModal(props: ProcessModalProps) {
               >
                 {exportStatus === "loading" ? "Exporting…" : "Export Excel"}
               </ExcelDownloadButton>
+
+              <SecondaryButton
+                variant="outlined"
+                disabled={suggestStatus === "loading" || isLoading}
+                startIcon={<AutoAwesomeIcon />}
+                onClick={() => void handleSuggestName()}
+              >
+                {suggestStatus === "loading" ? "Suggesting…" : "Suggest name"}
+              </SecondaryButton>
+
               {exportStatus !== "idle" && exportMessage ? (
                 <ExportStatusText
                   sx={{
@@ -645,6 +701,62 @@ export function ProcessModal(props: ProcessModalProps) {
                 </Typography>
               )}
             </Stack>
+
+            {(suggestStatus !== "idle" || aiSuggestion) && (
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                alignItems={{ xs: "stretch", sm: "center" }}
+                gap={1}
+                sx={{
+                  padding: "10px 20px",
+                  borderBottom: `1px solid ${theme.colors.softBlue}`,
+                  backgroundColor: theme.colors.paleBlue,
+                }}
+              >
+                <Input
+                  disableUnderline
+                  fullWidth
+                  style={{
+                    flex: 1,
+                    minWidth: 180,
+                    height: theme.height.input,
+                    boxSizing: "border-box",
+                    border: `1px solid ${theme.colors.softBlue}`,
+                    borderRadius: 16,
+                    padding: "0 14px",
+                    fontSize: 14,
+                    backgroundColor: theme.colors.cleanWhite,
+                    color: theme.colors.graphite,
+                  }}
+                  placeholder="AI suggestion"
+                  value={aiSuggestion}
+                  onChange={(e) => setAiSuggestion(e.target.value)}
+                  disabled={suggestStatus === "loading"}
+                />
+                <SecondaryButton
+                  variant="outlined"
+                  disabled={!aiSuggestion.trim() || suggestStatus === "loading"}
+                  onClick={() => {
+                    setExportFileName(aiSuggestion.trim());
+                    setSuggestMessage("Applied to export file name.");
+                    setSuggestStatus("done");
+                  }}
+                >
+                  Use as file name
+                </SecondaryButton>
+                <ExportStatusText
+                  sx={{
+                    color:
+                      suggestStatus === "error"
+                        ? theme.colors.red
+                        : theme.colors.deepTeal,
+                    minWidth: 120,
+                  }}
+                >
+                  {suggestMessage}
+                </ExportStatusText>
+              </Stack>
+            )}
 
             <ModalContentWrapper>
               {(isLoading || overallProcessObject.length > 0) && (

@@ -28,6 +28,16 @@ export async function POST(request: NextRequest) {
     const auth = await requireUser(request);
     if (!auth.ok) return auth.response;
 
+    if (!HF_API_KEY) {
+      return NextResponse.json(
+        {
+          error:
+            "HF_API_KEY is not set. Add it to .env.local to enable AI suggestions.",
+        },
+        { status: 503 }
+      );
+    }
+
     const body = await request.json();
 
     if (!Array.isArray(body)) {
