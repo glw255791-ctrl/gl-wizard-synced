@@ -39,6 +39,7 @@ import { PageWrapper } from "../../composed/page-wrapper/page-wrapper";
 import { Header } from "../../composed/header/header";
 import { supabaseBrowser } from "@/lib/supabase/browser-client";
 import { theme } from "@/constants/theme";
+import { DashboardStartTip } from "../../composed/workflow-hints/dashboard-start-tip";
 
 export function MainMenu() {
   const router = useRouter();
@@ -138,6 +139,8 @@ export function MainMenu() {
               <FlowText>Review Movement Tables and Process Analysis</FlowText>
             </FlowStep>
           </FlowStrip>
+
+          <DashboardStartTip />
 
           <Stack gap={1.1}>
             <SectionHeader>

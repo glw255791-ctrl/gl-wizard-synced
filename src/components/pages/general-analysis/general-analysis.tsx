@@ -20,6 +20,8 @@ import { WarningModal } from "../../composed/warning-modal/warning-modal";
 import { AnalysisSummary } from "../../composed/analysis-summary/analysis-summary";
 import { TrialBalanceCheck } from "../../composed/trial-balance-check/trial-balance-check";
 import { theme } from "@/constants/theme";
+import { AnalysisStartHint } from "../../composed/workflow-hints/analysis-start-hint";
+import { ResultsNextSteps } from "../../composed/workflow-hints/results-next-steps";
 
 function ResultsPlaceholder({ label }: { label: string }) {
   return (
@@ -159,6 +161,8 @@ export function GeneralAnalysis() {
           />
 
           {/* GL and CoA Upload — hidden on Results; Undo brings them back */}
+          {currentStep === AnalysisStep.TO_UPLOAD_GL && <AnalysisStartHint />}
+
           {currentStep !== AnalysisStep.ANALYZED && (
           <Grid2
             container
@@ -304,6 +308,7 @@ export function GeneralAnalysis() {
             )}
 
           {/* Overviews */}
+          {currentStep === AnalysisStep.ANALYZED && <ResultsNextSteps />}
           {currentStep === AnalysisStep.ANALYZED && (
             <AnalysisSummary
               rows={tableData}

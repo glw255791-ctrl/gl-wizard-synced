@@ -124,6 +124,30 @@ export const SectionLabel = styled(Typography)({
   color: theme.colors.freshBlue,
 });
 
+export const SectionHeaderRow = styled(Stack)({
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 8,
+  width: "100%",
+  minWidth: 0,
+});
+
+export const ClearSelectedButton = styled(Button)({
+  ...secondaryActionButtonStyles,
+  height: 28,
+  minHeight: 28,
+  paddingLeft: "0.75rem",
+  paddingRight: "0.75rem",
+  fontSize: "0.8rem",
+});
+
+export const ExportStatusText = styled(Typography)({
+  fontSize: "0.82rem",
+  fontWeight: 600,
+  marginLeft: 4,
+});
+
 export const FilterChip = styled(Stack)({
   flexDirection: "row",
   alignItems: "center",
@@ -159,7 +183,7 @@ export const IconButtonStyled = styled(IconButton)({
 
 export const RowLabelWrapper = styled(Stack)({
   flexDirection: "row",
-  alignItems: "center",
+  alignItems: "flex-start",
   gap: 6,
   flex: 1,
   minWidth: 0,
@@ -171,12 +195,13 @@ export const RowLabelCell = styled(Stack)({
   gap: 2,
   alignItems: "center",
   flexShrink: 0,
+  paddingTop: 2,
 });
 
 export const AmountCell = styled(Typography)({
   flex: "0 0 auto",
-  minWidth: 108,
-  maxWidth: 168,
+  minWidth: 100,
+  maxWidth: 140,
   boxSizing: "border-box",
   overflow: "hidden",
   textOverflow: "ellipsis",
@@ -189,17 +214,21 @@ export const AmountCell = styled(Typography)({
   color: theme.colors.darker,
   paddingLeft: 8,
   paddingRight: 4,
+  alignSelf: "center",
 });
 
 export const LabelText = styled(Typography)({
-  display: "block",
+  display: "-webkit-box",
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: "vertical",
   flex: 1,
   minWidth: 0,
   overflow: "hidden",
   textOverflow: "ellipsis",
-  whiteSpace: "nowrap",
+  whiteSpace: "normal",
+  wordBreak: "break-word",
   fontSize: 12.5,
-  lineHeight: 1.3,
+  lineHeight: 1.35,
   color: theme.colors.black,
 });
 
@@ -235,11 +264,11 @@ export const ProcessRowsBody = styled(Stack)({
 
 export const ProcessRow = styled(Stack)({
   flexDirection: "row",
-  alignItems: "center",
+  alignItems: "flex-start",
   gap: 8,
   minHeight: 34,
-  paddingTop: 5,
-  paddingBottom: 5,
+  paddingTop: 6,
+  paddingBottom: 6,
   paddingLeft: 12,
   paddingRight: 16,
   borderBottom: `1px solid ${theme.colors.softBlue}`,

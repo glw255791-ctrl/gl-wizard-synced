@@ -224,8 +224,7 @@ export const ProcessDataTable: React.FC<Props> = ({
                 typeof row.sideHeader === "string" ? row.sideHeader : "";
               const label = fullLabel;
               const amount = row.total ? String(row.total) : "";
-              const tooltipTitle =
-                fullLabel.length > 24 ? fullLabel : "";
+              const tooltipTitle = fullLabel;
               const bg =
                 row.bg && row.bg !== "white"
                   ? String(row.bg)

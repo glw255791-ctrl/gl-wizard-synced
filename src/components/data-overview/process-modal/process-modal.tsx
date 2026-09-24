@@ -15,6 +15,9 @@ import {
   ProcessTreeBranch,
   ProcessTreeChildren,
   SectionLabel,
+  SectionHeaderRow,
+  ClearSelectedButton,
+  ExportStatusText,
   FilterChip,
   FilterChipClear,
   SelectedSection,
@@ -78,6 +81,10 @@ export function ProcessModal(props: ProcessModalProps) {
   const [lazyTablesData, setLazyTablesData] = useState<TableData[]>([]);
   const [loading, setLoading] = useState(false);
   const [exportFileName, setExportFileName] = useState("");
+  const [exportStatus, setExportStatus] = useState<
+    "idle" | "loading" | "done" | "error"
+  >("idle");
+  const [exportMessage, setExportMessage] = useState("");
 
   /* ===========================================================================
    * Refs & transitions
@@ -249,6 +256,33 @@ export function ProcessModal(props: ProcessModalProps) {
     });
   }, []);
 
+  const handleClearSelected = useCallback(() => {
+    setOverallProcessObject([]);
+    setSearchByObjectInternal(undefined);
+    setExportStatus("idle");
+    setExportMessage("");
+    setLoading(true);
+
+    const { tablesData } = computeTableData(
+      undefined,
+      initialProcessObject,
+      filterValueOptions,
+      overviewTableData,
+      sortedDataDisplayHeader,
+      selectedFilter,
+      commonTableProps
+    );
+    setLazyTablesData(tablesData);
+    setLoading(false);
+  }, [
+    initialProcessObject,
+    filterValueOptions,
+    overviewTableData,
+    sortedDataDisplayHeader,
+    selectedFilter,
+    commonTableProps,
+  ]);
+
   /* ===========================================================================
    * Tree rendering
    * =========================================================================== */
@@ -328,6 +362,8 @@ export function ProcessModal(props: ProcessModalProps) {
       setOverallProcessObject([]);
       setSearchByObjectInternal(undefined);
       setExportFileName("");
+      setExportStatus("idle");
+      setExportMessage("");
       sideHeaderColorMapRef.current.clear();
       return;
     }
@@ -477,51 +513,88 @@ export function ProcessModal(props: ProcessModalProps) {
                 onChange={(e) => setExportFileName(e.target.value)}
               />
               <ExcelDownloadButton
-                disabled={exportFileName.trim() === ""}
+                disabled={
+                  exportFileName.trim() === "" || exportStatus === "loading"
+                }
                 variant="contained"
                 onClick={async () => {
                   const fileName = exportFileName.trim();
-                  const allRows = overallProcessObject
-                    .map((item) =>
-                      item.rows.map((row) => ({
-                        ...row,
-                        [commonTableProps.groupingValue]: item.title,
-                      }))
-                    )
-                    .flat();
+                  if (!fileName) return;
 
-                  const tableDataByRows = allRows.map((item) => {
-                    return basicTableData.filter((tableItem) => {
-                      return (
-                        toResultPath(tableItem.result) === item.sideHeader &&
-                        tableItem.coaData[
-                          commonTableProps.groupingValue as keyof AnyType
-                        ] ===
-                          item[commonTableProps.groupingValue as keyof AnyType]
-                      );
+                  setExportStatus("loading");
+                  setExportMessage("Preparing Excel…");
+
+                  try {
+                    const allRows = overallProcessObject
+                      .map((item) =>
+                        item.rows.map((row) => ({
+                          ...row,
+                          [commonTableProps.groupingValue]: item.title,
+                        }))
+                      )
+                      .flat();
+
+                    const tableDataByRows = allRows.map((item) => {
+                      return basicTableData.filter((tableItem) => {
+                        return (
+                          toResultPath(tableItem.result) === item.sideHeader &&
+                          tableItem.coaData[
+                            commonTableProps.groupingValue as keyof AnyType
+                          ] ===
+                            item[
+                              commonTableProps.groupingValue as keyof AnyType
+                            ]
+                        );
+                      });
                     });
-                  });
 
-                  const rows = allRows.map((item) => String(item.sideHeader));
-                  const [{ exportMultipleTablesToExcel }, { exportTreeToExcel }] =
-                    await Promise.all([
+                    const rows = allRows.map((item) => String(item.sideHeader));
+                    const [
+                      { exportMultipleTablesToExcel },
+                      { exportTreeToExcel },
+                    ] = await Promise.all([
                       import("../table/functions"),
                       import("./process-export"),
                     ]);
 
-                  await exportMultipleTablesToExcel(
-                    basicTableHeader,
-                    tableDataByRows,
-                    rows
-                  );
-                  await exportTreeToExcel(
-                    buildTree(overallProcessObject),
-                    `${fileName}.xlsx`
-                  );
+                    await exportMultipleTablesToExcel(
+                      basicTableHeader,
+                      tableDataByRows,
+                      rows
+                    );
+                    await exportTreeToExcel(
+                      buildTree(overallProcessObject),
+                      `${fileName}.xlsx`
+                    );
+
+                    setExportStatus("done");
+                    setExportMessage(`Saved ${fileName}.xlsx`);
+                  } catch (err) {
+                    setExportStatus("error");
+                    setExportMessage(
+                      err instanceof Error
+                        ? err.message
+                        : "Export failed. Try again."
+                    );
+                  }
                 }}
               >
-                Export Excel
+                {exportStatus === "loading" ? "Exporting…" : "Export Excel"}
               </ExcelDownloadButton>
+              {exportStatus !== "idle" && exportMessage ? (
+                <ExportStatusText
+                  sx={{
+                    color:
+                      exportStatus === "error"
+                        ? theme.colors.red
+                        : exportStatus === "done"
+                          ? theme.colors.deepTeal
+                          : theme.colors.slateGray,
+                  }}
+                >
+                  {exportMessage}
+                </ExportStatusText>
+              ) : null}
 
               {searchByObject ? (
                 <FilterChip>
@@ -576,7 +649,17 @@ export function ProcessModal(props: ProcessModalProps) {
             <ModalContentWrapper>
               {(isLoading || overallProcessObject.length > 0) && (
                 <SelectedSection>
-                  <SectionLabel>Selected process</SectionLabel>
+                  <SectionHeaderRow>
+                    <SectionLabel>Selected process</SectionLabel>
+                    {overallProcessObject.length > 0 ? (
+                      <ClearSelectedButton
+                        onClick={handleClearSelected}
+                        disabled={isLoading}
+                      >
+                        Clear selected
+                      </ClearSelectedButton>
+                    ) : null}
+                  </SectionHeaderRow>
                   <SelectedTableWrapper>
                     {isLoading ? (
                       <LoaderContentWrapper>

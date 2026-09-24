@@ -20,6 +20,8 @@ import { HierarchyModal } from "../../composed/hierarchy-modal/hierarchy-modal";
 import { HierarchyButton } from "../../composed/hierarchy-button/hierarchy-button";
 import { theme } from "@/constants/theme";
 import { useState } from "react";
+import { AnalysisStartHint } from "../../composed/workflow-hints/analysis-start-hint";
+import { ResultsNextSteps } from "../../composed/workflow-hints/results-next-steps";
 
 function ResultsPlaceholder({ label }: { label: string }) {
   return (
@@ -131,6 +133,8 @@ export function ReversalAnalysis() {
           />
 
           {/* GL and CoA Upload — hidden on Results; Undo brings them back */}
+          {currentStep === AnalysisStep.TO_UPLOAD_GL && <AnalysisStartHint />}
+
           {currentStep !== AnalysisStep.ANALYZED && (
           <Grid2
             container
@@ -273,6 +277,7 @@ export function ReversalAnalysis() {
             )}
 
           {/* GL Data Summary */}
+          {currentStep === AnalysisStep.ANALYZED && <ResultsNextSteps />}
           {currentStep === AnalysisStep.ANALYZED && (
             <AnalysisSummary
               rows={tableData}

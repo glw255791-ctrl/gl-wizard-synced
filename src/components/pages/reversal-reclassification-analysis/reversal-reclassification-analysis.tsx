@@ -21,6 +21,8 @@ import { HierarchyModal } from "../../composed/hierarchy-modal/hierarchy-modal";
 import { HierarchyButton } from "../../composed/hierarchy-button/hierarchy-button";
 import { theme } from "@/constants/theme";
 import { useState } from "react";
+import { AnalysisStartHint } from "../../composed/workflow-hints/analysis-start-hint";
+import { ResultsNextSteps } from "../../composed/workflow-hints/results-next-steps";
 
 function ResultsPlaceholder({ label }: { label: string }) {
   return (
@@ -126,6 +128,10 @@ export function ReversaReclassificationAnalysis() {
             onPressResetBtn={resetAnalysis}
             step={currentStep}
           />
+
+          {currentStep === AnalysisStep.TO_UPLOAD_GL && (
+            <AnalysisStartHint body="Drop an Excel GL, map the four columns, then add the chart of accounts to find reversing entries." />
+          )}
 
           {currentStep !== AnalysisStep.ANALYZED && (
             <Grid2 container spacing={2}>
@@ -272,6 +278,7 @@ export function ReversaReclassificationAnalysis() {
               />
             )}
 
+          {currentStep === AnalysisStep.ANALYZED && <ResultsNextSteps />}
           {currentStep === AnalysisStep.ANALYZED && (
             <AnalysisSummary
               rows={tableData}
