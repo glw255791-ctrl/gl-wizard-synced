@@ -33,7 +33,7 @@ export function LoginPage() {
 
   useEffect(() => {
     if (window.location.hash.includes("type=recovery")) {
-      router.replace(`/reset-password${window.location.hash}`);
+      window.location.replace(`/reset-password${window.location.hash}`);
       return;
     }
     if (!supabaseBrowser) return;
