@@ -168,8 +168,9 @@ export const RowLabelCell = styled(Stack)({
 
 export const AmountCell = styled(Typography)({
   flex: "0 0 auto",
-  minWidth: 132,
-  maxWidth: 160,
+  minWidth: 108,
+  maxWidth: 168,
+  boxSizing: "border-box",
   overflow: "hidden",
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
@@ -180,6 +181,7 @@ export const AmountCell = styled(Typography)({
   textAlign: "right",
   color: theme.colors.darker,
   paddingLeft: 8,
+  paddingRight: 2,
 });
 
 export const LabelText = styled(Typography)({
@@ -201,11 +203,13 @@ export const ProcessTableShell = styled(Stack, {
   maxWidth: compact ? 320 : "100%",
   minWidth: compact ? 280 : 0,
   flex: compact ? "0 0 320px" : "0 0 auto",
-  alignSelf: "flex-start",
+  alignSelf: compact ? "flex-start" : "stretch",
+  boxSizing: "border-box",
 }));
 
 export const ProcessRowsBody = styled(Stack)({
   width: "100%",
+  maxWidth: "100%",
   minWidth: 0,
   flex: "0 0 auto",
   overflowX: "hidden",
@@ -213,6 +217,7 @@ export const ProcessRowsBody = styled(Stack)({
   backgroundColor: theme.colors.white,
   borderBottomLeftRadius: theme.borderRadius.sm,
   borderBottomRightRadius: theme.borderRadius.sm,
+  boxSizing: "border-box",
 });
 
 export const ProcessRow = styled(Stack)({
@@ -220,10 +225,15 @@ export const ProcessRow = styled(Stack)({
   alignItems: "center",
   gap: 8,
   minHeight: 34,
-  padding: "5px 10px",
+  paddingTop: 5,
+  paddingBottom: 5,
+  paddingLeft: 12,
+  // Keep amounts clear of the table border and any scrollbar.
+  paddingRight: 20,
   borderBottom: `1px solid ${theme.colors.softBlue}`,
   boxSizing: "border-box",
   width: "100%",
+  maxWidth: "100%",
   minWidth: 0,
 
   "&:last-child": {
@@ -233,22 +243,21 @@ export const ProcessRow = styled(Stack)({
 
 export const TableScrollableWrapper = styled(Stack)({
   borderRadius: theme.borderRadius.sm,
-  borderWidth: theme.borderWidth.sm,
-  borderStyle: "solid",
-  borderColor: theme.colors.softBlue,
+  border: `1px solid ${theme.colors.softBlue}`,
   backgroundColor: theme.colors.white,
   width: "100%",
   maxWidth: "100%",
   minWidth: 0,
   flex: "0 0 auto",
   overflow: "hidden",
+  boxSizing: "border-box",
   boxShadow: "0 1px 0 rgba(53, 111, 115, 0.08)",
 });
 
 export const TableHeaderStyled = styled(Stack)({
   width: "100%",
   boxSizing: "border-box",
-  padding: "0.45rem 0.75rem",
+  padding: "0.45rem 1.25rem 0.45rem 0.75rem",
   backgroundColor: theme.colors.freshBlue,
   color: theme.colors.white,
   flexDirection: "row",
@@ -292,10 +301,33 @@ export const SelectedSection = styled(Stack)({
 export const BottomSection = styled(Stack)({
   gap: 6,
   width: "100%",
+  maxWidth: "100%",
   minWidth: 0,
   minHeight: 180,
   flex: "1 1 50%",
   overflow: "hidden",
+  boxSizing: "border-box",
+  alignItems: "stretch",
+});
+
+export const TablesWrapper = styled(Stack)({
+  gap: theme.gap.lg,
+  flexDirection: "column",
+  alignItems: "stretch",
+  overflowX: "hidden",
+  overflowY: "auto",
+  width: "100%",
+  maxWidth: "100%",
+  minWidth: 0,
+  flex: 1,
+  minHeight: 0,
+  paddingBottom: 4,
+  boxSizing: "border-box",
+
+  "& > *": {
+    width: "100%",
+    maxWidth: "100%",
+  },
 });
 
 export const AddButton = styled(Button)({
@@ -473,21 +505,6 @@ export const LoaderText = styled(Typography)({
 // Styled circular progress indicator
 export const StyledCircularProgress = styled(CircularProgress)({
   color: theme.colors.freshBlue,
-});
-
-export const TablesWrapper = styled(Stack)({
-  gap: theme.gap.lg,
-  flexDirection: "column",
-  alignItems: "stretch",
-  overflowX: "hidden",
-  overflowY: "auto",
-  width: "100%",
-  maxWidth: "100%",
-  minWidth: 0,
-  flex: 1,
-  minHeight: 0,
-  paddingBottom: 4,
-  boxSizing: "border-box",
 });
 
 export const ProcessTreeBranch = styled(Stack)({

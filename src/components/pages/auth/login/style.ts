@@ -58,6 +58,12 @@ export const LoginButton = styled(Button)({
     backgroundColor: theme.colors.limeSoft,
     boxShadow: "none",
   },
+
+  "&.Mui-disabled": {
+    backgroundColor: theme.colors.softBlue,
+    color: theme.colors.white,
+    opacity: 1,
+  },
 });
 
 export const ImageAndLogo = styled(Stack)({

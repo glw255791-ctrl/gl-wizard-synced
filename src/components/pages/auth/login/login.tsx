@@ -12,13 +12,25 @@ import {
   ErrorText,
 } from "./style";
 import { useLoginModel } from "./login-model";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase/browser-client";
-import { TextField, CircularProgress } from "@mui/material";
+import {
+  CircularProgress,
+  IconButton,
+  InputAdornment,
+  TextField,
+} from "@mui/material";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { theme } from "../../../../constants/theme";
 
 export function LoginPage() {
-  const { router, fieldErrors, onLogin, submitting, onChangeField } =
+  const { router, fieldErrors, onLogin, submitting, onChangeField, loginData } =
     useLoginModel();
+  const [showPassword, setShowPassword] = useState(false);
+
+  const canSubmit =
+    loginData.email.trim().length > 0 && loginData.password.trim().length > 0;
 
   useEffect(() => {
     if (!supabaseBrowser) return;
@@ -41,6 +53,7 @@ export function LoginPage() {
         component="form"
         onSubmit={(event) => {
           event.preventDefault();
+          if (!canSubmit || submitting) return;
           const data = new FormData(event.currentTarget);
           onLogin({
             email: String(data.get("email") ?? ""),
@@ -59,6 +72,8 @@ export function LoginPage() {
             label="Email"
             type="email"
             autoComplete="email"
+            placeholder="Enter your email"
+            value={loginData.email}
             error={!!fieldErrors.email}
             onChange={(e) => onChangeField("email", e.target.value)}
             fullWidth
@@ -70,21 +85,49 @@ export function LoginPage() {
           <TextField
             name="password"
             label="Password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             autoComplete="current-password"
+            placeholder="Enter your password"
+            value={loginData.password}
             error={!!fieldErrors.password}
             onChange={(e) => onChangeField("password", e.target.value)}
             fullWidth
             variant="outlined"
-            slotProps={{ inputLabel: { shrink: true } }}
+            slotProps={{
+              inputLabel: { shrink: true },
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      onMouseDown={(event) => event.preventDefault()}
+                      edge="end"
+                      size="small"
+                      sx={{ color: theme.colors.medium }}
+                    >
+                      {showPassword ? (
+                        <VisibilityOff fontSize="small" />
+                      ) : (
+                        <Visibility fontSize="small" />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
           />
         </InputWrapper>
         <LoginButton
           type="submit"
           fullWidth
-          disabled={submitting}
+          disabled={!canSubmit || submitting}
           startIcon={
-            submitting ? <CircularProgress size={18} color="inherit" /> : undefined
+            submitting ? (
+              <CircularProgress size={18} color="inherit" />
+            ) : undefined
           }
         >
           {submitting ? "Signing in..." : "Login"}
