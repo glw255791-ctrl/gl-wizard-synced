@@ -23,10 +23,7 @@ import {
 } from "./style";
 import { ProcessValue, SearchByObject } from "./types";
 
-const MAX_CHARS = 40;
 const TOTAL = "Total";
-const TOP_MAX_HEIGHT = 140;
-const BOTTOM_MAX_HEIGHT = 260;
 
 interface Filters {
   header: string;
@@ -198,20 +195,18 @@ export const ProcessDataTable: React.FC<Props> = ({
     );
   };
 
-  const maxHeight = isTopTable ? TOP_MAX_HEIGHT : BOTTOM_MAX_HEIGHT;
-
   return (
     <ProcessTableShell compact={Boolean(isTopTable)}>
       <TableScrollableWrapper id={id}>
         <TableHeaderStyled>
           <TableTitle>
             <Tooltip title={title}>
-              <Stack>{getElipsis(title, isTopTable ? 28 : 48)}</Stack>
+              <Stack>{getElipsis(title, isTopTable ? 40 : 64)}</Stack>
             </Tooltip>
           </TableTitle>
         </TableHeaderStyled>
 
-        <ProcessRowsBody sx={{ maxHeight }}>
+        <ProcessRowsBody>
           {tableRows.length === 0 ? (
             <Stack
               height={72}
@@ -225,15 +220,12 @@ export const ProcessDataTable: React.FC<Props> = ({
             </Stack>
           ) : (
             tableRows.map((row, index) => {
-              const label = row.sideHeader
-                ? getElipsis(String(row.sideHeader), MAX_CHARS)
-                : "";
+              const fullLabel =
+                typeof row.sideHeader === "string" ? row.sideHeader : "";
+              const label = fullLabel;
               const amount = row.total ? String(row.total) : "";
               const tooltipTitle =
-                typeof row.sideHeader === "string" &&
-                row.sideHeader.length > MAX_CHARS
-                  ? row.sideHeader
-                  : "";
+                fullLabel.length > 24 ? fullLabel : "";
               const bg =
                 row.bg && row.bg !== "white"
                   ? String(row.bg)

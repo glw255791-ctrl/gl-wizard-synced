@@ -82,13 +82,15 @@ export const ModalHeader = styled(Stack)(() => ({
 export const ModalContentWrapper = styled(Stack)(() => ({
   alignItems: "stretch",
   justifyContent: "flex-start",
+  flexDirection: "column",
   flex: 1,
   minHeight: 0,
   width: "100%",
   gap: theme.gap.md,
-  padding: theme.padding.lg,
+  padding: "0.85rem 1rem 1rem",
   overflow: "hidden",
   backgroundColor: theme.colors.page,
+  boxSizing: "border-box",
 }));
 
 // Title of the modal
@@ -186,7 +188,7 @@ export const AmountCell = styled(Typography)({
   textAlign: "right",
   color: theme.colors.darker,
   paddingLeft: 8,
-  paddingRight: 2,
+  paddingRight: 4,
 });
 
 export const LabelText = styled(Typography)({
@@ -204,21 +206,27 @@ export const LabelText = styled(Typography)({
 export const ProcessTableShell = styled(Stack, {
   shouldForwardProp: (prop) => prop !== "compact",
 })<{ compact?: boolean }>(({ compact }) => ({
-  width: compact ? 320 : "100%",
-  maxWidth: compact ? 320 : "100%",
-  minWidth: compact ? 280 : 0,
-  flex: compact ? "0 0 320px" : "0 0 auto",
-  alignSelf: compact ? "flex-start" : "stretch",
+  width: "100%",
+  maxWidth: "100%",
+  minWidth: compact ? 300 : 0,
+  flex: compact ? "1 1 360px" : "1 1 auto",
+  alignSelf: "stretch",
+  minHeight: 0,
+  height: "100%",
   boxSizing: "border-box",
+  display: "flex",
+  flexDirection: "column",
 }));
 
 export const ProcessRowsBody = styled(Stack)({
   width: "100%",
   maxWidth: "100%",
   minWidth: 0,
-  flex: "0 0 auto",
+  flex: 1,
+  minHeight: 0,
   overflowX: "hidden",
   overflowY: "auto",
+  scrollbarGutter: "stable",
   backgroundColor: theme.colors.white,
   borderBottomLeftRadius: theme.borderRadius.sm,
   borderBottomRightRadius: theme.borderRadius.sm,
@@ -233,8 +241,7 @@ export const ProcessRow = styled(Stack)({
   paddingTop: 5,
   paddingBottom: 5,
   paddingLeft: 12,
-  // Keep amounts clear of the table border and any scrollbar.
-  paddingRight: 20,
+  paddingRight: 16,
   borderBottom: `1px solid ${theme.colors.softBlue}`,
   boxSizing: "border-box",
   width: "100%",
@@ -253,7 +260,10 @@ export const TableScrollableWrapper = styled(Stack)({
   width: "100%",
   maxWidth: "100%",
   minWidth: 0,
-  flex: "0 0 auto",
+  flex: 1,
+  minHeight: 0,
+  display: "flex",
+  flexDirection: "column",
   overflow: "hidden",
   boxSizing: "border-box",
   boxShadow: "0 1px 0 rgba(53, 111, 115, 0.08)",
@@ -268,15 +278,15 @@ export const TableHeaderStyled = styled(Stack)({
 export const SelectedTableWrapper = styled(Stack)({
   gap: 10,
   flexDirection: "row",
-  alignItems: "flex-start",
+  alignItems: "stretch",
   flexWrap: "nowrap",
   overflowX: "auto",
-  overflowY: "auto",
+  overflowY: "hidden",
   width: "100%",
   maxWidth: "100%",
   minWidth: 0,
   minHeight: 0,
-  height: "100%",
+  flex: 1,
   justifyContent: "flex-start",
   borderRadius: theme.borderRadius.sm,
   backgroundColor: theme.colors.surface,
@@ -290,8 +300,8 @@ export const SelectedSection = styled(Stack)({
   width: "100%",
   minWidth: 0,
   minHeight: 0,
-  flex: "0 1 42%",
-  maxHeight: "42%",
+  flex: "0 1 38%",
+  maxHeight: "38%",
   overflow: "hidden",
 });
 
@@ -300,11 +310,13 @@ export const BottomSection = styled(Stack)({
   width: "100%",
   maxWidth: "100%",
   minWidth: 0,
-  minHeight: 180,
-  flex: "1 1 50%",
+  minHeight: 0,
+  flex: "1 1 auto",
   overflow: "hidden",
   boxSizing: "border-box",
   alignItems: "stretch",
+  display: "flex",
+  flexDirection: "column",
 });
 
 export const TablesWrapper = styled(Stack)({
@@ -312,18 +324,19 @@ export const TablesWrapper = styled(Stack)({
   flexDirection: "column",
   alignItems: "stretch",
   overflowX: "hidden",
-  overflowY: "auto",
+  overflowY: "hidden",
   width: "100%",
   maxWidth: "100%",
   minWidth: 0,
   flex: 1,
   minHeight: 0,
-  paddingBottom: 4,
   boxSizing: "border-box",
 
   "& > *": {
     width: "100%",
     maxWidth: "100%",
+    flex: 1,
+    minHeight: 0,
   },
 });
 
