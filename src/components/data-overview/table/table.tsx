@@ -33,6 +33,7 @@ import {
   ButtonsWrapper,
   styles,
   QueryStatsIconStyled,
+  ExportStatusOverlay,
 } from "./style";
 import { TotalText } from "./style";
 import { TableHeader } from "../../composed/basic-table/basic-table";
@@ -322,6 +323,7 @@ export const DataTable: React.FC<Props> = ({
           {selectedTable !== "all" && canProcess && (
             <ExcelDownloadButton
               variant="contained"
+              disabled={exportProgress != null}
               onClick={() => {
                 setIsProcessModalOpen(true);
                 setCurrentProcessObject({
@@ -339,16 +341,9 @@ export const DataTable: React.FC<Props> = ({
               Process Analysis
             </ExcelDownloadButton>
           )}
-          {exportProgress ? (
-            <DownloadProgress done={exportProgress.done} total={exportProgress.total} />
-          ) : null}
-          {exportError ? (
-            <Typography sx={{ color: theme.colors.white, fontSize: "0.85rem" }}>
-              {exportError}
-            </Typography>
-          ) : null}
           <ExcelDownloadButton
             onClick={onExportClick}
+            disabled={exportProgress != null}
             variant="contained"
             endIcon={<DownloadIcon />}
           >
@@ -357,6 +352,7 @@ export const DataTable: React.FC<Props> = ({
           {title !== "All items" && (
             <ExcelDownloadButton
               onClick={downloadGroupedByRow}
+              disabled={exportProgress != null}
               variant="contained"
               endIcon={<DownloadIcon />}
             >
@@ -365,6 +361,26 @@ export const DataTable: React.FC<Props> = ({
           )}
         </ButtonsWrapper>
       </TableHeaderStyled>
+
+      {exportProgress || exportError ? (
+        <ExportStatusOverlay>
+          {exportProgress ? (
+            <DownloadProgress
+              done={exportProgress.done}
+              total={exportProgress.total}
+              tone="onLight"
+            />
+          ) : null}
+          {exportError ? (
+            <Typography
+              sx={{ color: theme.colors.red, fontSize: "0.85rem", fontWeight: 600 }}
+            >
+              {exportError}
+            </Typography>
+          ) : null}
+        </ExportStatusOverlay>
+      ) : null}
+
       <AutoSizer
         style={{
           ...styles.autosizerWrapper,

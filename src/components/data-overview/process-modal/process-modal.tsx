@@ -17,6 +17,8 @@ import {
   SectionLabel,
   FilterChip,
   FilterChipClear,
+  SelectedSection,
+  BottomSection,
 } from "./style";
 import CloseIcon from "@mui/icons-material/Close";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -573,7 +575,7 @@ export function ProcessModal(props: ProcessModalProps) {
 
             <ModalContentWrapper>
               {(isLoading || overallProcessObject.length > 0) && (
-                <Stack gap={0.75} minWidth={0} width="100%">
+                <SelectedSection>
                   <SectionLabel>Selected process</SectionLabel>
                   <SelectedTableWrapper>
                     {isLoading ? (
@@ -587,10 +589,10 @@ export function ProcessModal(props: ProcessModalProps) {
                       renderProcessTree()
                     )}
                   </SelectedTableWrapper>
-                </Stack>
+                </SelectedSection>
               )}
 
-              <Stack gap={0.75} flex={1} minHeight={0} minWidth={0} width="100%">
+              <BottomSection>
                 <SectionLabel>
                   {searchByObject
                     ? "Related movements — click + to add"
@@ -616,7 +618,7 @@ export function ProcessModal(props: ProcessModalProps) {
                     </LoaderContentWrapper>
                   )}
                 </TablesWrapper>
-              </Stack>
+              </BottomSection>
             </ModalContentWrapper>
           </Stack>
         </ModalInnerContent>

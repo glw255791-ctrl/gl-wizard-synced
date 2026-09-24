@@ -166,20 +166,10 @@ export const RowLabelCell = styled(Stack)({
   flexShrink: 0,
 });
 
-export const LabelText = styled(Typography)({
-  flex: 1,
-  minWidth: 0,
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  whiteSpace: "nowrap",
-  fontSize: 12.5,
-  lineHeight: 1.3,
-  color: theme.colors.black,
-});
-
 export const AmountCell = styled(Typography)({
-  flex: "0 0 148px",
-  width: 148,
+  flex: "0 0 auto",
+  minWidth: 132,
+  maxWidth: 160,
   overflow: "hidden",
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
@@ -192,16 +182,32 @@ export const AmountCell = styled(Typography)({
   paddingLeft: 8,
 });
 
-export const ProcessTableShell = styled(Stack)({
-  width: "100%",
-  maxWidth: 720,
+export const LabelText = styled(Typography)({
+  display: "block",
+  flex: 1,
   minWidth: 0,
-  flex: "1 1 520px",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+  fontSize: 12.5,
+  lineHeight: 1.3,
+  color: theme.colors.black,
 });
+
+export const ProcessTableShell = styled(Stack, {
+  shouldForwardProp: (prop) => prop !== "compact",
+})<{ compact?: boolean }>(({ compact }) => ({
+  width: compact ? 320 : "100%",
+  maxWidth: compact ? 320 : "100%",
+  minWidth: compact ? 280 : 0,
+  flex: compact ? "0 0 320px" : "0 0 auto",
+  alignSelf: "flex-start",
+}));
 
 export const ProcessRowsBody = styled(Stack)({
   width: "100%",
   minWidth: 0,
+  flex: "0 0 auto",
   overflowX: "hidden",
   overflowY: "auto",
   backgroundColor: theme.colors.white,
@@ -213,8 +219,8 @@ export const ProcessRow = styled(Stack)({
   flexDirection: "row",
   alignItems: "center",
   gap: 8,
-  minHeight: 36,
-  padding: "6px 12px",
+  minHeight: 34,
+  padding: "5px 10px",
   borderBottom: `1px solid ${theme.colors.softBlue}`,
   boxSizing: "border-box",
   width: "100%",
@@ -234,8 +240,7 @@ export const TableScrollableWrapper = styled(Stack)({
   width: "100%",
   maxWidth: "100%",
   minWidth: 0,
-  flex: 1,
-  minHeight: 0,
+  flex: "0 0 auto",
   overflow: "hidden",
   boxShadow: "0 1px 0 rgba(53, 111, 115, 0.08)",
 });
@@ -243,31 +248,54 @@ export const TableScrollableWrapper = styled(Stack)({
 export const TableHeaderStyled = styled(Stack)({
   width: "100%",
   boxSizing: "border-box",
-  padding: "0.55rem 0.85rem",
+  padding: "0.45rem 0.75rem",
   backgroundColor: theme.colors.freshBlue,
   color: theme.colors.white,
   flexDirection: "row",
   justifyContent: "space-between",
   alignItems: "center",
   borderRadius: `${theme.borderRadius.sm} ${theme.borderRadius.sm} 0 0`,
-  minHeight: 40,
+  minHeight: 36,
+  flexShrink: 0,
 });
 
 export const SelectedTableWrapper = styled(Stack)({
-  gap: theme.gap.md,
+  gap: 10,
   flexDirection: "row",
-  alignItems: "stretch",
-  flexWrap: "wrap",
-  overflow: "visible",
+  alignItems: "flex-start",
+  flexWrap: "nowrap",
+  overflowX: "auto",
+  overflowY: "auto",
   width: "100%",
   maxWidth: "100%",
   minWidth: 0,
+  minHeight: 0,
+  height: "100%",
   justifyContent: "flex-start",
   borderRadius: theme.borderRadius.sm,
   backgroundColor: theme.colors.surface,
   border: `${theme.borderWidth.sm} solid ${theme.colors.softBlue}`,
-  padding: "0.75rem",
-  flexShrink: 0,
+  padding: "0.65rem",
+  boxSizing: "border-box",
+});
+
+export const SelectedSection = styled(Stack)({
+  gap: 6,
+  width: "100%",
+  minWidth: 0,
+  minHeight: 0,
+  flex: "0 1 42%",
+  maxHeight: "42%",
+  overflow: "hidden",
+});
+
+export const BottomSection = styled(Stack)({
+  gap: 6,
+  width: "100%",
+  minWidth: 0,
+  minHeight: 180,
+  flex: "1 1 50%",
+  overflow: "hidden",
 });
 
 export const AddButton = styled(Button)({
@@ -449,9 +477,8 @@ export const StyledCircularProgress = styled(CircularProgress)({
 
 export const TablesWrapper = styled(Stack)({
   gap: theme.gap.lg,
-  flexDirection: "row",
+  flexDirection: "column",
   alignItems: "stretch",
-  flexWrap: "wrap",
   overflowX: "hidden",
   overflowY: "auto",
   width: "100%",
@@ -460,23 +487,28 @@ export const TablesWrapper = styled(Stack)({
   flex: 1,
   minHeight: 0,
   paddingBottom: 4,
+  boxSizing: "border-box",
 });
 
 export const ProcessTreeBranch = styled(Stack)({
   flexDirection: "row",
   alignItems: "flex-start",
-  flexWrap: "wrap",
-  gap: 14,
-  width: "100%",
+  flexWrap: "nowrap",
+  gap: 12,
+  width: "auto",
   minWidth: 0,
+  flex: "0 0 auto",
 });
 
 export const ProcessTreeChildren = styled(Stack)({
-  flexDirection: "column",
-  gap: 12,
-  flex: "1 1 520px",
+  flexDirection: "row",
+  flexWrap: "wrap",
+  alignContent: "flex-start",
+  alignItems: "flex-start",
+  gap: 10,
+  flex: "0 1 auto",
   minWidth: 0,
-  maxWidth: 720,
+  maxWidth: "100%",
 });
 
 export const LoaderContentWrapper = styled(Stack)({

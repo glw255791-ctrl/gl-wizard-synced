@@ -22,10 +22,10 @@ import {
 } from "./style";
 import { ProcessValue, SearchByObject } from "./types";
 
-const MAX_CHARS = 52;
+const MAX_CHARS = 40;
 const TOTAL = "Total";
-const TOP_MAX_HEIGHT = 220;
-const BOTTOM_MAX_HEIGHT = 420;
+const TOP_MAX_HEIGHT = 140;
+const BOTTOM_MAX_HEIGHT = 260;
 
 interface Filters {
   header: string;
@@ -200,12 +200,12 @@ export const ProcessDataTable: React.FC<Props> = ({
   const maxHeight = isTopTable ? TOP_MAX_HEIGHT : BOTTOM_MAX_HEIGHT;
 
   return (
-    <ProcessTableShell>
+    <ProcessTableShell compact={Boolean(isTopTable)}>
       <TableScrollableWrapper id={id}>
         <TableHeaderStyled>
           <TableTitle>
             <Tooltip title={title}>
-              <Stack>{getElipsis(title, 48)}</Stack>
+              <Stack>{getElipsis(title, isTopTable ? 28 : 48)}</Stack>
             </Tooltip>
           </TableTitle>
         </TableHeaderStyled>

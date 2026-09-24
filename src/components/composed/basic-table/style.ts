@@ -35,10 +35,28 @@ export const LabelText = styled(Typography)({
 });
 
 export const Wrapper = styled(Stack)({
+  position: "relative",
   borderRadius: theme.borderRadius.sm,
   borderWidth: theme.borderWidth.sm,
   borderStyle: "solid",
   borderColor: theme.colors.softBlue,
+  overflow: "hidden",
+});
+
+export const ExportStatusOverlay = styled(Stack)({
+  position: "absolute",
+  left: "50%",
+  top: 56,
+  transform: "translateX(-50%)",
+  zIndex: 5,
+  minWidth: 280,
+  maxWidth: "min(420px, calc(100% - 2rem))",
+  padding: "0.85rem 1rem",
+  borderRadius: theme.borderRadius.md,
+  backgroundColor: theme.colors.white,
+  border: `1px solid ${theme.colors.softBlue}`,
+  boxShadow: "0 10px 28px rgba(53, 111, 115, 0.22)",
+  gap: "0.35rem",
 });
 
 export const TableHeaderStyled = styled(Stack)({

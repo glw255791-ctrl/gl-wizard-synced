@@ -127,6 +127,23 @@ export const styles: Record<string, CommonProps["style"]> = {
 export const ButtonsWrapper = styled(Stack)({
   flexDirection: "row",
   gap: theme.gap.md,
+  alignItems: "center",
+});
+
+export const ExportStatusOverlay = styled(Stack)({
+  position: "absolute",
+  left: "50%",
+  top: 56,
+  transform: "translateX(-50%)",
+  zIndex: 5,
+  minWidth: 280,
+  maxWidth: "min(420px, calc(100% - 2rem))",
+  padding: "0.85rem 1rem",
+  borderRadius: theme.borderRadius.md,
+  backgroundColor: theme.colors.white,
+  border: `1px solid ${theme.colors.softBlue}`,
+  boxShadow: "0 10px 28px rgba(53, 111, 115, 0.22)",
+  gap: "0.35rem",
 });
 
 /**

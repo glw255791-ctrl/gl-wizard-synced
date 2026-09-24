@@ -3,6 +3,7 @@ import { formatDate } from "date-fns";
 import {
   CheckedIcon,
   ExcelDownloadButton,
+  ExportStatusOverlay,
   getCellStyleByHeader,
   LabelText,
   ReversalCellWrapper,
@@ -107,9 +108,6 @@ export const BasicTable = ({
     <Wrapper>
       <TableHeaderStyled>
         <TableTitle>Data overview</TableTitle>
-        {exportProgress ? (
-          <DownloadProgress done={exportProgress.done} total={exportProgress.total} />
-        ) : null}
         <ExcelDownloadButton
           onClick={onExportTable}
           disabled={exportProgress != null}
@@ -119,6 +117,16 @@ export const BasicTable = ({
           Download
         </ExcelDownloadButton>
       </TableHeaderStyled>
+
+      {exportProgress ? (
+        <ExportStatusOverlay>
+          <DownloadProgress
+            done={exportProgress.done}
+            total={exportProgress.total}
+            tone="onLight"
+          />
+        </ExportStatusOverlay>
+      ) : null}
 
       {data.length > 0 && (
         <AutoSizer style={styles.autoSizer}>
