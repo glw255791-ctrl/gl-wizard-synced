@@ -285,8 +285,8 @@ export const SelectedTableWrapper = styled(Stack)({
   width: "100%",
   maxWidth: "100%",
   minWidth: 0,
-  minHeight: 0,
   flex: 1,
+  minHeight: 0,
   justifyContent: "flex-start",
   borderRadius: theme.borderRadius.sm,
   backgroundColor: theme.colors.surface,
@@ -300,9 +300,10 @@ export const SelectedSection = styled(Stack)({
   width: "100%",
   minWidth: 0,
   minHeight: 0,
-  flex: "0 1 38%",
-  maxHeight: "38%",
+  flex: "1 1 50%",
   overflow: "hidden",
+  display: "flex",
+  flexDirection: "column",
 });
 
 export const BottomSection = styled(Stack)({
@@ -311,7 +312,7 @@ export const BottomSection = styled(Stack)({
   maxWidth: "100%",
   minWidth: 0,
   minHeight: 0,
-  flex: "1 1 auto",
+  flex: "1 1 50%",
   overflow: "hidden",
   boxSizing: "border-box",
   alignItems: "stretch",
