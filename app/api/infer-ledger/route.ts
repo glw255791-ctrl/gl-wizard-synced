@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/auth/require-user";
 const HF_API_KEY = process.env.HF_API_KEY;
 /** Prefer a small routed model; `:fastest` picks an available Inference Provider. */
 const MODEL =
-  process.env.HF_MODEL?.trim() || "Qwen/Qwen2.5-7B-Instruct:fastest";
+  process.env.HF_MODEL?.trim() || "meta-llama/Llama-3.1-8B-Instruct:fastest";
 const ROUTER_URL = "https://router.huggingface.co/v1/chat/completions";
 
 const systemPrompt = `You are an expert accounting AI that infers business transactions from GL accounts. 

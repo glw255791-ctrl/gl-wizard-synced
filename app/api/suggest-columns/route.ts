@@ -3,7 +3,7 @@ import { requireUser } from "@/lib/auth/require-user";
 
 const HF_API_KEY = process.env.HF_API_KEY;
 const MODEL =
-  process.env.HF_MODEL?.trim() || "Qwen/Qwen2.5-7B-Instruct:fastest";
+  process.env.HF_MODEL?.trim() || "meta-llama/Llama-3.1-8B-Instruct:fastest";
 const ROUTER_URL = "https://router.huggingface.co/v1/chat/completions";
 
 const GL_KEYS = ["account", "jen", "date", "value"] as const;
@@ -83,10 +83,17 @@ JSON keys: ${keys.join(", ")}`,
 
     if (!response.ok) {
       const errText = await response.text();
-      return NextResponse.json(
-        { error: errText.slice(0, 240) || "Hugging Face request failed." },
-        { status: 502 }
-      );
+      let message = errText.slice(0, 240) || "Hugging Face request failed.";
+      try {
+        const parsed = JSON.parse(errText) as {
+          error?: { message?: string } | string;
+        };
+        if (typeof parsed.error === "string") message = parsed.error;
+        else if (parsed.error?.message) message = parsed.error.message;
+      } catch {
+        /* keep the raw snippet */
+      }
+      return NextResponse.json({ error: message }, { status: 502 });
     }
 
     const data = await response.json();
