@@ -64,6 +64,8 @@ export function UserManagementPage() {
     setSnackbarProps,
     resendAccess,
     setTemporaryPassword,
+    inviteLink,
+    setInviteLink,
   } = useUserManagementModel();
   const [issuedPassword, setIssuedPassword] = useState("");
 
@@ -205,7 +207,7 @@ export function UserManagementPage() {
       case "DELETE":
         return "Delete user";
       default:
-        return "Invite User";
+        return inviteLink ? "Close" : "Invite User";
     }
   };
 
@@ -377,14 +379,15 @@ export function UserManagementPage() {
             </SearchField>
             <InviteButton
               variant="contained"
-              onClick={() =>
+              onClick={() => {
+                setInviteLink("");
                 setModalProps({
                   date: new Date(),
                   email: "",
                   id: "",
                   modalAction: "INVITE",
-                })
-              }
+                });
+              }}
             >
               Invite user
             </InviteButton>
@@ -434,6 +437,22 @@ export function UserManagementPage() {
               {modalProps?.modalAction === "EXTEND" && renderExtendShortcuts()}
               {renderDatePicker()}
               {renderInviteEmailInput()}
+              {inviteLink ? (
+                <Stack gap={0.75}>
+                  <Typography sx={{ color: theme.colors.graphite, fontSize: "0.95rem" }}>
+                    Copy this link and send it to the user. Supabase email is not used.
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: "0.8rem",
+                      wordBreak: "break-all",
+                      color: theme.colors.deepTeal,
+                    }}
+                  >
+                    {inviteLink}
+                  </Typography>
+                </Stack>
+              ) : null}
               {modalProps?.modalAction === "DELETE" && (
                 <Typography sx={{ color: theme.colors.graphite, fontSize: "0.95rem" }}>
                   Delete {modalProps.email} permanently? They will not be able to sign in again.

@@ -18,6 +18,7 @@ export function useUserManagementModel() {
   const [modalProps, setModalProps] = useState<ModalProps | undefined>(
     undefined
   );
+  const [inviteLink, setInviteLink] = useState("");
 
   const router = useRouter();
 
@@ -66,36 +67,22 @@ export function useUserManagementModel() {
 
   // ----- Invite User -----
   const signUpUser = async (email: string) => {
-    if (!supabaseBrowser) return;
-    try {
-      const session = await supabaseBrowser.auth.getSession();
+    if (!supabaseBrowser) return "";
+    const session = await supabaseBrowser.auth.getSession();
 
-      const res = await fetch("/api/users/invite", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.data.session?.access_token}`,
-        },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to invite user.");
-      }
-
-      setSnackbarProps({
-        message: `Invite email sent to ${email}.`,
-        severity: "success",
-        open: true,
-      });
-    } catch (error) {
-      console.warn(error);
-      setSnackbarProps({
-        message: `Failed to invite user.`,
-        severity: "error",
-        open: true,
-      });
+    const res = await fetch("/api/users/invite", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.data.session?.access_token}`,
+      },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to invite user.");
     }
+    return String(data.link ?? "");
   };
 
   const authHeaders = async () => {
@@ -195,7 +182,24 @@ export function useUserManagementModel() {
   // ----- Confirm Button Handler -----
   const onConfirm = async () => {
     if (modalProps?.modalAction === "INVITE") {
-      await signUpUser(modalProps.email);
+      if (inviteLink) {
+        setInviteLink("");
+        setModalProps(undefined);
+        await loadData();
+        return;
+      }
+      try {
+        const link = await signUpUser(modalProps.email);
+        setInviteLink(link);
+      } catch (error) {
+        setSnackbarProps({
+          message:
+            error instanceof Error ? error.message : "Failed to invite user.",
+          severity: "error",
+          open: true,
+        });
+      }
+      return;
     } else if (modalProps?.modalAction === "DELETE" && modalProps.id) {
       await deleteUser(modalProps.id, modalProps.email);
     } else {
@@ -221,6 +225,8 @@ export function useUserManagementModel() {
     onConfirm,
     snackbarProps,
     setSnackbarProps,
+    inviteLink,
+    setInviteLink,
     resendAccess,
     setTemporaryPassword,
     deleteUser,

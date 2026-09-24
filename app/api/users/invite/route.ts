@@ -25,15 +25,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-      redirectTo: `${baseUrl}/register`,
+    const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+      type: "invite",
+      email,
+      options: { redirectTo: `${baseUrl}/register` },
     });
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true });
+    const link = data.properties?.action_link;
+    if (!link) {
+      return NextResponse.json(
+        { error: "Supabase did not return an invite link." },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ link });
   } catch {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
