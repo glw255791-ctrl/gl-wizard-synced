@@ -187,7 +187,6 @@ export function UserManagementPage() {
             </IconButton>
             </span>
           </Tooltip>
-          </Tooltip>
         </Stack>
       );
     }
