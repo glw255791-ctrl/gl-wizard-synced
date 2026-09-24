@@ -6,8 +6,8 @@ export const Root = styled(Stack)({
   minHeight: "100vh",
   justifyContent: "center",
   alignItems: "center",
-  backgroundColor: theme.colors.canvas,
-  backgroundImage: `linear-gradient(165deg, ${theme.colors.surface} 0%, ${theme.colors.page} 58%, ${theme.colors.canvas} 100%)`,
+  backgroundColor: theme.colors.lightGray,
+  backgroundImage: `linear-gradient(165deg, ${theme.colors.paleBlue} 0%, ${theme.colors.warmWhite} 58%, ${theme.colors.lightGray} 100%)`,
   padding: "2rem",
   boxSizing: "border-box",
 });
@@ -15,8 +15,8 @@ export const Root = styled(Stack)({
 export const LoginBlock = styled(Stack)({
   width: "100%",
   maxWidth: 420,
-  backgroundColor: theme.colors.lighter,
-  border: `1px solid ${theme.colors.surface}`,
+  backgroundColor: theme.colors.cleanWhite,
+  border: `1px solid ${theme.colors.paleBlue}`,
   borderRadius: theme.borderRadius.lg,
   padding: "2rem 2rem 1.5rem",
   gap: "1rem",
@@ -31,21 +31,21 @@ export const LogoImage = styled("img")({
 });
 
 export const Label = styled(Typography)({
-  color: theme.colors.darker,
+  color: theme.colors.deepTeal,
   fontWeight: 700,
   fontSize: "1.5rem",
   letterSpacing: "0.01em",
 });
 
 export const Subtitle = styled(Typography)({
-  color: theme.colors.medium,
+  color: theme.colors.slateGray,
   fontSize: "0.95rem",
   fontWeight: 400,
 });
 
 export const LoginButton = styled(Button)({
-  backgroundColor: theme.colors.action,
-  color: theme.colors.black,
+  backgroundColor: theme.colors.freshLime,
+  color: theme.colors.graphite,
   fontSize: "1rem",
   fontWeight: 600,
   textTransform: "none",
@@ -60,8 +60,8 @@ export const LoginButton = styled(Button)({
   },
 
   "&.Mui-disabled": {
-    backgroundColor: theme.colors.softBlue,
-    color: theme.colors.white,
+    backgroundColor: theme.colors.lightGray,
+    color: theme.colors.coolGray,
     opacity: 1,
   },
 });
@@ -79,17 +79,56 @@ export const InputWrapper = styled(Box)({
   "& .MuiOutlinedInput-root": {
     borderRadius: "12px",
     minHeight: 52,
-    backgroundColor: theme.colors.white,
+    backgroundColor: theme.colors.cleanWhite,
+    color: theme.colors.graphite,
+
+    "& fieldset": {
+      borderColor: theme.colors.softBlue,
+    },
+
+    "&:hover fieldset": {
+      borderColor: theme.colors.freshBlue,
+    },
+
+    "&.Mui-focused fieldset": {
+      borderColor: theme.colors.deepTeal,
+      borderWidth: 1.5,
+    },
+
+    "&.Mui-error fieldset": {
+      borderColor: theme.colors.red,
+    },
   },
 
   "& .MuiOutlinedInput-input": {
     padding: "14px 44px 14px 14px",
   },
 
+  "& .MuiInputLabel-root": {
+    color: theme.colors.slateGray,
+
+    "&.Mui-focused": {
+      color: theme.colors.deepTeal,
+    },
+
+    "&.Mui-error": {
+      color: theme.colors.red,
+    },
+  },
+
+  "& .MuiIconButton-root": {
+    color: theme.colors.slateGray,
+
+    "&:hover": {
+      color: theme.colors.deepTeal,
+      backgroundColor: theme.colors.paleBlue,
+    },
+  },
+
   "& input:-webkit-autofill": {
-    WebkitBoxShadow: `0 0 0 100px ${theme.colors.white} inset`,
-    WebkitTextFillColor: theme.colors.black,
-    caretColor: theme.colors.black,
+    WebkitBoxShadow: `0 0 0 100px ${theme.colors.cleanWhite} inset`,
+    WebkitTextFillColor: theme.colors.graphite,
+    caretColor: theme.colors.graphite,
   },
 
   "& input::-webkit-credentials-auto-fill-button": {

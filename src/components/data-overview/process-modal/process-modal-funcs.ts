@@ -29,12 +29,7 @@ export type Node = {
 };
 
 export function getColorForIndex(index: number): string {
-  if (index < ROW_COLORS.length) {
-    return ROW_COLORS[index];
-  }
-
-  const hue = (index * 137.5) % 360;
-  return `hsl(${hue}, 70%, 90%)`;
+  return ROW_COLORS[index % ROW_COLORS.length];
 }
 
 export function formatCurrency(value: number) {
@@ -113,22 +108,23 @@ export function buildTree(data: ProcessValue[]): Node {
   return roots[0];
 }
 
+/** Soft row tints from the brand palette (lime / teal / yellow only). */
 export const ROW_COLORS = [
-  "#E3F2FD", // light blue
-  "#FFF3E0", // light orange
-  "#E8F5E9", // light green
-  "#FCE4EC", // light pink
-  "#F3E5F5", // light purple
-  "#E0F7FA", // light cyan
-  "#FFF8E1", // light amber
-  "#E8EAF6", // light indigo
-  "#EFEBE9", // light brown
-  "#F1F8E9", // light lime
-  "#E0F2F1", // light teal
-  "#FBE9E7", // light deep orange
-  "#ECEFF1", // light blue grey
-  "#F9FBE7", // light yellow green
-  "#EDE7F6", // light deep purple
+  "#E8EFCB", // Lime Light
+  "#F5EFAF", // Soft Yellow
+  "#E4F0F0", // Pale Blue
+  "#D6E3A0", // Lime Soft
+  "#D7E6E7", // Soft Blue tint
+  "#EEF3D8", // Lime wash
+  "#F8F4C8", // Soft Yellow wash
+  "#DCEBEB", // Pale Blue deep
+  "#E3EBC0", // Lime Soft wash
+  "#CFE0E1", // Soft Blue light
+  "#F0F5D4", // Lime Light wash
+  "#E5E9E8", // Light Gray
+  "#EAF0D0", // Lime mix
+  "#D2E3E4", // Soft Blue mid
+  "#F3EFC0", // Soft Yellow mid
 ];
 
 export function computeTableData(

@@ -143,27 +143,45 @@ export const workerTimeout = {
 } as const;
 
 /**
- * Color palette values
+ * Brand palette (design reference)
+ * Fresh Lime #B8C96B · Lime Light #E8EFCB · Lime Soft #D6E3A0
+ * Deep Teal #356F73 · Fresh Blue #5A9298 · Soft Blue #A9C8C9 · Pale Blue #E4F0F0
+ * Graphite #394243 · Slate Gray #667274 · Cool Gray #A3ADAE
+ * Light Gray #E5E9E8 · Warm White #F8F9F6 · Sunny Yellow #E8D75A
+ * Soft Yellow #F5EFAF · Clean White #FFFFFF
  */
 export const colors = {
-  darker: "#356F73",
-  medium: "#667274",
-  lighter: "#FFFFFF",
-  page: "#F8F9F6",
-  surface: "#E4F0F0",
-  freshBlue: "#5A9298",
+  // Named aliases matching the design board
+  freshLime: "#B8C96B",
   limeLight: "#E8EFCB",
   limeSoft: "#D6E3A0",
+  deepTeal: "#356F73",
+  freshBlue: "#5A9298",
   softBlue: "#A9C8C9",
-  canvas: "#E5E9E8",
-  yellow: "#E8D75A",
+  paleBlue: "#E4F0F0",
+  graphite: "#394243",
+  slateGray: "#667274",
+  coolGray: "#A3ADAE",
+  lightGray: "#E5E9E8",
+  warmWhite: "#F8F9F6",
+  sunnyYellow: "#E8D75A",
+  softYellow: "#F5EFAF",
+  cleanWhite: "#FFFFFF",
 
-  action: "#B8C96B",
+  // Existing semantic keys (kept for call sites)
+  darker: "#356F73", // Deep Teal
+  medium: "#667274", // Slate Gray
+  lighter: "#FFFFFF", // Clean White
+  page: "#F8F9F6", // Warm White
+  surface: "#E4F0F0", // Pale Blue
+  canvas: "#E5E9E8", // Light Gray
+  yellow: "#E8D75A", // Sunny Yellow
+  action: "#B8C96B", // Fresh Lime
   red: "#C62828",
-  green: "#356F73",
+  green: "#356F73", // Deep Teal
   white: "#FFFFFF",
-  black: "#394243",
-  gray: "#A3ADAE",
+  black: "#394243", // Graphite
+  gray: "#A3ADAE", // Cool Gray
 } as const;
 
 /**

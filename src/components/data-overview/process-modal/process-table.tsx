@@ -4,6 +4,7 @@ import { Stack, Tooltip, Typography } from "@mui/material";
 import { getElipsis } from "../table/ellipsis";
 import { buildMovementTable } from "../table/build-movement-table";
 import { AnyType } from "../../../types";
+import { theme } from "../../../constants/theme";
 import {
   RowLabelWrapper,
   TableScrollableWrapper,
@@ -237,8 +238,8 @@ export const ProcessDataTable: React.FC<Props> = ({
                 row.bg && row.bg !== "white"
                   ? String(row.bg)
                   : index % 2 === 0
-                    ? "#fff"
-                    : "#f7fafb";
+                    ? theme.colors.cleanWhite
+                    : theme.colors.paleBlue;
               const isTotal =
                 row.sideHeader === TOTAL || row.sideHeader === mappingValue;
 

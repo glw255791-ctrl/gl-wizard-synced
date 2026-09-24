@@ -22,7 +22,6 @@ import {
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import { theme } from "../../../../constants/theme";
 
 export function LoginPage() {
   const { router, fieldErrors, onLogin, submitting, onChangeField, loginData } =
@@ -106,7 +105,6 @@ export function LoginPage() {
                       onMouseDown={(event) => event.preventDefault()}
                       edge="end"
                       size="small"
-                      sx={{ color: theme.colors.medium }}
                     >
                       {showPassword ? (
                         <VisibilityOff fontSize="small" />

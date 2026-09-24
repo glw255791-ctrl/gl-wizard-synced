@@ -6,8 +6,8 @@ const DISABLED_OPACITY = 0.55;
 
 // Styled card container
 export const StyledCard = styled(Card)({
-  backgroundColor: theme.colors.lighter,
-  border: `1px solid ${theme.colors.surface}`,
+  backgroundColor: theme.colors.cleanWhite,
+  border: `1px solid ${theme.colors.paleBlue}`,
   boxShadow: "none",
   borderRadius: theme.borderRadius.sm,
   padding: theme.padding.lg,
@@ -26,7 +26,7 @@ export const StyledCardDisabled = styled(StyledCard)({
 
 // Styled dropzone root (Stack)
 export const StyledDropzoneRoot = styled(Stack)({
-  border: `${theme.borderWidth.md} dashed ${theme.colors.medium}`,
+  border: `${theme.borderWidth.md} dashed ${theme.colors.freshBlue}`,
   borderRadius: theme.borderRadius.sm,
   width: "100%",
   flex: 1,
@@ -35,15 +35,15 @@ export const StyledDropzoneRoot = styled(Stack)({
   justifyContent: "center",
   alignContent: "center",
   alignItems: "center",
-  color: theme.colors.darker,
-  backgroundColor: theme.colors.surface,
+  color: theme.colors.deepTeal,
+  backgroundColor: theme.colors.paleBlue,
 });
 
 // Styled dropzone root (Stack)
 export const StyledAdditionalDropzoneRoot = styled(Stack, {
   shouldForwardProp: (prop) => prop !== "isDisabled",
 })(({ isDisabled }: { isDisabled?: boolean }) => ({
-  border: `${theme.borderWidth.md} dashed ${theme.colors.medium}`,
+  border: `${theme.borderWidth.md} dashed ${theme.colors.freshBlue}`,
   borderRadius: theme.borderRadius.sm,
   width: "100%",
   flex: 1,
@@ -53,8 +53,8 @@ export const StyledAdditionalDropzoneRoot = styled(Stack, {
   justifyContent: "center",
   alignContent: "center",
   alignItems: "center",
-  color: theme.colors.darker,
-  backgroundColor: theme.colors.surface,
+  color: theme.colors.deepTeal,
+  backgroundColor: theme.colors.paleBlue,
   opacity: isDisabled ? DISABLED_OPACITY : 1,
   pointerEvents: isDisabled ? "none" : "auto",
 }));
@@ -62,11 +62,13 @@ export const StyledAdditionalDropzoneRoot = styled(Stack, {
 // Styled download done icon
 export const StyledDownloadDoneIcon = styled(DownloadDoneIcon)({
   fontSize: theme.fontSize.icon,
+  color: theme.colors.deepTeal,
 });
 
 export const ZoneLabel = styled(Typography)({
   fontWeight: 600,
   textAlign: "center",
+  color: theme.colors.graphite,
 });
 
 export const ZoneHint = styled(Typography)({
@@ -74,5 +76,5 @@ export const ZoneHint = styled(Typography)({
   fontWeight: 700,
   letterSpacing: "0.04em",
   textTransform: "uppercase",
-  color: theme.colors.medium,
+  color: theme.colors.slateGray,
 });

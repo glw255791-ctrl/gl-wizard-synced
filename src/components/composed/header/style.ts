@@ -3,8 +3,8 @@ import { theme } from "../../../constants/theme";
 
 // Container for the header section
 export const Wrapper = styled(Card)({
-  backgroundColor: theme.colors.lighter,
-  border: `1px solid ${theme.colors.surface}`,
+  backgroundColor: theme.colors.cleanWhite,
+  border: `1px solid ${theme.colors.paleBlue}`,
   borderRadius: theme.borderRadius.sm,
   padding: "0.85rem 1.15rem",
   boxShadow: "none",
@@ -27,7 +27,7 @@ export const HeaderBtnsWrapper = styled(Stack)({
 
 // Icon styles for header buttons
 export const IconButtonStyled = styled(IconButton)({
-  color: theme.colors.darker,
+  color: theme.colors.deepTeal,
 
   "& .MuiSvgIcon-root": {
     fontSize: 26,
@@ -36,7 +36,7 @@ export const IconButtonStyled = styled(IconButton)({
 
 export const Title = styled(Typography)({
   fontWeight: 600,
-  color: theme.colors.darker,
+  color: theme.colors.deepTeal,
   fontSize: "1.3rem",
   letterSpacing: "0.01em",
 });
@@ -48,6 +48,6 @@ export const HeaderBtnsWrapperRight = styled(Stack)({
   justifyContent: "flex-end",
   flex: 1,
   gap: "0.15rem",
-  color: theme.colors.black,
+  color: theme.colors.graphite,
 });
 

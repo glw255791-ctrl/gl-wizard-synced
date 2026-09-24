@@ -3,9 +3,26 @@
   line-height: 1.45;
   font-weight: 400;
 
+  /* Brand palette */
+  --color-fresh-lime: #b8c96b;
+  --color-lime-light: #e8efcb;
+  --color-lime-soft: #d6e3a0;
+  --color-deep-teal: #356f73;
+  --color-fresh-blue: #5a9298;
+  --color-soft-blue: #a9c8c9;
+  --color-pale-blue: #e4f0f0;
+  --color-graphite: #394243;
+  --color-slate-gray: #667274;
+  --color-cool-gray: #a3adae;
+  --color-light-gray: #e5e9e8;
+  --color-warm-white: #f8f9f6;
+  --color-sunny-yellow: #e8d75a;
+  --color-soft-yellow: #f5efaf;
+  --color-clean-white: #ffffff;
+
   color-scheme: light;
-  color: #394243;
-  background-color: #e5e9e8;
+  color: var(--color-graphite);
+  background-color: var(--color-warm-white);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -17,4 +34,6 @@ body {
   width: 100%;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--color-warm-white);
+  color: var(--color-graphite);
 }

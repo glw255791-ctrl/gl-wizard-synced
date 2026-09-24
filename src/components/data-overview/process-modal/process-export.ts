@@ -5,9 +5,7 @@ import type { Node } from "./process-modal-funcs";
 import { ROW_COLORS } from "./process-modal-funcs";
 
 const getRowColor = (level: number): string => {
-  if (level < ROW_COLORS.length) return ROW_COLORS[level];
-  const hue = (level * 137.5) % 360;
-  return `hsl(${hue}, 70%, 90%)`;
+  return ROW_COLORS[level % ROW_COLORS.length];
 };
 
 const hslToHex = (hslString: string): string => {

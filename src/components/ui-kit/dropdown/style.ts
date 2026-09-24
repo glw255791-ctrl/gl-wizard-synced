@@ -9,20 +9,29 @@ export const DropdownContainer = styled(Stack)({});
 export const StyledInputLabel = styled(InputLabel)({
   textAlign: "left",
   fontSize: theme.fontSize.lg,
-  color: theme.colors.darker,
+  color: theme.colors.deepTeal,
 });
 
 // Styled select component
 export const StyledSelect = styled(Select)({
   height: theme.height.input,
   borderRadius: theme.borderRadius.sm,
-  backgroundColor: theme.colors.white,
-  color: theme.colors.darker,
+  backgroundColor: theme.colors.cleanWhite,
+  color: theme.colors.graphite,
   "& .MuiSelect-select": {
     textAlign: "left",
   },
   "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: theme.colors.darker,
+    borderColor: theme.colors.softBlue,
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: theme.colors.freshBlue,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: theme.colors.deepTeal,
+  },
+  "& .MuiSvgIcon-root": {
+    color: theme.colors.deepTeal,
   },
 });
 
@@ -34,11 +43,12 @@ export const LabelWithInfoIcon = styled(Stack)({
 
 export const StyledInfoIcon = styled(InfoOutlinedIcon)({
   fontSize: theme.fontSize.lg,
-  color: theme.colors.darker,
+  color: theme.colors.freshBlue,
 });
 
 // Styled menu item
 export const StyledMenuItem = styled(MenuItem)({
   textAlign: "left",
   fontSize: theme.fontSize.lg,
+  color: theme.colors.graphite,
 });
