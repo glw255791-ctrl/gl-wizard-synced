@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isLicenceExpired } from "@/lib/licence";
 
 const protectedRoutes = [
   "/dashboard",
@@ -52,6 +53,20 @@ export async function proxy(request: NextRequest) {
 
   if (!session) {
     return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, licence_valid_until")
+    .eq("id", session.user.id)
+    .single();
+
+  if (
+    profile &&
+    profile.role !== "admin" &&
+    isLicenceExpired(profile.licence_valid_until)
+  ) {
+    return NextResponse.redirect(new URL("/licence-expired", request.url));
   }
 
   return response;
