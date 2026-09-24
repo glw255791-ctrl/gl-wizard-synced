@@ -32,6 +32,10 @@ export function LoginPage() {
     loginData.email.trim().length > 0 && loginData.password.trim().length > 0;
 
   useEffect(() => {
+    if (window.location.hash.includes("type=recovery")) {
+      router.replace(`/reset-password${window.location.hash}`);
+      return;
+    }
     if (!supabaseBrowser) return;
 
     const checkSession = async () => {
